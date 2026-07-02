@@ -199,10 +199,11 @@
   <script>
     lucide.createIcons();
     
-    // THE NGROK URL
-    const API_BASE = 'https://padded-penalty-reattach.ngrok-free.dev/api';
-    // THE VIP PASS TO BYPASS FREE TIER WARNINGS ON BACKGROUND FETCHES
-    const ngrokHeaders = { 'ngrok-skip-browser-warning': 'true', 'Content-Type': 'application/json' };
+    // LIVE RENDER BACKEND URL
+    const API_BASE = 'https://wallet-y7yv.onrender.com/api';
+    
+    // Standard JSON Headers
+    const apiHeaders = { 'Content-Type': 'application/json' };
 
     let currentType = 'expense'; let expenseGoal = parseFloat(localStorage.getItem('walletGoal')) || 25000; let selectedMonth = 'all'; let searchQuery = '';
     let transactions = []; let wishlistItems = []; let monthlyWishlistSavings = parseFloat(localStorage.getItem('walletWishlistSavings')) || 0;
@@ -222,21 +223,21 @@
             if (localTx && localTx !== "undefined") {
                 const parsedTx = JSON.parse(localTx);
                 if (parsedTx.length > 0) {
-                    await fetch(`${API_BASE}/sync-transactions`, { method: 'POST', headers: ngrokHeaders, body: localTx });
+                    await fetch(`${API_BASE}/sync-transactions`, { method: 'POST', headers: apiHeaders, body: localTx });
                     localStorage.removeItem('walletTx'); 
                 }
             }
             if (localWish && localWish !== "undefined") {
                 const parsedWish = JSON.parse(localWish);
                 if (parsedWish.length > 0) {
-                    await fetch(`${API_BASE}/sync-wishlist`, { method: 'POST', headers: ngrokHeaders, body: localWish });
+                    await fetch(`${API_BASE}/sync-wishlist`, { method: 'POST', headers: apiHeaders, body: localWish });
                     localStorage.removeItem('walletWish');
                 }
             }
 
             const [txRes, wRes] = await Promise.all([ 
-                fetch(`${API_BASE}/get-transactions`, { headers: { 'ngrok-skip-browser-warning': 'true' } }), 
-                fetch(`${API_BASE}/get-wishlist`, { headers: { 'ngrok-skip-browser-warning': 'true' } }) 
+                fetch(`${API_BASE}/get-transactions`), 
+                fetch(`${API_BASE}/get-wishlist`) 
             ]);
             
             if (txRes.ok) transactions = await txRes.json(); 
@@ -305,9 +306,9 @@
         try {
           const imported = JSON.parse(e.target.result);
           if (imported.transactions) {
-            await fetch(`${API_BASE}/sync-transactions`, { method: 'POST', headers: ngrokHeaders, body: JSON.stringify(imported.transactions) });
+            await fetch(`${API_BASE}/sync-transactions`, { method: 'POST', headers: apiHeaders, body: JSON.stringify(imported.transactions) });
             if (imported.wishlist) {
-                await fetch(`${API_BASE}/sync-wishlist`, { method: 'POST', headers: ngrokHeaders, body: JSON.stringify(imported.wishlist) });
+                await fetch(`${API_BASE}/sync-wishlist`, { method: 'POST', headers: apiHeaders, body: JSON.stringify(imported.wishlist) });
             }
             expenseGoal = imported.goal || 25000; monthlyWishlistSavings = imported.savings || 0;
             localStorage.setItem('walletGoal', expenseGoal); localStorage.setItem('walletWishlistSavings', monthlyWishlistSavings);
@@ -325,7 +326,7 @@
         const icon = document.getElementById('scanIcon'); icon.setAttribute('data-lucide', 'loader-2'); icon.classList.add('animate-spin'); lucide.createIcons();
         const formData = new FormData(); formData.append('receipt', file);
         try {
-            const res = await fetch(`${API_BASE}/receipt-ocr`, { method: 'POST', headers: { 'ngrok-skip-browser-warning': 'true' }, body: formData });
+            const res = await fetch(`${API_BASE}/receipt-ocr`, { method: 'POST', body: formData });
             const data = await res.json();
             if (data.total > 0) { document.getElementById('amount').value = data.total; document.getElementById('note').value = 'Document Scan Data Extraction'; } 
         } catch (error) { alert("OCR Engine communication layer error."); } 
@@ -341,7 +342,7 @@
 
         try {
             const res = await fetch(`${API_BASE}/sms-webhook`, {
-                method: 'POST', headers: ngrokHeaders, body: JSON.stringify({ smsText: smsText })
+                method: 'POST', headers: apiHeaders, body: JSON.stringify({ smsText: smsText })
             });
             const result = await res.json();
             if (!result.error) {
@@ -365,7 +366,7 @@
             transactions.forEach(t => { if(t.type === 'income') tIncTotal += t.amount; else tExpTotal += t.amount; });
             const aiPayloadData = { summary: `Exact Totals: Income is ₹${tIncTotal}, Expense is ₹${tExpTotal}.`, rawLedger: transactions };
             const res = await fetch(`${API_BASE}/jarvis-advice`, { 
-                method: 'POST', headers: ngrokHeaders, body: JSON.stringify({ transactions: aiPayloadData, monthlyBudget: expenseGoal }) 
+                method: 'POST', headers: apiHeaders, body: JSON.stringify({ transactions: aiPayloadData, monthlyBudget: expenseGoal }) 
             });
             const data = await res.json(); 
             term.innerHTML = ''; let i = 0; const txt = data.advice; term.classList.add('ai-typing');
@@ -391,7 +392,7 @@
         if(document.getElementById('isRecurring')) document.getElementById('isRecurring').checked = false; 
         updateUI();
 
-        try { await fetch(`${API_BASE}/add-transaction`, { method: 'POST', headers: ngrokHeaders, body: JSON.stringify(newTx) }); } 
+        try { await fetch(`${API_BASE}/add-transaction`, { method: 'POST', headers: apiHeaders, body: JSON.stringify(newTx) }); } 
         catch(err) { console.warn("Failed to sync new transaction."); }
     });
 
@@ -399,7 +400,7 @@
         if(confirm("Confirm entry deletion?")) { 
             transactions = transactions.filter(t => t.id !== id);
             updateUI(); 
-            try { await fetch(`${API_BASE}/delete-transaction/${id}`, { method: 'DELETE', headers: { 'ngrok-skip-browser-warning': 'true' } }); } catch(err){}
+            try { await fetch(`${API_BASE}/delete-transaction/${id}`, { method: 'DELETE' }); } catch(err){}
         } 
     }
 
@@ -409,7 +410,7 @@
         if(confirm("Remove tracking index?")) { 
             wishlistItems = wishlistItems.filter(w => w.id !== id);
             renderWishlist(); 
-            try { await fetch(`${API_BASE}/delete-wishlist/${id}`, { method: 'DELETE', headers: { 'ngrok-skip-browser-warning': 'true' } }); } catch(err){}
+            try { await fetch(`${API_BASE}/delete-wishlist/${id}`, { method: 'DELETE' }); } catch(err){}
         } 
     }
 
@@ -417,7 +418,7 @@
         const url = e.target.value; const icn = document.getElementById('linkStatusIcon'); if(!url) return;
         icn.setAttribute('data-lucide', 'loader-2'); icn.classList.add('animate-spin'); lucide.createIcons();
         try {
-            const res = await fetch(`${API_BASE}/scrape-price`, { method: 'POST', headers: ngrokHeaders, body: JSON.stringify({url}) });
+            const res = await fetch(`${API_BASE}/scrape-price`, { method: 'POST', headers: apiHeaders, body: JSON.stringify({url}) });
             const result = await res.json();
             if(result.title) document.getElementById('wishName').value = result.title.split('|')[0].trim();
             if(result.price) document.getElementById('wishPrice').value = result.price;
@@ -437,7 +438,7 @@
         renderWishlist();
         
         try {
-            await fetch(`${API_BASE}/add-wishlist`, { method: 'POST', headers: ngrokHeaders, body: JSON.stringify(newItem) });
+            await fetch(`${API_BASE}/add-wishlist`, { method: 'POST', headers: apiHeaders, body: JSON.stringify(newItem) });
         } catch (error) { 
             console.warn("Failed to sync new wishlist item."); 
         } finally { 
