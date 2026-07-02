@@ -84,7 +84,7 @@
               </div>
               <div id="aiTerminal" class="hidden mb-4 p-4 bg-black/60 border border-blue-500/30 rounded-xl text-xs md:text-sm text-gray-300 min-h-[80px]"></div>
               <div class="h-44 md:h-48 relative flex items-center justify-center"><canvas id="walletChart"></canvas><div class="absolute inset-0 flex flex-col items-center justify-center pointer-events-none pt-2"><span class="text-gray-400 text-[9px] font-semibold mb-0.5 uppercase tracking-widest">Spent</span><span id="chartCenterText" class="text-lg md:text-xl font-bold text-white">₹0</span></div></div>
-              <div id="topInsights" class="mt-4 space-y-3 pt-4 border-t border-white/10 flex-grow"></div>
+              <div id="topInsights" class="mt-4 space-y-3 pt-4 border-t border-white/10 flex-grow overflow-y-auto max-h-[160px] pr-2"></div>
             </div>
             <div class="glass-panel rounded-3xl p-5 md:p-6">
               <h3 class="text-sm font-bold text-gray-300 mb-6 uppercase tracking-widest">Cash Flow</h3>
@@ -99,7 +99,6 @@
                  <div class="flex items-center space-x-1.5">
                    <button onclick="exportData()" class="bg-white/5 hover:bg-white/10 text-gray-300 p-2 rounded-xl border border-white/5" title="Backup (JSON)"><i data-lucide="download" class="w-4 h-4"></i></button>
                    <label class="bg-white/5 hover:bg-white/10 text-gray-300 p-2 rounded-xl border border-white/5 cursor-pointer" title="Restore (JSON)"><i data-lucide="upload" class="w-4 h-4"></i><input type="file" id="importFile" accept=".json" class="hidden" onchange="importData(event)"></label>
-                   <a href="http://localhost:3000/generate-pdf" download class="bg-white/5 hover:bg-white/10 text-rose-400 p-2 rounded-xl border border-white/5" title="Download PDF Statement"><i data-lucide="file-text" class="w-4 h-4"></i></a>
                  </div>
                </div>
                <div class="flex space-x-2">
@@ -200,8 +199,11 @@
   <script>
     lucide.createIcons();
     
-    // NOTE: Change this to your Render/Railway live backend URL once hosted!
-    const API_BASE = 'http://localhost:3000';
+    // LIVE RENDER BACKEND URL
+    const API_BASE = 'https://wallet-y7yv.onrender.com/api';
+    
+    // Standard JSON Headers
+    const apiHeaders = { 'Content-Type': 'application/json' };
 
     let currentType = 'expense'; let expenseGoal = parseFloat(localStorage.getItem('walletGoal')) || 25000; let selectedMonth = 'all'; let searchQuery = '';
     let transactions = []; let wishlistItems = []; let monthlyWishlistSavings = parseFloat(localStorage.getItem('walletWishlistSavings')) || 0;
@@ -215,15 +217,38 @@
 
     async function syncDataFromServer() {
         try {
-            const localData = localStorage.getItem('walletData');
-            if (localData && JSON.parse(localData).length > 0) {
-                await fetch(`${API_BASE}/sync-transactions`, { method: 'POST', headers: {'Content-Type':'application/json'}, body: localData });
-                localStorage.removeItem('walletData'); 
+            const localTx = localStorage.getItem('walletTx');
+            const localWish = localStorage.getItem('walletWish');
+            
+            if (localTx && localTx !== "undefined") {
+                const parsedTx = JSON.parse(localTx);
+                if (parsedTx.length > 0) {
+                    await fetch(`${API_BASE}/sync-transactions`, { method: 'POST', headers: apiHeaders, body: localTx });
+                    localStorage.removeItem('walletTx'); 
+                }
             }
-            const [txRes, wRes] = await Promise.all([ fetch(`${API_BASE}/get-transactions`), fetch(`${API_BASE}/get-wishlist`) ]);
-            transactions = await txRes.json(); wishlistItems = await wRes.json();
-            updateUI(); renderWishlist();
-        } catch (err) { console.error("Could not fetch from Cloud DB. Ensure server is running."); }
+            if (localWish && localWish !== "undefined") {
+                const parsedWish = JSON.parse(localWish);
+                if (parsedWish.length > 0) {
+                    await fetch(`${API_BASE}/sync-wishlist`, { method: 'POST', headers: apiHeaders, body: localWish });
+                    localStorage.removeItem('walletWish');
+                }
+            }
+
+            const [txRes, wRes] = await Promise.all([ 
+                fetch(`${API_BASE}/get-transactions`), 
+                fetch(`${API_BASE}/get-wishlist`) 
+            ]);
+            
+            if (txRes.ok) transactions = await txRes.json(); 
+            if (wRes.ok) wishlistItems = await wRes.json();
+            
+        } catch (err) { 
+            console.warn("Cloud sync warning: Using local cache until server connects.", err); 
+        } finally {
+            updateUI(); 
+            renderWishlist();
+        }
     }
 
     function switchMainView(view) {
@@ -281,13 +306,18 @@
         try {
           const imported = JSON.parse(e.target.result);
           if (imported.transactions) {
-            await fetch(`${API_BASE}/sync-transactions`, { method: 'POST', headers: {'Content-Type':'application/json'}, body: JSON.stringify(imported.transactions) });
+            await fetch(`${API_BASE}/sync-transactions`, { method: 'POST', headers: apiHeaders, body: JSON.stringify(imported.transactions) });
+            if (imported.wishlist) {
+                await fetch(`${API_BASE}/sync-wishlist`, { method: 'POST', headers: apiHeaders, body: JSON.stringify(imported.wishlist) });
+            }
             expenseGoal = imported.goal || 25000; monthlyWishlistSavings = imported.savings || 0;
             localStorage.setItem('walletGoal', expenseGoal); localStorage.setItem('walletWishlistSavings', monthlyWishlistSavings);
             document.getElementById('wishlistSavingsInput').value = monthlyWishlistSavings || '';
-            alert("Data records synced to cloud successfully!"); syncDataFromServer();
+            
+            alert("Backup imported to Cloud Database successfully!");
+            syncDataFromServer(); 
           }
-        } catch (err) { alert("Corrupted parsing sequence on target database file."); }
+        } catch (err) { alert("Corrupted database file."); }
       }; reader.readAsText(file);
     }
 
@@ -296,44 +326,31 @@
         const icon = document.getElementById('scanIcon'); icon.setAttribute('data-lucide', 'loader-2'); icon.classList.add('animate-spin'); lucide.createIcons();
         const formData = new FormData(); formData.append('receipt', file);
         try {
-            const res = await fetch(`${API_BASE}/scan-receipt`, { method: 'POST', body: formData });
+            const res = await fetch(`${API_BASE}/receipt-ocr`, { method: 'POST', body: formData });
             const data = await res.json();
             if (data.total > 0) { document.getElementById('amount').value = data.total; document.getElementById('note').value = 'Document Scan Data Extraction'; } 
-            else { alert("Total value key parameters undetected inside asset frame."); }
         } catch (error) { alert("OCR Engine communication layer error."); } 
         finally { icon.setAttribute('data-lucide', 'camera'); icon.classList.remove('animate-spin'); lucide.createIcons(); event.target.value = ''; }
     }
 
     async function handleSMSPaste() {
-        const smsText = prompt("Paste raw transaction info SMS body structure here:");
+        const smsText = prompt("Paste raw transaction SMS here:");
         if (!smsText) return;
 
         const icon = document.getElementById('smsIcon');
         icon.setAttribute('data-lucide', 'loader-2'); icon.classList.add('animate-spin'); lucide.createIcons();
 
         try {
-            const res = await fetch(`${API_BASE}/parse-sms`, {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ sms: smsText })
+            const res = await fetch(`${API_BASE}/sms-webhook`, {
+                method: 'POST', headers: apiHeaders, body: JSON.stringify({ smsText: smsText })
             });
             const result = await res.json();
-
-            if (result.status === 'success') {
-                const data = result.data;
-                if (data.type === 'expense' || data.type === 'income') switchTab(data.type);
-                
-                document.getElementById('amount').value = data.amount;
-                document.getElementById('note').value = data.note;
-                
-                const accDropdown = document.getElementById('account');
-                for(let i=0; i < accDropdown.options.length; i++) {
-                    if(accDropdown.options[i].value === data.account) {
-                        accDropdown.selectedIndex = i; break;
-                    }
-                }
-            } else { alert("Failed parsing text details via AI engine."); }
-        } catch (error) { alert("Connection timeout on Gemini parsing node."); } 
+            if (!result.error) {
+                switchTab(result.data.type);
+                document.getElementById('amount').value = result.data.amount;
+                document.getElementById('note').value = result.data.merchant;
+            } 
+        } catch (error) { } 
         finally { icon.setAttribute('data-lucide', 'message-square'); icon.classList.remove('animate-spin'); lucide.createIcons(); }
     }
 
@@ -345,50 +362,88 @@
         term.innerHTML = '<span class="text-blue-400 animate-pulse">Jarvis is compiling budget logs...</span>';
         
         try {
-            const res = await fetch(`${API_BASE}/ai-insights`, { method: 'POST', headers: {'Content-Type':'application/json'}, body: JSON.stringify({ transactions: transactions, goal: expenseGoal }) });
+            let tIncTotal = 0, tExpTotal = 0;
+            transactions.forEach(t => { if(t.type === 'income') tIncTotal += t.amount; else tExpTotal += t.amount; });
+            const aiPayloadData = { summary: `Exact Totals: Income is ₹${tIncTotal}, Expense is ₹${tExpTotal}.`, rawLedger: transactions };
+            const res = await fetch(`${API_BASE}/jarvis-advice`, { 
+                method: 'POST', headers: apiHeaders, body: JSON.stringify({ transactions: aiPayloadData, monthlyBudget: expenseGoal }) 
+            });
             const data = await res.json(); 
-            term.innerHTML = ''; let i = 0; const txt = data.message; term.classList.add('ai-typing');
+            term.innerHTML = ''; let i = 0; const txt = data.advice; term.classList.add('ai-typing');
             function typeWriter() { 
                 if (i < txt.length) { term.innerHTML += txt.charAt(i); i++; aiTypingTimer = setTimeout(typeWriter, 20); } 
                 else { term.classList.remove('ai-typing'); btn.disabled = false; btn.classList.remove('opacity-50', 'cursor-not-allowed'); } 
             }
             typeWriter();
         } catch (err) { 
-            term.innerHTML = '<span class="text-red-400">Analysis stream offline. Verification required for Gemini parameters.</span>'; 
+            term.innerHTML = '<span class="text-red-400">Analysis stream offline.</span>'; 
             btn.disabled = false; btn.classList.remove('opacity-50', 'cursor-not-allowed');
         }
     }
 
     document.getElementById('transactionForm').addEventListener('submit', async (e) => {
-        e.preventDefault(); const amt = parseFloat(document.getElementById('amount').value); if (!amt) return;
+        e.preventDefault(); 
+        const amt = parseFloat(document.getElementById('amount').value); if (!amt) return;
         const dateObj = new Date(document.getElementById('date').value); const now = new Date(); dateObj.setHours(now.getHours(), now.getMinutes());
         const newTx = { id: String(Date.now()), type: currentType, amount: amt, account: document.getElementById('account').value, category: document.getElementById('category').value, note: document.getElementById('note').value, timestamp: dateObj.getTime(), isRecurring: document.getElementById('isRecurring')?.checked };
-        await fetch(`${API_BASE}/add-transaction`, { method: 'POST', headers: {'Content-Type':'application/json'}, body: JSON.stringify(newTx) });
-        document.getElementById('amount').value = ''; document.getElementById('note').value = ''; if(document.getElementById('isRecurring')) document.getElementById('isRecurring').checked = false; syncDataFromServer();
+        
+        transactions.push(newTx);
+        document.getElementById('amount').value = ''; document.getElementById('note').value = ''; 
+        if(document.getElementById('isRecurring')) document.getElementById('isRecurring').checked = false; 
+        updateUI();
+
+        try { await fetch(`${API_BASE}/add-transaction`, { method: 'POST', headers: apiHeaders, body: JSON.stringify(newTx) }); } 
+        catch(err) { console.warn("Failed to sync new transaction."); }
     });
 
-    async function deleteTx(id) { if(confirm("Confirm entry deletion?")) { await fetch(`${API_BASE}/delete-transaction/${id}`, { method: 'DELETE' }); syncDataFromServer(); } }
+    async function deleteTx(id) { 
+        if(confirm("Confirm entry deletion?")) { 
+            transactions = transactions.filter(t => t.id !== id);
+            updateUI(); 
+            try { await fetch(`${API_BASE}/delete-transaction/${id}`, { method: 'DELETE' }); } catch(err){}
+        } 
+    }
 
     function updateWishlistSavings(v) { monthlyWishlistSavings = parseFloat(v) || 0; localStorage.setItem('walletWishlistSavings', monthlyWishlistSavings); renderWishlist(); }
-    async function deleteWishlistItem(id) { if(confirm("Remove tracking index?")) { await fetch(`${API_BASE}/delete-wishlist/${id}`, { method: 'DELETE' }); syncDataFromServer(); } }
+    
+    async function deleteWishlistItem(id) { 
+        if(confirm("Remove tracking index?")) { 
+            wishlistItems = wishlistItems.filter(w => w.id !== id);
+            renderWishlist(); 
+            try { await fetch(`${API_BASE}/delete-wishlist/${id}`, { method: 'DELETE' }); } catch(err){}
+        } 
+    }
 
     document.getElementById('wishLink').addEventListener('change', async (e) => {
         const url = e.target.value; const icn = document.getElementById('linkStatusIcon'); if(!url) return;
         icn.setAttribute('data-lucide', 'loader-2'); icn.classList.add('animate-spin'); lucide.createIcons();
         try {
-            const res = await fetch(`${API_BASE}/scrape`, { method: 'POST', headers: {'Content-Type':'application/json'}, body: JSON.stringify({url}) });
+            const res = await fetch(`${API_BASE}/scrape-price`, { method: 'POST', headers: apiHeaders, body: JSON.stringify({url}) });
             const result = await res.json();
-            if(result.status === 'success') {
-                if(result.data.title) document.getElementById('wishName').value = result.data.title.split('|')[0].trim();
-                if(result.data.price) document.getElementById('wishPrice').value = result.data.price;
-                if(result.data.imageUrl) document.getElementById('wishImage').value = result.data.imageUrl;
-            }
+            if(result.title) document.getElementById('wishName').value = result.title.split('|')[0].trim();
+            if(result.price) document.getElementById('wishPrice').value = result.price;
+            if(result.imageUrl) document.getElementById('wishImage').value = result.imageUrl;
         } catch(err) {} finally { icn.setAttribute('data-lucide', 'link'); icn.classList.remove('animate-spin'); lucide.createIcons(); }
     });
 
     document.getElementById('wishlistForm').addEventListener('submit', async (e) => {
-        e.preventDefault(); const newItem = { id: String(Date.now()), title: document.getElementById('wishName').value, price: parseFloat(document.getElementById('wishPrice').value), link: document.getElementById('wishLink').value, imageUrl: document.getElementById('wishImage').value };
-        await fetch(`${API_BASE}/add-wishlist`, { method: 'POST', headers: {'Content-Type':'application/json'}, body: JSON.stringify(newItem) }); e.target.reset(); syncDataFromServer();
+        e.preventDefault(); 
+        const btn = e.target.querySelector('button[type="submit"]'); const orig = btn.innerText;
+        btn.innerText = "Saving to Tracker..."; btn.disabled = true;
+        
+        const newItem = { id: String(Date.now()), title: document.getElementById('wishName').value, price: parseFloat(document.getElementById('wishPrice').value), link: document.getElementById('wishLink').value, imageUrl: document.getElementById('wishImage').value };
+        
+        wishlistItems.push(newItem);
+        e.target.reset(); 
+        renderWishlist();
+        
+        try {
+            await fetch(`${API_BASE}/add-wishlist`, { method: 'POST', headers: apiHeaders, body: JSON.stringify(newItem) });
+        } catch (error) { 
+            console.warn("Failed to sync new wishlist item."); 
+        } finally { 
+            btn.innerText = orig; btn.disabled = false; 
+        }
     });
 
     function renderWishlist() {
@@ -409,7 +464,10 @@
 
     function initCharts() {
       donutChart = new Chart(document.getElementById('walletChart').getContext('2d'), { type: 'doughnut', data: { labels:[], datasets:[{data:[], backgroundColor:[], borderWidth:0}] }, options: { responsive: true, maintainAspectRatio: false, cutout: '80%', plugins: { legend: { display: false } } } });
-      lineChart = new Chart(document.getElementById('trendChart').getContext('2d'), { type: 'line', data: { labels:[], datasets:[] }, options: { responsive: true, maintainAspectRatio: false, tension: 0.4, plugins: { legend: { display: false } }, scales: { x: { grid: { display: false } }, y: { grid: { color: 'rgba(255,255,255,0.05)' }, border:{display:false} } } } });
+      lineChart = new Chart(document.getElementById('trendChart').getContext('2d'), { 
+        type: 'line', data: { labels:[], datasets:[] }, 
+        options: { responsive: true, maintainAspectRatio: false, elements: { line: { tension: 0.4 } }, plugins: { legend: { display: false } }, scales: { x: { grid: { display: false } }, y: { grid: { color: 'rgba(255,255,255,0.05)' }, border:{display:false} } } } 
+      });
     }
 
     function updateUI() {
@@ -425,7 +483,6 @@
 
       document.getElementById('totalIncome').innerText = `₹${tInc.toLocaleString()}`; document.getElementById('totalExpense').innerText = `₹${tExp.toLocaleString()}`; document.getElementById('chartCenterText').innerText = `₹${tExp.toLocaleString()}`;
       document.getElementById('netBalance').innerText = `₹${(bal.UPI+bal.Card+bal.Cash).toLocaleString()}`; ['UPI', 'Card', 'Cash'].forEach(a => document.getElementById(`bal${a}`).innerText = `₹${bal[a].toLocaleString()}`);
-
       const pct = Math.min((tExp / expenseGoal) * 100, 100) || 0; document.getElementById('goalProgress').style.width = `${pct}%`; document.getElementById('goalText').innerText = `Target Threshold: ₹${expenseGoal.toLocaleString()} (${Math.round(pct)}%)`;
       document.getElementById('recordCount').innerText = filtered.length;
 
@@ -433,15 +490,21 @@
       const sCats = Object.entries(catData).sort((a,b)=>b[1]-a[1]);
       donutChart.data = { labels: sCats.map(c=>c[0]), datasets: [{ data: sCats.map(c=>c[1]), backgroundColor: sCats.map(c=>CAT_COLORS[c[0]]||'#6b7280') }] }; donutChart.update();
 
-      const insightsEl = document.getElementById('topInsights');
+      const insightsEl = document.getElementById('topInsights'); insightsEl.className = "mt-4 space-y-3 pt-4 border-t border-white/10 flex-grow overflow-y-auto max-h-[160px] pr-2";
       if (sCats.length === 0) { insightsEl.innerHTML = `<p class="text-xs text-gray-500 text-center py-2">No category logs processed.</p>`; } 
-      else { insightsEl.innerHTML = sCats.slice(0, 3).map(([cat, val]) => { const catPct = Math.round((val / tExp) * 100); return `<div><div class="flex justify-between text-[10px] font-bold mb-1"><span class="text-gray-300 uppercase">${cat}</span><span class="text-gray-400">₹${val.toLocaleString()} (${catPct}%)</span></div><div class="w-full bg-white/5 rounded-full h-1.5"><div class="h-1.5 rounded-full" style="width: ${catPct}%; background-color: ${CAT_COLORS[cat] || '#6b7280'}"></div></div></div>`; }).join(''); }
+      else { insightsEl.innerHTML = sCats.map(([cat, val]) => { const catPct = tExp ? Math.round((val / tExp) * 100) : 0; return `<div><div class="flex justify-between text-[10px] font-bold mb-1"><span class="text-gray-300 uppercase">${cat}</span><span class="text-gray-400">₹${val.toLocaleString()} (${catPct}%)</span></div><div class="w-full bg-white/5 rounded-full h-1.5"><div class="h-1.5 rounded-full" style="width: ${catPct}%; background-color: ${CAT_COLORS[cat] || '#6b7280'}"></div></div></div>`; }).join(''); }
 
-      const dates = {}; [...filtered].sort((a,b)=>a.timestamp-b.timestamp).slice(-15).forEach(t => { const d = new Date(t.timestamp).toLocaleDateString('en-GB',{day:'numeric',month:'short'}); if(!dates[d]) dates[d] = {i:0,e:0}; t.type === 'income' ? dates[d].i += t.amount : dates[d].e += t.amount; });
+      const dates = {}; const sortedFiltered = [...filtered].sort((a,b)=>a.timestamp-b.timestamp);
+      if(sortedFiltered.length > 0) {
+          const endNode = new Date(sortedFiltered[sortedFiltered.length-1].timestamp); endNode.setHours(0,0,0,0);
+          const startNode = new Date(endNode); startNode.setDate(startNode.getDate() - 14); 
+          for(let d = new Date(startNode); d <= endNode; d.setDate(d.getDate() + 1)) { dates[d.toLocaleDateString('en-GB',{day:'numeric',month:'short'})] = {i:0,e:0}; }
+          sortedFiltered.forEach(t => { const dStr = new Date(t.timestamp).toLocaleDateString('en-GB',{day:'numeric',month:'short'}); if(dates[dStr]) { t.type === 'income' ? dates[dStr].i += t.amount : dates[dStr].e += t.amount; } });
+      }
       const labels = Object.keys(dates); lineChart.data = { labels, datasets: [ { data: labels.map(l=>dates[l].i), borderColor: '#10b981', backgroundColor: 'rgba(16, 185, 129, 0.1)', fill:true, pointRadius:2 }, { data: labels.map(l=>dates[l].e), borderColor: '#f43f5e', backgroundColor: 'rgba(244, 63, 94, 0.1)', fill:true, pointRadius:2 } ]}; lineChart.update();
 
       const list = document.getElementById('ledgerList');
-      if(!filtered.length) list.innerHTML = `<p class="text-gray-500 text-sm py-4 text-center">No structural entry indexes align with query criteria.</p>`;
+      if(!filtered.length) list.innerHTML = `<p class="text-gray-500 text-sm py-4 text-center">No structural entry indexes.</p>`;
       else list.innerHTML = [...filtered].sort((a,b)=>b.timestamp-a.timestamp).map(t => {
           const isI = t.type === 'income';
           return `<div class="ledger-item flex items-center justify-between p-4 bg-white/5 rounded-2xl border border-white/5 mb-2 hover:bg-white/10 transition-colors"><div class="flex items-center space-x-3 md:space-x-4"><div class="w-10 h-10 rounded-full flex items-center justify-center ${isI ? 'bg-emerald-500/20 text-emerald-400' : 'bg-rose-500/20 text-rose-400'}"><i data-lucide="${isI ? 'arrow-down-left' : 'credit-card'}" class="w-5 h-5"></i></div><div><p class="font-bold text-gray-200 text-sm">${t.category} ${t.isRecurring ? '<span class="bg-blue-600/30 text-blue-400 text-[8px] px-1 ml-1 rounded">AUTO</span>' : ''}</p><p class="text-[10px] text-gray-500 uppercase mt-0.5">${t.account} • ${new Date(t.timestamp).toLocaleDateString('en-GB',{day:'numeric',month:'short'})}</p></div></div><div class="flex items-center space-x-2 md:space-x-3"><div class="text-right"><p class="font-black text-sm md:text-base ${isI ? 'text-emerald-400' : 'text-rose-400'}">${isI?'+':'-'}₹${t.amount.toLocaleString()}</p>${t.note ? `<p class="text-[10px] text-gray-500 truncate max-w-[90px] md:max-w-[120px]">${t.note}</p>`:''}</div><button onclick="deleteTx('${t.id}')" class="action-btn text-gray-500 hover:text-rose-500 p-2"><i data-lucide="trash-2" class="w-4 h-4"></i></button></div></div>`;
