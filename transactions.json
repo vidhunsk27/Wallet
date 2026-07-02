@@ -1,0 +1,82 @@
+[
+  {
+    "id": 1781446647053,
+    "type": "expense",
+    "amount": 1.25,
+    "account": "UPI",
+    "category": "Groceries",
+    "note": "",
+    "timestamp": 1781395200000,
+    "isRecurring": false
+  },
+  {
+    "id": 1781446687727,
+    "type": "expense",
+    "amount": 100,
+    "account": "UPI",
+    "category": "Food & Dining",
+    "note": "",
+    "timestamp": 1781395200000,
+    "isRecurring": false
+  },
+  {
+    "id": 1781446703732,
+    "type": "expense",
+    "amount": 1000,
+    "account": "UPI",
+    "category": "Transport",
+    "note": "",
+    "timestamp": 1781395200000,
+    "isRecurring": false
+  },
+  {
+    "id": 1781446719918,
+    "type": "expense",
+    "amount": 200,
+    "account": "UPI",
+    "category": "Food & Dining",
+    "note": "",
+    "timestamp": 1781481600000,
+    "isRecurring": false
+  },
+  {
+    "id": 1781446744706,
+    "type": "income",
+    "amount": 10000,
+    "account": "UPI",
+    "category": "Salary",
+    "note": "",
+    "timestamp": 1781395200000,
+    "isRecurring": false
+  },
+  {
+    "id": 1781446774316,
+    "type": "expense",
+    "amount": 10,
+    "account": "UPI",
+    "category": "Entertainment",
+    "note": "",
+    "timestamp": 1781395200000,
+    "isRecurring": false
+  },
+  {
+    "id": 1781449509730,
+    "type": "expense",
+    "amount": 500,
+    "account": "UPI",
+    "category": "Shopping",
+    "note": "",
+    "timestamp": 1781535900000,
+    "isRecurring": false
+  },
+  {
+    "id": 1781449519406,
+    "type": "expense",
+    "amount": 500,
+    "account": "UPI",
+    "category": "Utilities",
+    "note": "",
+    "timestamp": 1781622300000,
+    "isRecurring": false
+  }
+]
