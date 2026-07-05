@@ -34,9 +34,15 @@
   <div class="max-w-7xl mx-auto space-y-4 md:space-y-6">
     
     <header class="flex flex-col sm:flex-row justify-between items-center gap-4 glass-panel rounded-3xl p-4 px-6">
-      <div class="flex items-center space-x-3">
-        <div class="w-10 h-10 bg-gradient-to-br from-blue-500 to-purple-600 rounded-xl flex items-center justify-center shadow-lg shadow-blue-500/20"><i data-lucide="layers" class="text-white w-5 h-5"></i></div>
-        <h1 class="text-xl font-black tracking-tight text-white">Wallet<span class="text-blue-400">V2.0</span></h1>
+      <div class="flex items-center space-x-4">
+        <div class="relative">
+          <div class="w-12 h-12 bg-gradient-to-br from-blue-600 to-purple-600 rounded-full flex items-center justify-center shadow-lg shadow-blue-500/20 text-white font-black text-xl border border-white/10">V</div>
+          <div class="absolute bottom-0 right-0 w-3.5 h-3.5 bg-emerald-500 border-2 border-[#050505] rounded-full animate-pulse shadow-[0_0_8px_rgba(16,185,129,0.8)]"></div>
+        </div>
+        <div>
+          <h1 class="text-xl font-black tracking-tight text-white">Welcome back, <span class="text-blue-400">Vidhun</span></h1>
+          <p class="text-[10px] text-gray-400 font-bold uppercase tracking-widest flex items-center mt-0.5"><i data-lucide="shield-check" class="w-3 h-3 mr-1 text-emerald-400"></i> Server Encrypted</p>
+        </div>
       </div>
       <div class="flex space-x-1 bg-black/40 p-1 rounded-2xl border border-white/5 w-full sm:w-auto">
         <button id="navDashboard" onclick="switchMainView('dashboard')" class="flex-1 sm:flex-none px-4 md:px-5 py-2.5 rounded-xl font-bold text-sm bg-white/10 text-white shadow-sm transition-all"><i data-lucide="activity" class="inline w-4 h-4 mr-1.5"></i> Ledger</button>
@@ -45,10 +51,31 @@
     </header>
 
     <div id="viewDashboard" class="view-active space-y-4 md:space-y-6">
+      
+      <!-- PENDING SMS CONFIRMATION UI -->
+      <div id="pendingContainer" class="hidden mb-6">
+          <div class="bg-gray-900 border border-blue-500/30 rounded-xl p-4 md:p-6 shadow-lg relative overflow-hidden">
+               <div class="absolute inset-0 bg-gradient-to-r from-blue-600/10 to-purple-600/10 pointer-events-none"></div>
+               <h2 class="text-sm font-bold text-blue-400 mb-4 uppercase tracking-widest flex items-center">
+                   <div class="w-2 h-2 rounded-full bg-blue-500 mr-2 animate-pulse"></div> Action Required: Pending SMS
+               </h2>
+               <div id="pending-list" class="space-y-3"></div>
+          </div>
+      </div>
+
+      <!-- PRIMARY ASSET CARDS -->
       <div class="grid grid-cols-1 md:grid-cols-3 gap-4 md:gap-6">
         <div class="glass-panel rounded-3xl p-6 md:p-8 relative overflow-hidden group">
           <div class="absolute inset-0 bg-gradient-to-br from-blue-500/10 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
-          <h3 class="text-xs font-bold text-gray-400 uppercase tracking-widest mb-2 flex items-center"><div class="w-2 h-2 rounded-full bg-blue-500 mr-2 animate-pulse"></div> Total Assets</h3>
+          
+          <div class="flex justify-between items-start mb-2">
+              <h3 class="text-xs font-bold text-gray-400 uppercase tracking-widest flex items-center"><div class="w-2 h-2 rounded-full bg-blue-500 mr-2 animate-pulse"></div> Total Assets</h3>
+              <div class="px-2 py-1 bg-black/40 border border-white/5 rounded-lg flex items-center shadow-sm backdrop-blur-md">
+                  <span class="text-[9px] text-gray-500 uppercase font-bold mr-1.5">Health</span>
+                  <span id="healthScore" class="text-xs font-black text-emerald-400">0/100</span>
+              </div>
+          </div>
+
           <h1 id="netBalance" class="text-4xl md:text-5xl font-black text-white mt-2 drop-shadow-md">₹0</h1>
           <div class="mt-6 md:mt-8 grid grid-cols-3 gap-2 md:gap-4 text-xs md:text-sm font-medium border-t border-white/10 pt-4 md:pt-6">
             <div><p class="text-gray-500 text-[10px] md:text-xs mb-1">UPI</p><p id="balUPI" class="text-white font-bold">₹0</p></div>
@@ -72,8 +99,30 @@
         </div>
       </div>
 
+      <!-- ADVANCED MINI-STATS STRIP -->
+      <div class="grid grid-cols-2 md:grid-cols-4 gap-4 md:gap-6 mt-2">
+        <div class="bg-gradient-to-r from-blue-900/20 to-blue-800/10 backdrop-blur-xl rounded-2xl p-4 md:p-5 border border-blue-500/20 shadow-lg shadow-blue-900/10">
+          <p class="text-[10px] uppercase text-blue-400 font-bold tracking-widest mb-1 flex items-center"><i data-lucide="flame" class="w-3 h-3 mr-1"></i> Daily Burn</p>
+          <p id="statBurnRate" class="text-xl font-black text-white">₹0</p>
+        </div>
+        <div class="bg-gradient-to-r from-emerald-900/20 to-emerald-800/10 backdrop-blur-xl rounded-2xl p-4 md:p-5 border border-emerald-500/20 shadow-lg shadow-emerald-900/10">
+          <p class="text-[10px] uppercase text-emerald-400 font-bold tracking-widest mb-1 flex items-center"><i data-lucide="trending-up" class="w-3 h-3 mr-1"></i> Savings Velocity</p>
+          <p id="statSavingsRate" class="text-xl font-black text-white">0%</p>
+        </div>
+        <div class="bg-gradient-to-r from-rose-900/20 to-rose-800/10 backdrop-blur-xl rounded-2xl p-4 md:p-5 border border-rose-500/20 shadow-lg shadow-rose-900/10">
+          <p class="text-[10px] uppercase text-rose-400 font-bold tracking-widest mb-1 flex items-center"><i data-lucide="repeat" class="w-3 h-3 mr-1"></i> Recurring Debt</p>
+          <p id="statLiabilities" class="text-xl font-black text-white">₹0</p>
+        </div>
+        <div class="bg-gradient-to-r from-purple-900/20 to-purple-800/10 backdrop-blur-xl rounded-2xl p-4 md:p-5 border border-purple-500/20 shadow-lg shadow-purple-900/10">
+          <p class="text-[10px] uppercase text-purple-400 font-bold tracking-widest mb-1 flex items-center"><i data-lucide="clock" class="w-3 h-3 mr-1"></i> Liquid Runway</p>
+          <p id="statRunway" class="text-xl font-black text-white">0 Days</p>
+        </div>
+      </div>
+
       <div class="grid grid-cols-1 lg:grid-cols-3 gap-4 md:gap-6">
         <div class="lg:col-span-2 space-y-4 md:space-y-6">
+          
+          <!-- CHART GRID: DONUT & LINE -->
           <div class="grid grid-cols-1 md:grid-cols-2 gap-4 md:gap-6">
             <div class="glass-panel rounded-3xl p-5 md:p-6 flex flex-col">
               <div class="flex justify-between items-center mb-6">
@@ -87,9 +136,19 @@
               <div id="topInsights" class="mt-4 space-y-3 pt-4 border-t border-white/10 flex-grow overflow-y-auto max-h-[160px] pr-2"></div>
             </div>
             <div class="glass-panel rounded-3xl p-5 md:p-6">
-              <h3 class="text-sm font-bold text-gray-300 mb-6 uppercase tracking-widest">Cash Flow</h3>
+              <h3 class="text-sm font-bold text-gray-300 mb-6 uppercase tracking-widest">Cash Flow Trend</h3>
               <div class="h-60 md:h-64"><canvas id="trendChart"></canvas></div>
             </div>
+          </div>
+
+          <!-- CHART GRID: RADAR MATRIX -->
+          <div class="glass-panel rounded-3xl p-5 md:p-6 border border-white/5 bg-gradient-to-b from-transparent to-white/5">
+              <div class="flex justify-between items-center mb-4">
+                  <h3 class="text-sm font-bold text-gray-300 uppercase tracking-widest">Behavioral Spending Matrix</h3>
+                  <i data-lucide="radar" class="text-blue-500 w-5 h-5"></i>
+              </div>
+              <p class="text-xs text-gray-500 mb-4">Visualizing allocation density across primary fixed categories.</p>
+              <div class="h-52 md:h-64 relative flex justify-center"><canvas id="radarChart"></canvas></div>
           </div>
 
           <div class="glass-panel rounded-3xl p-4 md:p-6">
@@ -110,6 +169,7 @@
           </div>
         </div>
 
+        <!-- QUICK ENTRY SIDEBAR -->
         <div class="lg:col-span-1">
           <div class="glass-panel rounded-3xl p-5 md:p-6 sticky top-6">
             <h3 class="text-sm font-bold text-gray-300 mb-6 uppercase tracking-widest">Quick Entry</h3>
@@ -128,10 +188,11 @@
                     <i id="smsIcon" data-lucide="message-square" class="w-5 h-5"></i>
                   </button>
                   
+                  <!-- COMPATIBILITY TWEAK: Added capture="camera" to activate immediate snap function on mobile viewports -->
                   <label for="receiptUpload" class="absolute right-4 p-2 bg-gray-800 hover:bg-gray-700 text-gray-300 rounded-lg cursor-pointer transition-colors" title="Scan Receipt/PDF">
                     <i id="scanIcon" data-lucide="camera" class="w-5 h-5"></i>
                   </label>
-                  <input type="file" id="receiptUpload" accept="image/*,application/pdf" class="hidden" onchange="scanReceipt(event)">
+                  <input type="file" id="receiptUpload" accept="image/*" capture="camera" class="hidden" onchange="scanReceipt(event)">
                 </div>
                 <div class="flex gap-1.5 mt-3 overflow-x-auto pb-1 touch-pan-x">
                   <button type="button" onclick="addAmount(100)" class="flex-1 min-w-[55px] bg-white/5 hover:bg-white/10 text-gray-300 text-xs font-bold py-2 rounded-lg border border-white/5">+100</button>
@@ -179,6 +240,7 @@
       </div>
     </div>
 
+    <!-- WISHLIST VIEW -->
     <div id="viewWishlist" class="view-hidden space-y-4 md:space-y-6">
       <div class="glass-panel rounded-3xl p-6 md:p-8 flex flex-col md:flex-row justify-between items-center gap-4">
         <div><h2 class="text-2xl md:text-3xl font-black text-white flex items-center"><i data-lucide="rocket" class="text-blue-400 mr-4 w-7 h-7"></i> Target Goals</h2><p class="text-gray-400 text-xs md:text-sm mt-1.5">Captured via automation hooks or items added manually below.</p></div>
@@ -199,10 +261,7 @@
   <script>
     lucide.createIcons();
     
-    // LIVE RENDER BACKEND URL
     const API_BASE = 'https://wallet-y7yv.onrender.com/api';
-    
-    // Standard JSON Headers
     const apiHeaders = { 'Content-Type': 'application/json' };
 
     let currentType = 'expense'; let expenseGoal = parseFloat(localStorage.getItem('walletGoal')) || 25000; let selectedMonth = 'all'; let searchQuery = '';
@@ -215,40 +274,80 @@
     const INCOME_CATEGORIES = ['Salary', 'Freelance', 'Investments', 'Refund', 'Other'];
     const CAT_COLORS = { 'Food & Dining': '#ef4444', 'Groceries': '#f97316', 'Subscriptions': '#8b5cf6', 'Transport': '#3b82f6', 'Utilities': '#eab308', 'Shopping': '#a855f7', 'Salary': '#10b981', 'Other': '#6b7280' };
 
+    async function loadPendingTransactions() {
+        try {
+            const response = await fetch(`${API_BASE}/pending`);
+            if (!response.ok) return;
+            const data = await response.json();
+            renderPendingUI(data);
+        } catch (error) { console.warn("Pending pipeline offline."); }
+    }
+
+    function renderPendingUI(pendingTxns) {
+        const container = document.getElementById('pendingContainer');
+        const list = document.getElementById('pending-list');
+        
+        if (!pendingTxns || pendingTxns.length === 0) {
+            container.classList.add('hidden');
+            return;
+        }
+
+        container.classList.remove('hidden');
+        list.innerHTML = '';
+
+        pendingTxns.forEach(txn => {
+            const isI = txn.type === 'income';
+            list.innerHTML += `
+                <div class="bg-black/50 p-3 md:p-4 rounded-lg flex flex-col md:flex-row md:items-center justify-between space-y-3 md:space-y-0 border border-white/5">
+                    <div class="flex-1">
+                        <div class="flex justify-between md:block">
+                            <span class="text-xs font-bold text-gray-300 uppercase">${txn.sender || txn.merchant || 'Bank SMS'}</span>
+                            <span class="font-black text-sm md:hidden ${isI ? 'text-emerald-400' : 'text-rose-400'}">${isI ? '+' : '-'}₹${txn.amount}</span>
+                        </div>
+                        <p class="text-gray-400 text-xs mt-1 italic">"${txn.rawMessage}"</p>
+                    </div>
+                    <div class="flex items-center justify-between md:justify-end md:space-x-4">
+                        <span class="hidden md:inline font-black text-lg mr-2 ${isI ? 'text-emerald-400' : 'text-rose-400'}">${isI ? '+' : '-'}₹${txn.amount}</span>
+                        <div class="flex space-x-2 w-full md:w-auto">
+                            <button onclick="handleDecision('${txn.id}', 'reject')" class="flex-1 md:flex-none px-3 py-1.5 bg-rose-600/20 hover:bg-rose-600 text-rose-400 hover:text-white text-xs font-bold rounded-lg transition-all border border-rose-500/30">Reject</button>
+                            <button onclick="handleDecision('${txn.id}', 'approve')" class="flex-1 md:flex-none px-3 py-1.5 bg-emerald-600/20 hover:bg-emerald-600 text-emerald-400 hover:text-white text-xs font-bold rounded-lg transition-all border border-emerald-500/30">Approve</button>
+                        </div>
+                    </div>
+                </div>`;
+        });
+        lucide.createIcons();
+    }
+
+    async function handleDecision(id, action) {
+        try {
+            const res = await fetch(`${API_BASE}/${action}`, { method: 'POST', headers: apiHeaders, body: JSON.stringify({ id: id }) });
+            const result = await res.json();
+            if (result.success) {
+                if (action === 'approve' && result.data) { transactions.push(result.data); updateUI(); }
+                loadPendingTransactions();
+            }
+        } catch (error) {}
+    }
+
+    async function handleSMSPaste() {
+        const smsText = prompt("Paste raw transaction SMS here:");
+        if (!smsText) return;
+        const icon = document.getElementById('smsIcon');
+        icon.setAttribute('data-lucide', 'loader-2'); icon.classList.add('animate-spin'); lucide.createIcons();
+        try {
+            const res = await fetch(`${API_BASE}/sms-webhook`, { method: 'POST', headers: apiHeaders, body: JSON.stringify({ smsText: smsText }) });
+            if (res.ok) { alert("SMS added to persistent queue!"); loadPendingTransactions(); } 
+        } catch (error) { } finally { icon.setAttribute('data-lucide', 'message-square'); icon.classList.remove('animate-spin'); lucide.createIcons(); }
+    }
+
     async function syncDataFromServer() {
         try {
-            const localTx = localStorage.getItem('walletTx');
-            const localWish = localStorage.getItem('walletWish');
-            
-            if (localTx && localTx !== "undefined") {
-                const parsedTx = JSON.parse(localTx);
-                if (parsedTx.length > 0) {
-                    await fetch(`${API_BASE}/sync-transactions`, { method: 'POST', headers: apiHeaders, body: localTx });
-                    localStorage.removeItem('walletTx'); 
-                }
-            }
-            if (localWish && localWish !== "undefined") {
-                const parsedWish = JSON.parse(localWish);
-                if (parsedWish.length > 0) {
-                    await fetch(`${API_BASE}/sync-wishlist`, { method: 'POST', headers: apiHeaders, body: localWish });
-                    localStorage.removeItem('walletWish');
-                }
-            }
-
-            const [txRes, wRes] = await Promise.all([ 
-                fetch(`${API_BASE}/get-transactions`), 
-                fetch(`${API_BASE}/get-wishlist`) 
-            ]);
-            
-            if (txRes.ok) transactions = await txRes.json(); 
-            if (wRes.ok) wishlistItems = await wRes.json();
-            
-        } catch (err) { 
-            console.warn("Cloud sync warning: Using local cache until server connects.", err); 
-        } finally {
-            updateUI(); 
-            renderWishlist();
-        }
+            const localTx = localStorage.getItem('walletTx'); const localWish = localStorage.getItem('walletWish');
+            if (localTx && localTx !== "undefined") { const parsedTx = JSON.parse(localTx); if (parsedTx.length > 0) { await fetch(`${API_BASE}/sync-transactions`, { method: 'POST', headers: apiHeaders, body: localTx }); localStorage.removeItem('walletTx'); } }
+            if (localWish && localWish !== "undefined") { const parsedWish = JSON.parse(localWish); if (parsedWish.length > 0) { await fetch(`${API_BASE}/sync-wishlist`, { method: 'POST', headers: apiHeaders, body: localWish }); localStorage.removeItem('walletWish'); } }
+            const [txRes, wRes] = await Promise.all([ fetch(`${API_BASE}/get-transactions`), fetch(`${API_BASE}/get-wishlist`) ]);
+            if (txRes.ok) transactions = await txRes.json(); if (wRes.ok) wishlistItems = await wRes.json();
+        } catch (err) {} finally { updateUI(); renderWishlist(); }
     }
 
     function switchMainView(view) {
@@ -279,11 +378,7 @@
       (currentType === 'expense' ? EXPENSE_CATEGORIES : INCOME_CATEGORIES).forEach(c => sel.innerHTML += `<option value="${c}">${c}</option>`);
     }
 
-    function setGoal() {
-      const g = prompt("Set Budget Constraint (₹):", expenseGoal);
-      if (g && !isNaN(g)) { expenseGoal = parseFloat(g); localStorage.setItem('walletGoal', expenseGoal); updateUI(); }
-    }
-
+    function setGoal() { const g = prompt("Set Budget Constraint (₹):", expenseGoal); if (g && !isNaN(g)) { expenseGoal = parseFloat(g); localStorage.setItem('walletGoal', expenseGoal); updateUI(); } }
     function addAmount(val) { document.getElementById('amount').value = (parseFloat(document.getElementById('amount').value) || 0) + val; }
 
     function populateMonthFilter() {
@@ -307,17 +402,13 @@
           const imported = JSON.parse(e.target.result);
           if (imported.transactions) {
             await fetch(`${API_BASE}/sync-transactions`, { method: 'POST', headers: apiHeaders, body: JSON.stringify(imported.transactions) });
-            if (imported.wishlist) {
-                await fetch(`${API_BASE}/sync-wishlist`, { method: 'POST', headers: apiHeaders, body: JSON.stringify(imported.wishlist) });
-            }
+            if (imported.wishlist) await fetch(`${API_BASE}/sync-wishlist`, { method: 'POST', headers: apiHeaders, body: JSON.stringify(imported.wishlist) });
             expenseGoal = imported.goal || 25000; monthlyWishlistSavings = imported.savings || 0;
             localStorage.setItem('walletGoal', expenseGoal); localStorage.setItem('walletWishlistSavings', monthlyWishlistSavings);
             document.getElementById('wishlistSavingsInput').value = monthlyWishlistSavings || '';
-            
-            alert("Backup imported to Cloud Database successfully!");
-            syncDataFromServer(); 
+            alert("Backup imported successfully!"); syncDataFromServer(); 
           }
-        } catch (err) { alert("Corrupted database file."); }
+        } catch (err) {}
       }; reader.readAsText(file);
     }
 
@@ -329,45 +420,18 @@
             const res = await fetch(`${API_BASE}/receipt-ocr`, { method: 'POST', body: formData });
             const data = await res.json();
             if (data.total > 0) { document.getElementById('amount').value = data.total; document.getElementById('note').value = 'Document Scan Data Extraction'; } 
-        } catch (error) { alert("OCR Engine communication layer error."); } 
-        finally { icon.setAttribute('data-lucide', 'camera'); icon.classList.remove('animate-spin'); lucide.createIcons(); event.target.value = ''; }
-    }
-
-    async function handleSMSPaste() {
-        const smsText = prompt("Paste raw transaction SMS here:");
-        if (!smsText) return;
-
-        const icon = document.getElementById('smsIcon');
-        icon.setAttribute('data-lucide', 'loader-2'); icon.classList.add('animate-spin'); lucide.createIcons();
-
-        try {
-            const res = await fetch(`${API_BASE}/sms-webhook`, {
-                method: 'POST', headers: apiHeaders, body: JSON.stringify({ smsText: smsText })
-            });
-            const result = await res.json();
-            if (!result.error) {
-                switchTab(result.data.type);
-                document.getElementById('amount').value = result.data.amount;
-                document.getElementById('note').value = result.data.merchant;
-            } 
-        } catch (error) { } 
-        finally { icon.setAttribute('data-lucide', 'message-square'); icon.classList.remove('animate-spin'); lucide.createIcons(); }
+        } catch (error) {} finally { icon.setAttribute('data-lucide', 'camera'); icon.classList.remove('animate-spin'); lucide.createIcons(); event.target.value = ''; }
     }
 
     async function getAIInsights() {
         const term = document.getElementById('aiTerminal'); const btn = document.getElementById('aiButton');
         btn.disabled = true; btn.classList.add('opacity-50', 'cursor-not-allowed');
-        clearTimeout(aiTypingTimer);
-        term.classList.remove('hidden');
-        term.innerHTML = '<span class="text-blue-400 animate-pulse">Jarvis is compiling budget logs...</span>';
-        
+        clearTimeout(aiTypingTimer); term.classList.remove('hidden'); term.innerHTML = '<span class="text-blue-400 animate-pulse">Jarvis is compiling budget logs...</span>';
         try {
             let tIncTotal = 0, tExpTotal = 0;
             transactions.forEach(t => { if(t.type === 'income') tIncTotal += t.amount; else tExpTotal += t.amount; });
-            const aiPayloadData = { summary: `Exact Totals: Income is ₹${tIncTotal}, Expense is ₹${tExpTotal}.`, rawLedger: transactions };
-            const res = await fetch(`${API_BASE}/jarvis-advice`, { 
-                method: 'POST', headers: apiHeaders, body: JSON.stringify({ transactions: aiPayloadData, monthlyBudget: expenseGoal }) 
-            });
+            const aiPayloadData = { summary: `Totals: Income ₹${tIncTotal}, Expense ₹${tExpTotal}.`, rawLedger: transactions };
+            const res = await fetch(`${API_BASE}/jarvis-advice`, { method: 'POST', headers: apiHeaders, body: JSON.stringify({ transactions: aiPayloadData, monthlyBudget: expenseGoal }) });
             const data = await res.json(); 
             term.innerHTML = ''; let i = 0; const txt = data.advice; term.classList.add('ai-typing');
             function typeWriter() { 
@@ -375,10 +439,7 @@
                 else { term.classList.remove('ai-typing'); btn.disabled = false; btn.classList.remove('opacity-50', 'cursor-not-allowed'); } 
             }
             typeWriter();
-        } catch (err) { 
-            term.innerHTML = '<span class="text-red-400">Analysis stream offline.</span>'; 
-            btn.disabled = false; btn.classList.remove('opacity-50', 'cursor-not-allowed');
-        }
+        } catch (err) { term.innerHTML = '<span class="text-red-400">Analysis stream offline.</span>'; btn.disabled = false; btn.classList.remove('opacity-50', 'cursor-not-allowed'); }
     }
 
     document.getElementById('transactionForm').addEventListener('submit', async (e) => {
@@ -391,9 +452,7 @@
         document.getElementById('amount').value = ''; document.getElementById('note').value = ''; 
         if(document.getElementById('isRecurring')) document.getElementById('isRecurring').checked = false; 
         updateUI();
-
-        try { await fetch(`${API_BASE}/add-transaction`, { method: 'POST', headers: apiHeaders, body: JSON.stringify(newTx) }); } 
-        catch(err) { console.warn("Failed to sync new transaction."); }
+        try { await fetch(`${API_BASE}/add-transaction`, { method: 'POST', headers: apiHeaders, body: JSON.stringify(newTx) }); } catch(err) {}
     });
 
     async function deleteTx(id) { 
@@ -429,21 +488,10 @@
     document.getElementById('wishlistForm').addEventListener('submit', async (e) => {
         e.preventDefault(); 
         const btn = e.target.querySelector('button[type="submit"]'); const orig = btn.innerText;
-        btn.innerText = "Saving to Tracker..."; btn.disabled = true;
-        
+        btn.innerText = "Saving..."; btn.disabled = true;
         const newItem = { id: String(Date.now()), title: document.getElementById('wishName').value, price: parseFloat(document.getElementById('wishPrice').value), link: document.getElementById('wishLink').value, imageUrl: document.getElementById('wishImage').value };
-        
-        wishlistItems.push(newItem);
-        e.target.reset(); 
-        renderWishlist();
-        
-        try {
-            await fetch(`${API_BASE}/add-wishlist`, { method: 'POST', headers: apiHeaders, body: JSON.stringify(newItem) });
-        } catch (error) { 
-            console.warn("Failed to sync new wishlist item."); 
-        } finally { 
-            btn.innerText = orig; btn.disabled = false; 
-        }
+        wishlistItems.push(newItem); e.target.reset(); renderWishlist();
+        try { await fetch(`${API_BASE}/add-wishlist`, { method: 'POST', headers: apiHeaders, body: JSON.stringify(newItem) }); } catch (error) {} finally { btn.innerText = orig; btn.disabled = false; }
     });
 
     function renderWishlist() {
@@ -460,13 +508,25 @@
       }).join(''); lucide.createIcons();
     }
 
-    Chart.defaults.color = '#9ca3af'; Chart.defaults.font.family = 'Inter'; let donutChart, lineChart;
+    Chart.defaults.color = '#9ca3af'; Chart.defaults.font.family = 'Inter'; 
+    let donutChart, lineChart, radarChart;
 
     function initCharts() {
       donutChart = new Chart(document.getElementById('walletChart').getContext('2d'), { type: 'doughnut', data: { labels:[], datasets:[{data:[], backgroundColor:[], borderWidth:0}] }, options: { responsive: true, maintainAspectRatio: false, cutout: '80%', plugins: { legend: { display: false } } } });
+      
       lineChart = new Chart(document.getElementById('trendChart').getContext('2d'), { 
         type: 'line', data: { labels:[], datasets:[] }, 
         options: { responsive: true, maintainAspectRatio: false, elements: { line: { tension: 0.4 } }, plugins: { legend: { display: false } }, scales: { x: { grid: { display: false } }, y: { grid: { color: 'rgba(255,255,255,0.05)' }, border:{display:false} } } } 
+      });
+
+      radarChart = new Chart(document.getElementById('radarChart').getContext('2d'), {
+        type: 'radar',
+        data: { labels: ['Dining', 'Transport', 'Shopping', 'Utilities', 'Subs'], datasets: [{ label: 'Allocation', data: [0, 0, 0, 0, 0], backgroundColor: 'rgba(59, 130, 246, 0.2)', borderColor: '#3b82f6', pointBackgroundColor: '#60a5fa', borderWidth: 2 }] },
+        options: {
+            responsive: true, maintainAspectRatio: false,
+            scales: { r: { angleLines: { color: 'rgba(255,255,255,0.05)' }, grid: { color: 'rgba(255,255,255,0.05)' }, pointLabels: { color: '#9ca3af', font: { family: 'Inter', size: 10 } }, ticks: { display: false } } },
+            plugins: { legend: { display: false } }
+        }
       });
     }
 
@@ -486,9 +546,38 @@
       const pct = Math.min((tExp / expenseGoal) * 100, 100) || 0; document.getElementById('goalProgress').style.width = `${pct}%`; document.getElementById('goalText').innerText = `Target Threshold: ₹${expenseGoal.toLocaleString()} (${Math.round(pct)}%)`;
       document.getElementById('recordCount').innerText = filtered.length;
 
+      const currentDay = Math.max(1, new Date().getDate());
+      const burnRate = tExp / currentDay;
+      document.getElementById('statBurnRate').innerText = `₹${Math.round(burnRate).toLocaleString()}`;
+
+      const savingsRate = tInc > 0 ? ((tInc - tExp) / tInc) * 100 : 0;
+      document.getElementById('statSavingsRate').innerText = `${Math.max(0, savingsRate).toFixed(1)}%`;
+
+      let tLiabilities = 0;
+      filtered.forEach(t => { if(t.type === 'expense' && t.isRecurring) tLiabilities += t.amount; });
+      document.getElementById('statLiabilities').innerText = `₹${tLiabilities.toLocaleString()}`;
+
+      const liquidAssets = bal.UPI + bal.Cash + bal.Card;
+      const runway = burnRate > 0 ? liquidAssets / burnRate : 0;
+      document.getElementById('statRunway').innerText = `${Math.round(runway)} Days`;
+
+      let healthScore = 50; 
+      if (savingsRate > 20) healthScore += 20; else if (savingsRate > 5) healthScore += 10;
+      if (runway > 30) healthScore += 20; else if (runway > 15) healthScore += 10;
+      if (tLiabilities < (tInc * 0.2)) healthScore += 10;
+      
+      const finalHealth = Math.min(100, Math.max(10, Math.round(healthScore)));
+      const healthEl = document.getElementById('healthScore');
+      healthEl.innerText = `${finalHealth}/100`;
+      healthEl.className = `text-xs font-black ${finalHealth > 75 ? 'text-emerald-400' : (finalHealth > 40 ? 'text-orange-400' : 'text-rose-400')}`;
+
       const catData = {}; filtered.filter(t=>t.type==='expense').forEach(e => catData[e.category] = (catData[e.category]||0)+e.amount);
       const sCats = Object.entries(catData).sort((a,b)=>b[1]-a[1]);
       donutChart.data = { labels: sCats.map(c=>c[0]), datasets: [{ data: sCats.map(c=>c[1]), backgroundColor: sCats.map(c=>CAT_COLORS[c[0]]||'#6b7280') }] }; donutChart.update();
+
+      const radarMappings = ['Food & Dining', 'Transport', 'Shopping', 'Utilities', 'Subscriptions'];
+      radarChart.data.datasets[0].data = radarMappings.map(c => catData[c] || 0);
+      radarChart.update();
 
       const insightsEl = document.getElementById('topInsights'); insightsEl.className = "mt-4 space-y-3 pt-4 border-t border-white/10 flex-grow overflow-y-auto max-h-[160px] pr-2";
       if (sCats.length === 0) { insightsEl.innerHTML = `<p class="text-xs text-gray-500 text-center py-2">No category logs processed.</p>`; } 
@@ -507,11 +596,25 @@
       if(!filtered.length) list.innerHTML = `<p class="text-gray-500 text-sm py-4 text-center">No structural entry indexes.</p>`;
       else list.innerHTML = [...filtered].sort((a,b)=>b.timestamp-a.timestamp).map(t => {
           const isI = t.type === 'income';
-          return `<div class="ledger-item flex items-center justify-between p-4 bg-white/5 rounded-2xl border border-white/5 mb-2 hover:bg-white/10 transition-colors"><div class="flex items-center space-x-3 md:space-x-4"><div class="w-10 h-10 rounded-full flex items-center justify-center ${isI ? 'bg-emerald-500/20 text-emerald-400' : 'bg-rose-500/20 text-rose-400'}"><i data-lucide="${isI ? 'arrow-down-left' : 'credit-card'}" class="w-5 h-5"></i></div><div><p class="font-bold text-gray-200 text-sm">${t.category} ${t.isRecurring ? '<span class="bg-blue-600/30 text-blue-400 text-[8px] px-1 ml-1 rounded">AUTO</span>' : ''}</p><p class="text-[10px] text-gray-500 uppercase mt-0.5">${t.account} • ${new Date(t.timestamp).toLocaleDateString('en-GB',{day:'numeric',month:'short'})}</p></div></div><div class="flex items-center space-x-2 md:space-x-3"><div class="text-right"><p class="font-black text-sm md:text-base ${isI ? 'text-emerald-400' : 'text-rose-400'}">${isI?'+':'-'}₹${t.amount.toLocaleString()}</p>${t.note ? `<p class="text-[10px] text-gray-500 truncate max-w-[90px] md:max-w-[120px]">${t.note}</p>`:''}</div><button onclick="deleteTx('${t.id}')" class="action-btn text-gray-500 hover:text-rose-500 p-2"><i data-lucide="trash-2" class="w-4 h-4"></i></button></div></div>`;
+          let impactBadge = '';
+          if (t.amount > 10000 && !isI) impactBadge = `<span class="px-1.5 py-0.5 bg-rose-500/20 text-rose-400 border border-rose-500/30 rounded text-[8px] font-black uppercase ml-2 tracking-widest relative -top-0.5 shadow-sm">High Impact</span>`;
+          else if (t.amount < 100 && !isI) impactBadge = `<span class="px-1.5 py-0.5 bg-gray-500/20 text-gray-400 border border-gray-500/30 rounded text-[8px] font-black uppercase ml-2 tracking-widest relative -top-0.5 shadow-sm">Micro</span>`;
+
+          return `<div class="ledger-item flex items-center justify-between p-4 bg-white/5 rounded-2xl border border-white/5 mb-2 hover:bg-white/10 transition-colors"><div class="flex items-center space-x-3 md:space-x-4"><div class="w-10 h-10 rounded-full flex items-center justify-center ${isI ? 'bg-emerald-500/20 text-emerald-400' : 'bg-rose-500/20 text-rose-400'}"><i data-lucide="${isI ? 'arrow-down-left' : 'credit-card'}" class="w-5 h-5"></i></div><div><p class="font-bold text-gray-200 text-sm flex items-center">${t.category} ${t.isRecurring ? '<span class="bg-blue-600/30 text-blue-400 text-[8px] px-1 ml-1 rounded">AUTO</span>' : ''} ${impactBadge}</p><p class="text-[10px] text-gray-500 uppercase mt-0.5">${t.account} • ${new Date(t.timestamp).toLocaleDateString('en-GB',{day:'numeric',month:'short'})}</p></div></div><div class="flex items-center space-x-2 md:space-x-3"><div class="text-right"><p class="font-black text-sm md:text-base ${isI ? 'text-emerald-400' : 'text-rose-400'}">${isI?'+':'-'}₹${t.amount.toLocaleString()}</p>${t.note ? `<p class="text-[10px] text-gray-500 truncate max-w-[90px] md:max-w-[120px]">${t.note}</p>`:''}</div><button onclick="deleteTx('${t.id}')" class="action-btn text-gray-500 hover:text-rose-500 p-2"><i data-lucide="trash-2" class="w-4 h-4"></i></button></div></div>`;
       }).join(''); lucide.createIcons();
     }
 
-    document.addEventListener('DOMContentLoaded', () => { populateCategories(); document.getElementById('date').valueAsDate = new Date(); initCharts(); syncDataFromServer(); document.getElementById('searchInput').addEventListener('input', (e) => { searchQuery = e.target.value; updateUI(); }); document.getElementById('monthFilter').addEventListener('change', (e) => { selectedMonth = e.target.value; updateUI(); }); });
+    document.addEventListener('DOMContentLoaded', () => { 
+        populateCategories(); 
+        document.getElementById('date').valueAsDate = new Date(); 
+        initCharts(); 
+        syncDataFromServer(); 
+        document.getElementById('searchInput').addEventListener('input', (e) => { searchQuery = e.target.value; updateUI(); }); 
+        document.getElementById('monthFilter').addEventListener('change', (e) => { selectedMonth = e.target.value; updateUI(); }); 
+        
+        loadPendingTransactions();
+        setInterval(loadPendingTransactions, 8000); 
+    });
   </script>
 </body>
 </html>

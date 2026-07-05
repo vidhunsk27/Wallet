@@ -3,7 +3,6 @@ const cors = require('cors');
 const { GoogleGenerativeAI } = require('@google/generative-ai');
 const multer = require('multer');
 const puppeteer = require('puppeteer');
-const tesseract = require('tesseract.js');
 
 // --- FIREBASE IMPORTS ---
 const { initializeApp, cert } = require('firebase-admin/app');
@@ -19,7 +18,6 @@ app.use(express.json());
 
 const upload = multer({ storage: multer.memoryStorage() });
 
-// SECURE API KEY INITIALIZATION
 const apiKey = process.env.GEMINI_API_KEY || "YOUR_API_KEY_HERE";
 const genAI = new GoogleGenerativeAI(apiKey);
 
@@ -146,30 +144,116 @@ app.post('/api/jarvis-advice', async (req, res) => {
 
 app.post('/api/sms-webhook', async (req, res) => {
     try {
+        const rawText = req.body.smsText || req.body.message;
+        const sender = req.body.sender || 'Bank SMS';
+
+        if (!rawText) return res.status(400).json({ error: 'No SMS text provided' });
+
         const model = genAI.getGenerativeModel({ model: 'gemini-2.5-flash' });
-        const prompt = `Extract amount, merchant, date, and type (income/expense) from this bank SMS: "${req.body.smsText}". 
-        Return ONLY a JSON object: {amount: number, merchant: string, date: "YYYY-MM-DD", type: string}. If invalid, return {"error":"invalid"}`;
+        const prompt = `Extract amount, merchant, date, and type (income/expense) from this bank SMS: "${rawText}". 
+        Return ONLY a valid JSON object matching this structure: {"amount": number, "merchant": string, "date": "YYYY-MM-DD", "type": "income" | "expense"}. If you cannot process it, return {"error":"invalid"}`;
 
         const result = await model.generateContent(prompt);
-        const parsedData = JSON.parse(result.response.text().replace(/```json/g, '').replace(/```/g, '').trim());
+        let cleanText = result.response.text().replace(/```json/gi, '').replace(/```/g, '').trim();
+        const parsedData = JSON.parse(cleanText);
 
-        if (parsedData.error) return res.status(400).json({ message: 'Invalid SMS' });
+        if (parsedData.error) return res.status(400).json({ message: 'Invalid SMS format' });
 
         const txId = String(Date.now());
-        const txData = { id: txId, type: parsedData.type, amount: parsedData.amount, merchant: parsedData.merchant, account: 'UPI', category: 'Other', note: parsedData.merchant + " (SMS)", timestamp: Date.now(), isRecurring: false };
-        await db.collection('transactions').doc(txId).set(txData);
-        res.status(201).json({ message: 'Saved', data: txData });
-    } catch (error) { res.status(500).json({ error: 'Webhook failed' }); }
+        const txData = { 
+            id: txId, 
+            type: parsedData.type || 'expense', 
+            amount: parsedData.amount || 0, 
+            merchant: parsedData.merchant || 'Unknown Vendor', 
+            account: 'UPI', 
+            category: 'Other', 
+            note: (parsedData.merchant || 'Transaction') + " (SMS)", 
+            timestamp: Date.now(), 
+            isRecurring: false,
+            rawMessage: rawText,
+            sender: sender
+        };
+        
+        await db.collection('pending').doc(txId).set(txData);
+        res.status(201).json({ message: 'Saved to pending firestore queue', data: txData });
+    } catch (error) { 
+        console.error("SMS Parsing Error: ", error);
+        res.status(500).json({ error: 'Webhook processing exception occurred.' }); 
+    }
 });
 
+app.get('/api/pending', async (req, res) => {
+    try {
+        const snapshot = await db.collection('pending').get();
+        res.status(200).json(snapshot.docs.map(doc => doc.data()));
+    } catch (error) { res.status(500).json({ error: 'Failed to pull queue logs' }); }
+});
+
+app.post('/api/approve', async (req, res) => {
+    try {
+        const { id } = req.body;
+        const docRef = db.collection('pending').doc(id);
+        const doc = await docRef.get();
+        
+        if (doc.exists) {
+            const approvedTxn = doc.data();
+            
+            const finalTx = {
+                id: approvedTxn.id,
+                type: approvedTxn.type || 'expense',
+                amount: approvedTxn.amount,
+                account: approvedTxn.account || 'UPI',
+                category: approvedTxn.category || 'Other',
+                note: approvedTxn.note || approvedTxn.merchant,
+                timestamp: approvedTxn.timestamp,
+                isRecurring: false
+            };
+            
+            await db.collection('transactions').doc(finalTx.id).set(finalTx);
+            await docRef.delete();
+            
+            res.json({ success: true, message: "Approved successfully", data: finalTx });
+        } else {
+            res.status(404).json({ error: "Transaction index tracking vector not found" });
+        }
+    } catch (error) { res.status(500).json({ error: 'Approval processing failure' }); }
+});
+
+app.post('/api/reject', async (req, res) => {
+    try {
+        const { id } = req.body;
+        await db.collection('pending').doc(id).delete();
+        res.json({ success: true, message: "Rejected and safely expunged from dataset" });
+    } catch (error) { res.status(500).json({ error: 'Rejection routing failed' }); }
+});
+
+// =========================================================================
+//  FIXED AND RE-ENGINEERED COMPLEX BILL ANALYSIS VIA MULTIMODAL GEMINI VISION
+// =========================================================================
 app.post('/api/receipt-ocr', upload.single('receipt'), async (req, res) => {
     try {
-        const { data: { text } } = await tesseract.recognize(req.file.buffer, 'eng');
+        if (!req.file) return res.status(400).json({ error: 'No image element payload detected.' });
+
         const model = genAI.getGenerativeModel({ model: 'gemini-2.5-flash' });
-        const prompt = `Find total amount paid from this receipt text: "${text}". Return JSON format: { "total": number }`;
-        const result = await model.generateContent(prompt);
-        res.status(200).json(JSON.parse(result.response.text().replace(/```json/g, '').replace(/```/g, '').trim()));
-    } catch (error) { res.status(500).json({ error: 'OCR failed' }); }
+        
+        // Formulate image package natively for multimodal execution
+        const receiptImageBufferPart = {
+            inlineData: {
+                data: req.file.buffer.toString("base64"),
+                mimeType: req.file.mimetype
+            }
+        };
+
+        const prompt = `Analyze this complex receipt/bill image closely. Even if it is blurry, itemized, or layout-dense, extract the overall Grand Total amount paid. Return ONLY a valid JSON object in this format: { "total": number }. If no numbers are decipherable, return { "total": 0 }. Do not write markdown wrapping.`;
+
+        const result = await model.generateContent([prompt, receiptImageBufferPart]);
+        let cleanText = result.response.text().replace(/```json/gi, '').replace(/```/g, '').trim();
+        
+        res.status(200).json(JSON.parse(cleanText));
+    } catch (error) { 
+        console.error("Vision Processing Module Crash Exception: ", error);
+        res.status(500).json({ error: 'AI Vision decoding exception occurred.' }); 
+    }
 });
 
 // ==========================================
@@ -185,7 +269,6 @@ app.post('/api/scrape-price', async (req, res) => {
         const page = await browser.newPage();
         await page.setUserAgent('Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36');
         
-        // Wait longer for heavy client-side scripts to run (like Flipkart Minutes react state)
         await page.goto(req.body.url, { waitUntil: 'networkidle2', timeout: 30000 });
         await new Promise(r => setTimeout(r, 3000));
 
@@ -194,7 +277,6 @@ app.post('/api/scrape-price', async (req, res) => {
             let cleanTitle = document.querySelector('h1')?.innerText || document.title;
             cleanTitle = cleanTitle.split('|')[0].split('- Buy')[0].split('- Price')[0].trim();
 
-            // Engine 1: Intercept Google Search metadata engine (JSON-LD)
             const ldScripts = Array.from(document.querySelectorAll('script[type="application/ld+json"]'));
             for (const script of ldScripts) {
                 try {
@@ -225,7 +307,6 @@ app.post('/api/scrape-price', async (req, res) => {
                 } catch(e) {}
             }
 
-            // Engine 2: Specific Priority Selectors (No broad text sweeps)
             if (price === 0) {
                 const priceSelectors = [
                     '.a-price-whole', '._30jeq3', '.Nx9bqj', 
@@ -252,7 +333,6 @@ app.post('/api/scrape-price', async (req, res) => {
     }
 });
 
-// --- THE MAGIC BOOKMARKLET ROUTE (V4 - MULTI-ENGINE INTERCEPT) ---
 app.get('/api/bookmark', async (req, res) => {
     const targetUrl = req.query.url;
     if (!targetUrl) return res.send("No URL provided.");
@@ -273,7 +353,6 @@ app.get('/api/bookmark', async (req, res) => {
             let cleanTitle = document.querySelector('h1')?.innerText || document.title;
             cleanTitle = cleanTitle.split('|')[0].split('- Buy')[0].split('- Price')[0].trim();
 
-            // Engine 1: JSON-LD Extraction
             const ldScripts = Array.from(document.querySelectorAll('script[type="application/ld+json"]'));
             for (const script of ldScripts) {
                 try {
@@ -304,7 +383,6 @@ app.get('/api/bookmark', async (req, res) => {
                 } catch(e) {}
             }
 
-            // Engine 2: Strict Class Fallback Chain
             if (price === 0) {
                 const priceSelectors = [
                     '.a-price-whole', '._30jeq3', '.Nx9bqj', 
