@@ -23,6 +23,14 @@
     .ai-typing { border-right: 2px solid #3b82f6; white-space: pre-wrap; overflow: hidden; animation: blink 1s step-end infinite; }
     @keyframes blink { 50% { border-color: transparent; } }
     .ledger-item .action-btn { opacity: 1; transform: scale(1); }
+    
+    /* --- NEW ADDITIONS FOR FIXES AND TOOLTIPS --- */
+    .transaction-desc { white-space: normal !important; word-wrap: break-word; overflow: visible; line-height: 1.4; display: block; max-width: 100%; }
+    .info-icon { display: inline-block; margin-left: 6px; color: #888; cursor: help; font-size: 0.85rem; position: relative; }
+    .info-icon::after { content: attr(data-tooltip); position: absolute; bottom: 150%; left: 50%; transform: translateX(-50%); background: #2a2a2a; border: 1px solid #444; color: #e0e0e0; padding: 8px 12px; border-radius: 6px; white-space: nowrap; opacity: 0; pointer-events: none; transition: all 0.2s ease; font-size: 0.75rem; z-index: 100; box-shadow: 0 4px 12px rgba(0,0,0,0.5); font-weight: normal; text-transform: none; }
+    .info-icon::before { content: ''; position: absolute; bottom: 110%; left: 50%; transform: translateX(-50%); border-width: 6px; border-style: solid; border-color: #2a2a2a transparent transparent transparent; opacity: 0; pointer-events: none; transition: all 0.2s ease; z-index: 101; }
+    .info-icon:hover::after, .info-icon:hover::before { opacity: 1; transform: translateX(-50%) translateY(-2px); }
+
     @media (min-width: 768px) { .ledger-item .action-btn { opacity: 0; transform: scale(0.8); transition: all 0.2s; } .ledger-item:hover .action-btn { opacity: 1; transform: scale(1); } }
   </style>
 </head>
@@ -99,22 +107,30 @@
         </div>
       </div>
 
-      <!-- ADVANCED MINI-STATS STRIP -->
+      <!-- ADVANCED MINI-STATS STRIP (WITH TOOLTIPS) -->
       <div class="grid grid-cols-2 md:grid-cols-4 gap-4 md:gap-6 mt-2">
         <div class="bg-gradient-to-r from-blue-900/20 to-blue-800/10 backdrop-blur-xl rounded-2xl p-4 md:p-5 border border-blue-500/20 shadow-lg shadow-blue-900/10">
-          <p class="text-[10px] uppercase text-blue-400 font-bold tracking-widest mb-1 flex items-center"><i data-lucide="flame" class="w-3 h-3 mr-1"></i> Daily Burn</p>
+          <p class="text-[10px] uppercase text-blue-400 font-bold tracking-widest mb-1 flex items-center">
+            <i data-lucide="flame" class="w-3 h-3 mr-1"></i> Daily Burn <span class="info-icon" data-tooltip="Avg money spent per day this month">ⓘ</span>
+          </p>
           <p id="statBurnRate" class="text-xl font-black text-white">₹0</p>
         </div>
         <div class="bg-gradient-to-r from-emerald-900/20 to-emerald-800/10 backdrop-blur-xl rounded-2xl p-4 md:p-5 border border-emerald-500/20 shadow-lg shadow-emerald-900/10">
-          <p class="text-[10px] uppercase text-emerald-400 font-bold tracking-widest mb-1 flex items-center"><i data-lucide="trending-up" class="w-3 h-3 mr-1"></i> Savings Velocity</p>
+          <p class="text-[10px] uppercase text-emerald-400 font-bold tracking-widest mb-1 flex items-center">
+            <i data-lucide="trending-up" class="w-3 h-3 mr-1"></i> Savings Velocity <span class="info-icon" data-tooltip="Percentage of income saved">ⓘ</span>
+          </p>
           <p id="statSavingsRate" class="text-xl font-black text-white">0%</p>
         </div>
         <div class="bg-gradient-to-r from-rose-900/20 to-rose-800/10 backdrop-blur-xl rounded-2xl p-4 md:p-5 border border-rose-500/20 shadow-lg shadow-rose-900/10">
-          <p class="text-[10px] uppercase text-rose-400 font-bold tracking-widest mb-1 flex items-center"><i data-lucide="repeat" class="w-3 h-3 mr-1"></i> Recurring Debt</p>
+          <p class="text-[10px] uppercase text-rose-400 font-bold tracking-widest mb-1 flex items-center">
+            <i data-lucide="repeat" class="w-3 h-3 mr-1"></i> Recurring Debt <span class="info-icon" data-tooltip="Total monthly fixed subscriptions">ⓘ</span>
+          </p>
           <p id="statLiabilities" class="text-xl font-black text-white">₹0</p>
         </div>
         <div class="bg-gradient-to-r from-purple-900/20 to-purple-800/10 backdrop-blur-xl rounded-2xl p-4 md:p-5 border border-purple-500/20 shadow-lg shadow-purple-900/10">
-          <p class="text-[10px] uppercase text-purple-400 font-bold tracking-widest mb-1 flex items-center"><i data-lucide="clock" class="w-3 h-3 mr-1"></i> Liquid Runway</p>
+          <p class="text-[10px] uppercase text-purple-400 font-bold tracking-widest mb-1 flex items-center">
+            <i data-lucide="clock" class="w-3 h-3 mr-1"></i> Liquid Runway <span class="info-icon" data-tooltip="Days your balance will last at current burn rate">ⓘ</span>
+          </p>
           <p id="statRunway" class="text-xl font-black text-white">0 Days</p>
         </div>
       </div>
@@ -149,6 +165,15 @@
               </div>
               <p class="text-xs text-gray-500 mb-4">Visualizing allocation density across primary fixed categories.</p>
               <div class="h-52 md:h-64 relative flex justify-center"><canvas id="radarChart"></canvas></div>
+          </div>
+          
+          <!-- NEW: 7-DAY CASHFLOW CHART -->
+          <div class="glass-panel rounded-3xl p-5 md:p-6 border border-white/5 bg-gradient-to-b from-transparent to-white/5">
+              <div class="flex justify-between items-center mb-4">
+                  <h3 class="text-sm font-bold text-gray-300 uppercase tracking-widest">7-Day Cashflow</h3>
+                  <i data-lucide="bar-chart-3" class="text-emerald-500 w-5 h-5"></i>
+              </div>
+              <div class="h-52 md:h-64 relative flex justify-center"><canvas id="cashflowChart"></canvas></div>
           </div>
 
           <div class="glass-panel rounded-3xl p-4 md:p-6">
@@ -188,7 +213,6 @@
                     <i id="smsIcon" data-lucide="message-square" class="w-5 h-5"></i>
                   </button>
                   
-                  <!-- COMPATIBILITY TWEAK: Added capture="camera" to activate immediate snap function on mobile viewports -->
                   <label for="receiptUpload" class="absolute right-4 p-2 bg-gray-800 hover:bg-gray-700 text-gray-300 rounded-lg cursor-pointer transition-colors" title="Scan Receipt/PDF">
                     <i id="scanIcon" data-lucide="camera" class="w-5 h-5"></i>
                   </label>
@@ -509,7 +533,7 @@
     }
 
     Chart.defaults.color = '#9ca3af'; Chart.defaults.font.family = 'Inter'; 
-    let donutChart, lineChart, radarChart;
+    let donutChart, lineChart, radarChart, cashflowChart;
 
     function initCharts() {
       donutChart = new Chart(document.getElementById('walletChart').getContext('2d'), { type: 'doughnut', data: { labels:[], datasets:[{data:[], backgroundColor:[], borderWidth:0}] }, options: { responsive: true, maintainAspectRatio: false, cutout: '80%', plugins: { legend: { display: false } } } });
@@ -527,6 +551,12 @@
             scales: { r: { angleLines: { color: 'rgba(255,255,255,0.05)' }, grid: { color: 'rgba(255,255,255,0.05)' }, pointLabels: { color: '#9ca3af', font: { family: 'Inter', size: 10 } }, ticks: { display: false } } },
             plugins: { legend: { display: false } }
         }
+      });
+      
+      cashflowChart = new Chart(document.getElementById('cashflowChart').getContext('2d'), {
+        type: 'bar',
+        data: { labels: [], datasets: [ { label: 'Income', data: [], backgroundColor: '#10b981', borderRadius: 4 }, { label: 'Expense', data: [], backgroundColor: '#f43f5e', borderRadius: 4 } ] },
+        options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { position: 'top', labels: { color: '#9ca3af', font: {size: 10}, boxWidth: 12 } } }, scales: { x: { grid: { display: false }, ticks: {color: '#9ca3af'} }, y: { grid: { color: 'rgba(255,255,255,0.05)' }, border:{display:false}, ticks: {color: '#9ca3af'} } } }
       });
     }
 
@@ -579,10 +609,6 @@
       radarChart.data.datasets[0].data = radarMappings.map(c => catData[c] || 0);
       radarChart.update();
 
-      const insightsEl = document.getElementById('topInsights'); insightsEl.className = "mt-4 space-y-3 pt-4 border-t border-white/10 flex-grow overflow-y-auto max-h-[160px] pr-2";
-      if (sCats.length === 0) { insightsEl.innerHTML = `<p class="text-xs text-gray-500 text-center py-2">No category logs processed.</p>`; } 
-      else { insightsEl.innerHTML = sCats.map(([cat, val]) => { const catPct = tExp ? Math.round((val / tExp) * 100) : 0; return `<div><div class="flex justify-between text-[10px] font-bold mb-1"><span class="text-gray-300 uppercase">${cat}</span><span class="text-gray-400">₹${val.toLocaleString()} (${catPct}%)</span></div><div class="w-full bg-white/5 rounded-full h-1.5"><div class="h-1.5 rounded-full" style="width: ${catPct}%; background-color: ${CAT_COLORS[cat] || '#6b7280'}"></div></div></div>`; }).join(''); }
-
       const dates = {}; const sortedFiltered = [...filtered].sort((a,b)=>a.timestamp-b.timestamp);
       if(sortedFiltered.length > 0) {
           const endNode = new Date(sortedFiltered[sortedFiltered.length-1].timestamp); endNode.setHours(0,0,0,0);
@@ -590,7 +616,21 @@
           for(let d = new Date(startNode); d <= endNode; d.setDate(d.getDate() + 1)) { dates[d.toLocaleDateString('en-GB',{day:'numeric',month:'short'})] = {i:0,e:0}; }
           sortedFiltered.forEach(t => { const dStr = new Date(t.timestamp).toLocaleDateString('en-GB',{day:'numeric',month:'short'}); if(dates[dStr]) { t.type === 'income' ? dates[dStr].i += t.amount : dates[dStr].e += t.amount; } });
       }
-      const labels = Object.keys(dates); lineChart.data = { labels, datasets: [ { data: labels.map(l=>dates[l].i), borderColor: '#10b981', backgroundColor: 'rgba(16, 185, 129, 0.1)', fill:true, pointRadius:2 }, { data: labels.map(l=>dates[l].e), borderColor: '#f43f5e', backgroundColor: 'rgba(244, 63, 94, 0.1)', fill:true, pointRadius:2 } ]}; lineChart.update();
+      
+      const labels = Object.keys(dates); 
+      lineChart.data = { labels, datasets: [ { data: labels.map(l=>dates[l].i), borderColor: '#10b981', backgroundColor: 'rgba(16, 185, 129, 0.1)', fill:true, pointRadius:2 }, { data: labels.map(l=>dates[l].e), borderColor: '#f43f5e', backgroundColor: 'rgba(244, 63, 94, 0.1)', fill:true, pointRadius:2 } ]}; 
+      lineChart.update();
+
+      // Update new 7-Day Cashflow Bar Chart
+      const last7Labels = labels.slice(-7);
+      cashflowChart.data.labels = last7Labels;
+      cashflowChart.data.datasets[0].data = last7Labels.map(l => dates[l].i);
+      cashflowChart.data.datasets[1].data = last7Labels.map(l => dates[l].e);
+      cashflowChart.update();
+
+      const insightsEl = document.getElementById('topInsights'); insightsEl.className = "mt-4 space-y-3 pt-4 border-t border-white/10 flex-grow overflow-y-auto max-h-[160px] pr-2";
+      if (sCats.length === 0) { insightsEl.innerHTML = `<p class="text-xs text-gray-500 text-center py-2">No category logs processed.</p>`; } 
+      else { insightsEl.innerHTML = sCats.map(([cat, val]) => { const catPct = tExp ? Math.round((val / tExp) * 100) : 0; return `<div><div class="flex justify-between text-[10px] font-bold mb-1"><span class="text-gray-300 uppercase">${cat}</span><span class="text-gray-400">₹${val.toLocaleString()} (${catPct}%)</span></div><div class="w-full bg-white/5 rounded-full h-1.5"><div class="h-1.5 rounded-full" style="width: ${catPct}%; background-color: ${CAT_COLORS[cat] || '#6b7280'}"></div></div></div>`; }).join(''); }
 
       const list = document.getElementById('ledgerList');
       if(!filtered.length) list.innerHTML = `<p class="text-gray-500 text-sm py-4 text-center">No structural entry indexes.</p>`;
@@ -600,7 +640,8 @@
           if (t.amount > 10000 && !isI) impactBadge = `<span class="px-1.5 py-0.5 bg-rose-500/20 text-rose-400 border border-rose-500/30 rounded text-[8px] font-black uppercase ml-2 tracking-widest relative -top-0.5 shadow-sm">High Impact</span>`;
           else if (t.amount < 100 && !isI) impactBadge = `<span class="px-1.5 py-0.5 bg-gray-500/20 text-gray-400 border border-gray-500/30 rounded text-[8px] font-black uppercase ml-2 tracking-widest relative -top-0.5 shadow-sm">Micro</span>`;
 
-          return `<div class="ledger-item flex items-center justify-between p-4 bg-white/5 rounded-2xl border border-white/5 mb-2 hover:bg-white/10 transition-colors"><div class="flex items-center space-x-3 md:space-x-4"><div class="w-10 h-10 rounded-full flex items-center justify-center ${isI ? 'bg-emerald-500/20 text-emerald-400' : 'bg-rose-500/20 text-rose-400'}"><i data-lucide="${isI ? 'arrow-down-left' : 'credit-card'}" class="w-5 h-5"></i></div><div><p class="font-bold text-gray-200 text-sm flex items-center">${t.category} ${t.isRecurring ? '<span class="bg-blue-600/30 text-blue-400 text-[8px] px-1 ml-1 rounded">AUTO</span>' : ''} ${impactBadge}</p><p class="text-[10px] text-gray-500 uppercase mt-0.5">${t.account} • ${new Date(t.timestamp).toLocaleDateString('en-GB',{day:'numeric',month:'short'})}</p></div></div><div class="flex items-center space-x-2 md:space-x-3"><div class="text-right"><p class="font-black text-sm md:text-base ${isI ? 'text-emerald-400' : 'text-rose-400'}">${isI?'+':'-'}₹${t.amount.toLocaleString()}</p>${t.note ? `<p class="text-[10px] text-gray-500 truncate max-w-[90px] md:max-w-[120px]">${t.note}</p>`:''}</div><button onclick="deleteTx('${t.id}')" class="action-btn text-gray-500 hover:text-rose-500 p-2"><i data-lucide="trash-2" class="w-4 h-4"></i></button></div></div>`;
+          // Removed the truncate logic below so text wraps naturally using the new .transaction-desc class
+          return `<div class="ledger-item flex items-center justify-between p-4 bg-white/5 rounded-2xl border border-white/5 mb-2 hover:bg-white/10 transition-colors"><div class="flex items-center space-x-3 md:space-x-4"><div class="w-10 h-10 rounded-full flex items-center justify-center ${isI ? 'bg-emerald-500/20 text-emerald-400' : 'bg-rose-500/20 text-rose-400'}"><i data-lucide="${isI ? 'arrow-down-left' : 'credit-card'}" class="w-5 h-5"></i></div><div><p class="font-bold text-gray-200 text-sm flex items-center">${t.category} ${t.isRecurring ? '<span class="bg-blue-600/30 text-blue-400 text-[8px] px-1 ml-1 rounded">AUTO</span>' : ''} ${impactBadge}</p><p class="text-[10px] text-gray-500 uppercase mt-0.5">${t.account} • ${new Date(t.timestamp).toLocaleDateString('en-GB',{day:'numeric',month:'short'})}</p></div></div><div class="flex flex-col items-end space-y-1"><div class="flex items-center space-x-2"><p class="font-black text-sm md:text-base ${isI ? 'text-emerald-400' : 'text-rose-400'}">${isI?'+':'-'}₹${t.amount.toLocaleString()}</p><button onclick="deleteTx('${t.id}')" class="action-btn text-gray-500 hover:text-rose-500 p-2"><i data-lucide="trash-2" class="w-4 h-4"></i></button></div>${t.note ? `<p class="text-[10px] text-gray-500 transaction-desc text-right mt-1">${t.note}</p>`:''}</div></div>`;
       }).join(''); lucide.createIcons();
     }
 
