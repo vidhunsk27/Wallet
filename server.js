@@ -45,7 +45,15 @@ try {
 const db = getFirestore();
 
 // ==========================================
-//           CORE DATABASE ROUTES
+//      UPTIME MONITOR (KEEPS SERVER AWAKE)
+// ==========================================
+
+app.get('/api/ping', (req, res) => {
+    res.status(200).send('OK');
+});
+
+// ==========================================
+//          CORE DATABASE ROUTES
 // ==========================================
 
 app.get('/api/get-transactions', async (req, res) => {
@@ -117,7 +125,7 @@ app.post('/api/sync-wishlist', async (req, res) => {
 });
 
 // ==========================================
-//             AI & TOOL ROUTES
+//            AI & TOOL ROUTES
 // ==========================================
 
 app.post('/api/jarvis-advice', async (req, res) => {
@@ -257,7 +265,7 @@ app.post('/api/receipt-ocr', upload.single('receipt'), async (req, res) => {
 });
 
 // ==========================================
-//     HIGH-ACCURACY MULTI-ENGINE SCRAPER
+//      HIGH-ACCURACY MULTI-ENGINE SCRAPER
 // ==========================================
 
 app.post('/api/scrape-price', async (req, res) => {
