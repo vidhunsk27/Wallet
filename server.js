@@ -466,7 +466,47 @@ app.get('/api/bookmark', async (req, res) => {
         `);
     } catch (error) {
         if (browser) await browser.close();
-        res.send("<h2 style='color:#ef4444; text-align:center; font-family:sans-serif; margin-top:50px;'>Network error. Try adding manually.</h2>");
+        
+        // If the scraper crashes, show the manual entry UI instead of a plain error
+        res.send(`
+            <html style="background:#050505; color:#10b981; font-family:sans-serif; text-align:center; padding:2rem;">
+                <h2 style="margin-top: 20px; color:#3b82f6;">🎯 Wallet V2.0</h2>
+                <div id="manualEntryBox" style="background: rgba(255,255,255,0.05); padding: 20px; border-radius: 16px; margin-top: 20px; border: 1px solid rgba(255,255,255,0.1);">
+                    <p style="color:#ef4444; font-size:12px; font-weight:bold; text-transform:uppercase; letter-spacing:1px; margin-bottom:15px;">⚠️ Scraper Blocked by Site</p>
+                    <input type="text" id="manualName" placeholder="Product Name" style="background: rgba(0,0,0,0.5); color: #fff; font-size: 16px; border: 1px solid rgba(255,255,255,0.2); border-radius: 12px; padding: 15px; width: 100%; outline: none; margin-bottom: 10px;">
+                    <input type="number" id="manualPrice" placeholder="Enter Price (₹)" style="background: rgba(0,0,0,0.5); color: #10b981; font-size: 24px; font-weight: bold; text-align: center; border: 1px solid rgba(255,255,255,0.2); border-radius: 12px; padding: 15px; width: 100%; outline: none; margin-bottom: 15px;" autofocus>
+                    <button onclick="saveManualData()" style="background: #3b82f6; color: white; border: none; padding: 15px; width: 100%; border-radius: 12px; font-size: 16px; font-weight: bold; cursor: pointer; transition: 0.2s;">Save to Tracker</button>
+                </div>
+
+                <script>
+                    function saveManualData() {
+                        const btn = document.querySelector('button');
+                        const priceInput = document.getElementById('manualPrice').value;
+                        const nameInput = document.getElementById('manualName').value || 'Saved Item';
+                        
+                        if (!priceInput || priceInput <= 0) return;
+                        
+                        btn.innerText = "Syncing to Cloud...";
+                        btn.style.background = "#10b981";
+                        
+                        fetch('/api/add-wishlist', {
+                            method: 'POST',
+                            headers: { 'Content-Type': 'application/json' },
+                            body: JSON.stringify({ 
+                                id: String(Date.now()), 
+                                title: nameInput, 
+                                price: parseFloat(priceInput), 
+                                link: '${targetUrl}', 
+                                imageUrl: '' 
+                            })
+                        }).then(() => {
+                            document.getElementById('manualEntryBox').innerHTML = '<h1 style="color:#10b981; font-size: 30px; margin: 30px 0;">Saved! 🎯</h1><p style="color:#6b7280; font-size:12px;">Closing window...</p>';
+                            setTimeout(() => window.close(), 1500);
+                        });
+                    }
+                </script>
+            </html>
+        `);
     }
 });
 
