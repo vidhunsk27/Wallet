@@ -272,7 +272,7 @@ app.post('/api/scrape-price', async (req, res) => {
     let browser;
     try {
         browser = await puppeteer.launch({ 
-            args: ['--no-sandbox', '--disable-setuid-sandbox', '--disable-blink-features=AutomationControlled'] 
+            args: ['--no-sandbox', '--disable-setuid-sandbox', '--disable-dev-shm-usage', '--disable-blink-features=AutomationControlled'] 
         });
         const page = await browser.newPage();
         await page.setUserAgent('Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36');
@@ -348,7 +348,7 @@ app.get('/api/bookmark', async (req, res) => {
     let browser;
     try {
         browser = await puppeteer.launch({ 
-            args: ['--no-sandbox', '--disable-setuid-sandbox', '--disable-blink-features=AutomationControlled'] 
+            args: ['--no-sandbox', '--disable-setuid-sandbox', '--disable-dev-shm-usage', '--disable-blink-features=AutomationControlled'] 
         });
         const page = await browser.newPage();
         await page.setUserAgent('Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36');
@@ -467,7 +467,7 @@ app.get('/api/bookmark', async (req, res) => {
     } catch (error) {
         if (browser) await browser.close();
         
-        // If the scraper crashes, show the manual entry UI instead of a plain error
+        // Fallback interface to elegantly intercept bot blocks
         res.send(`
             <html style="background:#050505; color:#10b981; font-family:sans-serif; text-align:center; padding:2rem;">
                 <h2 style="margin-top: 20px; color:#3b82f6;">🎯 Wallet V2.0</h2>
