@@ -77,6 +77,18 @@ app.delete('/api/delete-transaction/:id', async (req, res) => {
     } catch (error) { res.status(500).json({ error: 'Failed to delete' }); }
 });
 
+// NEW EDIT ROUTE
+app.put('/api/edit-transaction/:id', async (req, res) => {
+    try {
+        const { id } = req.params;
+        const updatedData = req.body;
+        await db.collection('transactions').doc(id).update(updatedData);
+        res.status(200).json({ message: 'Updated successfully' });
+    } catch (error) { 
+        res.status(500).json({ error: 'Failed to update transaction' }); 
+    }
+});
+
 app.post('/api/sync-transactions', async (req, res) => {
     try {
         const transactions = req.body;
@@ -244,7 +256,6 @@ app.post('/api/receipt-ocr', upload.single('receipt'), async (req, res) => {
 
         const model = genAI.getGenerativeModel({ model: 'gemini-2.5-flash' });
         
-        // Formulate image package natively for multimodal execution
         const receiptImageBufferPart = {
             inlineData: {
                 data: req.file.buffer.toString("base64"),
@@ -445,7 +456,7 @@ app.get('/api/bookmark', async (req, res) => {
                             btn.innerText = "Syncing to Cloud...";
                             btn.style.background = "#10b981";
                             
-                            fetch('/api/add-wishlist', {
+                            fetch('https://wallet-y7yv.onrender.com/api/add-wishlist', {
                                 method: 'POST',
                                 headers: { 'Content-Type': 'application/json', 'ngrok-skip-browser-warning': 'true' },
                                 body: JSON.stringify({ 
@@ -467,7 +478,6 @@ app.get('/api/bookmark', async (req, res) => {
     } catch (error) {
         if (browser) await browser.close();
         
-        // Fallback interface to elegantly intercept bot blocks
         res.send(`
             <html style="background:#050505; color:#10b981; font-family:sans-serif; text-align:center; padding:2rem;">
                 <h2 style="margin-top: 20px; color:#3b82f6;">🎯 Wallet V2.0</h2>
@@ -489,7 +499,7 @@ app.get('/api/bookmark', async (req, res) => {
                         btn.innerText = "Syncing to Cloud...";
                         btn.style.background = "#10b981";
                         
-                        fetch('/api/add-wishlist', {
+                        fetch('https://wallet-y7yv.onrender.com/api/add-wishlist', {
                             method: 'POST',
                             headers: { 'Content-Type': 'application/json' },
                             body: JSON.stringify({ 
