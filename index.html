@@ -24,7 +24,6 @@
     @keyframes blink { 50% { border-color: transparent; } }
     .ledger-item .action-btn { opacity: 1; transform: scale(1); }
     
-    /* --- NEW ADDITIONS FOR FIXES AND TOOLTIPS --- */
     .transaction-desc { white-space: normal !important; word-wrap: break-word; overflow: visible; line-height: 1.4; display: block; max-width: 100%; }
     .info-icon { display: inline-block; margin-left: 6px; color: #888; cursor: help; font-size: 0.85rem; position: relative; }
     .info-icon::after { content: attr(data-tooltip); position: absolute; bottom: 150%; left: 50%; transform: translateX(-50%); background: #2a2a2a; border: 1px solid #444; color: #e0e0e0; padding: 8px 12px; border-radius: 6px; white-space: nowrap; opacity: 0; pointer-events: none; transition: all 0.2s ease; font-size: 0.75rem; z-index: 100; box-shadow: 0 4px 12px rgba(0,0,0,0.5); font-weight: normal; text-transform: none; }
@@ -107,7 +106,7 @@
         </div>
       </div>
 
-      <!-- ADVANCED MINI-STATS STRIP (WITH TOOLTIPS) -->
+      <!-- ADVANCED MINI-STATS STRIP -->
       <div class="grid grid-cols-2 md:grid-cols-4 gap-4 md:gap-6 mt-2">
         <div class="bg-gradient-to-r from-blue-900/20 to-blue-800/10 backdrop-blur-xl rounded-2xl p-4 md:p-5 border border-blue-500/20 shadow-lg shadow-blue-900/10">
           <p class="text-[10px] uppercase text-blue-400 font-bold tracking-widest mb-1 flex items-center">
@@ -276,10 +275,66 @@
         </div>
       </div>
       <div class="grid grid-cols-1 lg:grid-cols-3 gap-4 md:gap-6">
-        <div class="lg:col-span-1"><div class="glass-panel rounded-3xl p-5 md:p-6 sticky top-6"><h3 class="text-sm font-bold text-gray-300 mb-6 uppercase tracking-widest">Auto-Fetch Item</h3><form id="wishlistForm" class="space-y-4"><div class="relative"><input type="url" id="wishLink" placeholder="Paste product URL link..." class="w-full glass-input rounded-xl p-4 pr-10 text-sm text-white" /><i id="linkStatusIcon" data-lucide="link" class="absolute right-4 top-1/2 transform -translate-y-1/2 w-4 h-4 text-gray-500"></i></div><input type="text" id="wishName" placeholder="Product Name Target" required class="w-full glass-input rounded-xl p-4 text-sm text-white" /><input type="number" id="wishPrice" placeholder="Price Matrix (₹)" required class="w-full glass-input rounded-xl p-4 text-sm text-white" /><input type="url" id="wishImage" placeholder="Image Resource Address" class="w-full glass-input rounded-xl p-4 text-sm text-white" /><button type="submit" class="w-full bg-blue-600 hover:bg-blue-500 text-white font-bold py-4 rounded-xl transition-all shadow-lg shadow-blue-500/25">Save to Tracker</button></form></div></div>
+        <div class="lg:col-span-1">
+          <div class="glass-panel rounded-3xl p-5 md:p-6 sticky top-6">
+            <h3 class="text-sm font-bold text-gray-300 mb-6 uppercase tracking-widest">Auto-Fetch Item</h3>
+            <form id="wishlistForm" class="space-y-4">
+              <div class="relative">
+                <input type="url" id="wishLink" placeholder="Paste product URL link..." class="w-full glass-input rounded-xl p-4 pr-10 text-sm text-white" />
+                <i id="linkStatusIcon" data-lucide="link" class="absolute right-4 top-1/2 transform -translate-y-1/2 w-4 h-4 text-gray-500"></i>
+              </div>
+              <input type="text" id="wishName" placeholder="Product Name Target" required class="w-full glass-input rounded-xl p-4 text-sm text-white" />
+              <input type="number" id="wishPrice" placeholder="Price Matrix (₹)" required class="w-full glass-input rounded-xl p-4 text-sm text-white" />
+              <!-- ADDED WISH CATEGORY SELECTOR -->
+              <div>
+                <label class="block text-[10px] font-bold text-gray-500 uppercase tracking-wider mb-1.5 pl-1">Wish Category</label>
+                <select id="wishCategory" class="w-full glass-input rounded-xl p-4 text-sm text-white">
+                  <option value="Gadgets">💻 Gadgets</option>
+                  <option value="Apparel">👕 Apparel</option>
+                  <option value="Lifestyle">✨ Lifestyle</option>
+                  <option value="Other">📦 Other</option>
+                </select>
+              </div>
+              <input type="url" id="wishImage" placeholder="Image Resource Address" class="w-full glass-input rounded-xl p-4 text-sm text-white" />
+              <button type="submit" class="w-full bg-blue-600 hover:bg-blue-500 text-white font-bold py-4 rounded-xl transition-all shadow-lg shadow-blue-500/25">Save to Tracker</button>
+            </form>
+          </div>
+        </div>
         <div class="lg:col-span-2"><div id="wishlistGrid" class="grid grid-cols-1 md:grid-cols-2 gap-4 md:gap-6"></div></div>
       </div>
     </div>
+  </div>
+
+  <!-- EDIT MODAL -->
+  <div id="editModal" class="hidden fixed inset-0 bg-black/80 backdrop-blur-sm z-50 flex items-center justify-center p-4">
+      <div class="glass-panel rounded-3xl p-6 w-full max-w-sm border border-white/10">
+          <h3 class="text-white font-bold mb-4 uppercase tracking-widest text-sm flex items-center"><i data-lucide="edit-2" class="w-4 h-4 mr-2 text-blue-400"></i> Edit Transaction</h3>
+          <input type="hidden" id="editId">
+          <div class="space-y-3">
+              <div>
+                  <label class="block text-[10px] font-bold text-gray-500 uppercase tracking-wider mb-1 pl-1">Amount (₹)</label>
+                  <input type="number" id="editAmount" class="w-full glass-input rounded-xl p-3 text-sm text-white font-bold" placeholder="Amount">
+              </div>
+              <div>
+                  <label class="block text-[10px] font-bold text-gray-500 uppercase tracking-wider mb-1 pl-1">Category</label>
+                  <input type="text" id="editCategory" class="w-full glass-input rounded-xl p-3 text-sm text-white" placeholder="Category">
+              </div>
+              <div>
+                  <label class="block text-[10px] font-bold text-gray-500 uppercase tracking-wider mb-1 pl-1">Account</label>
+                  <select id="editAccount" class="w-full glass-input rounded-xl p-3 text-sm text-white">
+                      <option value="UPI">UPI</option><option value="Card">Card</option><option value="Cash">Cash</option>
+                  </select>
+              </div>
+              <div>
+                  <label class="block text-[10px] font-bold text-gray-500 uppercase tracking-wider mb-1 pl-1">Description</label>
+                  <input type="text" id="editNote" class="w-full glass-input rounded-xl p-3 text-sm text-white" placeholder="Description">
+              </div>
+              <div class="flex space-x-2 pt-3">
+                  <button onclick="closeEditModal()" class="flex-1 py-3 rounded-xl text-gray-400 bg-white/5 hover:bg-white/10 text-sm font-bold transition-all border border-white/5">Cancel</button>
+                  <button onclick="saveEditTx()" class="flex-1 py-3 rounded-xl text-white bg-blue-600 hover:bg-blue-500 text-sm font-bold transition-all shadow-lg shadow-blue-500/25">Save Changes</button>
+              </div>
+          </div>
+      </div>
   </div>
 
   <script>
@@ -479,6 +534,56 @@
         try { await fetch(`${API_BASE}/add-transaction`, { method: 'POST', headers: apiHeaders, body: JSON.stringify(newTx) }); } catch(err) {}
     });
 
+    function openEditModal(id) {
+        const tx = transactions.find(t => t.id === id);
+        if (!tx) return;
+        
+        document.getElementById('editId').value = tx.id;
+        document.getElementById('editAmount').value = tx.amount;
+        document.getElementById('editCategory').value = tx.category;
+        document.getElementById('editAccount').value = tx.account;
+        document.getElementById('editNote').value = tx.note || '';
+        
+        document.getElementById('editModal').classList.remove('hidden');
+        lucide.createIcons();
+    }
+
+    function closeEditModal() {
+        document.getElementById('editModal').classList.add('hidden');
+    }
+
+    async function saveEditTx() {
+        const id = document.getElementById('editId').value;
+        const txIndex = transactions.findIndex(t => t.id === id);
+        if (txIndex === -1) return;
+
+        const newAmt = parseFloat(document.getElementById('editAmount').value);
+        if (isNaN(newAmt) || newAmt <= 0) return alert("Invalid amount.");
+
+        transactions[txIndex].amount = newAmt;
+        transactions[txIndex].category = document.getElementById('editCategory').value;
+        transactions[txIndex].account = document.getElementById('editAccount').value;
+        transactions[txIndex].note = document.getElementById('editNote').value;
+
+        closeEditModal();
+        updateUI();
+
+        try {
+            await fetch(`${API_BASE}/edit-transaction/${id}`, {
+                method: 'PUT',
+                headers: apiHeaders,
+                body: JSON.stringify({ 
+                    amount: transactions[txIndex].amount, 
+                    category: transactions[txIndex].category, 
+                    account: transactions[txIndex].account, 
+                    note: transactions[txIndex].note 
+                })
+            });
+        } catch (error) {
+            console.error('Failed to sync edit to cloud.');
+        }
+    }
+
     async function deleteTx(id) { 
         if(confirm("Confirm entry deletion?")) { 
             transactions = transactions.filter(t => t.id !== id);
@@ -513,11 +618,22 @@
         e.preventDefault(); 
         const btn = e.target.querySelector('button[type="submit"]'); const orig = btn.innerText;
         btn.innerText = "Saving..."; btn.disabled = true;
-        const newItem = { id: String(Date.now()), title: document.getElementById('wishName').value, price: parseFloat(document.getElementById('wishPrice').value), link: document.getElementById('wishLink').value, imageUrl: document.getElementById('wishImage').value };
+        
+        // MODIFIED TO PASS SELECTOR VALUES & TIMESTAMP
+        const newItem = { 
+            id: String(Date.now()), 
+            title: document.getElementById('wishName').value, 
+            price: parseFloat(document.getElementById('wishPrice').value), 
+            link: document.getElementById('wishLink').value, 
+            imageUrl: document.getElementById('wishImage').value,
+            category: document.getElementById('wishCategory').value,
+            timestamp: Date.now()
+        };
         wishlistItems.push(newItem); e.target.reset(); renderWishlist();
         try { await fetch(`${API_BASE}/add-wishlist`, { method: 'POST', headers: apiHeaders, body: JSON.stringify(newItem) }); } catch (error) {} finally { btn.innerText = orig; btn.disabled = false; }
     });
 
+    // RE-ENGINEERED WISHLIST CARD GENERATOR
     function renderWishlist() {
       const grid = document.getElementById('wishlistGrid');
       if (!wishlistItems.length) { grid.innerHTML = `<p class="text-gray-500 text-sm">No trackable items stored inside current database frame.</p>`; return; }
@@ -525,10 +641,37 @@
         let actionPlanHTML = '';
         if (monthlyWishlistSavings > 0) {
           const daysNeeded = Math.ceil((item.price / monthlyWishlistSavings) * 30);
-          actionPlanHTML = `<div class="mt-4 bg-white/5 rounded-xl p-3 border border-white/5 flex items-center"><i data-lucide="calendar-clock" class="text-blue-400 w-5 h-5 mr-3"></i><div><p class="text-[10px] uppercase tracking-widest text-gray-500 font-bold">Velocity Strategy Plan</p><p class="text-xs text-gray-300"><span class="font-bold text-blue-400">${daysNeeded} sequential days</span> remaining until lock acquisition.</p></div></div>`;
+          actionPlanHTML = `<div class="mt-3 bg-white/5 rounded-xl p-3 border border-white/5 flex items-center"><i data-lucide="calendar-clock" class="text-blue-400 w-4 h-4 mr-2.5"></i><div><p class="text-[9px] uppercase tracking-widest text-gray-500 font-bold">Strategy Plan</p><p class="text-xs text-gray-300"><span class="font-bold text-blue-400">${daysNeeded} days</span> remaining until lock acquisition.</p></div></div>`;
         }
-        const img = item.imageUrl ? `<img src="${item.imageUrl}" class="w-full h-40 object-cover rounded-xl mb-4 bg-black/50">` : '';
-        return `<div class="glass-panel rounded-3xl p-5 relative group border border-white/5 flex flex-col"><button onclick="deleteWishlistItem('${item.id}')" class="absolute top-3 right-3 bg-red-500/20 text-red-500 p-2 rounded-full opacity-100 md:opacity-0 group-hover:opacity-100 transition-all backdrop-blur-md z-10"><i data-lucide="x" class="w-4 h-4"></i></button>${img}<div class="flex-grow"><h3 class="font-bold text-white leading-tight line-clamp-2">${item.title}</h3><h4 class="text-2xl font-black text-emerald-400 mt-2">₹${item.price.toLocaleString()}</h4></div>${actionPlanHTML}${item.link ? `<a href="${item.link}" target="_blank" class="block w-full text-center mt-4 bg-white/5 hover:bg-white/10 py-2 rounded-xl text-xs font-bold transition-all border border-white/10 text-white">View Online Node</a>` : ''}</div>`;
+        
+        // Fix 1: Elegant vector container fallback if product images are absent
+        const img = item.imageUrl ? 
+            `<img src="${item.imageUrl}" class="w-full h-40 object-cover rounded-xl mb-4 bg-black/50 border border-white/5">` : 
+            `<div class="w-full h-40 rounded-xl mb-4 bg-gradient-to-br from-blue-900/20 to-purple-900/10 border border-white/5 flex flex-col items-center justify-center text-gray-500"><i data-lucide="package" class="w-8 h-8 mb-2 text-blue-500/40"></i><span class="text-[10px] uppercase font-bold tracking-widest text-gray-400/60">No Image Asset</span></div>`;
+            
+        // Fix 2 & 3: Extracted platform node, category tags, and calendar logging details
+        let storeLabel = 'Store Node';
+        try { if(item.link) storeLabel = new URL(item.link).hostname.replace('www.', ''); } catch(e){}
+        const catTag = item.category || 'Unassigned';
+        const formattedDate = item.timestamp ? new Date(item.timestamp).toLocaleDateString('en-GB', {day:'numeric', month:'short'}) : 'Recent';
+
+        return `<div class="glass-panel rounded-3xl p-5 relative group border border-white/5 flex flex-col">
+            <button onclick="deleteWishlistItem('${item.id}')" class="absolute top-3 right-3 bg-red-500/20 text-red-500 p-2 rounded-full opacity-100 md:opacity-0 group-hover:opacity-100 transition-all backdrop-blur-md z-10"><i data-lucide="x" class="w-4 h-4"></i></button>
+            ${img}
+            <div class="flex-grow space-y-2">
+                <div class="flex items-center justify-between gap-2">
+                    <span class="px-2 py-0.5 bg-blue-500/10 text-blue-400 border border-blue-500/20 rounded text-[9px] font-black uppercase tracking-wider">${catTag}</span>
+                    <span class="text-[9px] text-gray-500 font-medium uppercase tracking-widest">${formattedDate}</span>
+                </div>
+                <h3 class="font-bold text-white leading-tight line-clamp-2 pt-1">${item.title}</h3>
+                <div class="flex items-baseline justify-between pt-1">
+                    <h4 class="text-2xl font-black text-emerald-400">₹${item.price.toLocaleString()}</h4>
+                    <span class="text-[10px] font-bold text-gray-400 uppercase tracking-widest flex items-center"><i data-lucide="shopping-bag" class="w-3 h-3 mr-1 text-purple-400"></i> ${storeLabel}</span>
+                </div>
+            </div>
+            ${actionPlanHTML}
+            ${item.link ? `<a href="${item.link}" target="_blank" class="block w-full text-center mt-3 bg-white/5 hover:bg-white/10 py-2.5 rounded-xl text-xs font-bold transition-all border border-white/10 text-white">View Online Node</a>` : ''}
+        </div>`;
       }).join(''); lucide.createIcons();
     }
 
@@ -621,7 +764,6 @@
       lineChart.data = { labels, datasets: [ { data: labels.map(l=>dates[l].i), borderColor: '#10b981', backgroundColor: 'rgba(16, 185, 129, 0.1)', fill:true, pointRadius:2 }, { data: labels.map(l=>dates[l].e), borderColor: '#f43f5e', backgroundColor: 'rgba(244, 63, 94, 0.1)', fill:true, pointRadius:2 } ]}; 
       lineChart.update();
 
-      // Update new 7-Day Cashflow Bar Chart
       const last7Labels = labels.slice(-7);
       cashflowChart.data.labels = last7Labels;
       cashflowChart.data.datasets[0].data = last7Labels.map(l => dates[l].i);
@@ -640,8 +782,7 @@
           if (t.amount > 10000 && !isI) impactBadge = `<span class="px-1.5 py-0.5 bg-rose-500/20 text-rose-400 border border-rose-500/30 rounded text-[8px] font-black uppercase ml-2 tracking-widest relative -top-0.5 shadow-sm">High Impact</span>`;
           else if (t.amount < 100 && !isI) impactBadge = `<span class="px-1.5 py-0.5 bg-gray-500/20 text-gray-400 border border-gray-500/30 rounded text-[8px] font-black uppercase ml-2 tracking-widest relative -top-0.5 shadow-sm">Micro</span>`;
 
-          // Removed the truncate logic below so text wraps naturally using the new .transaction-desc class
-          return `<div class="ledger-item flex items-center justify-between p-4 bg-white/5 rounded-2xl border border-white/5 mb-2 hover:bg-white/10 transition-colors"><div class="flex items-center space-x-3 md:space-x-4"><div class="w-10 h-10 rounded-full flex items-center justify-center ${isI ? 'bg-emerald-500/20 text-emerald-400' : 'bg-rose-500/20 text-rose-400'}"><i data-lucide="${isI ? 'arrow-down-left' : 'credit-card'}" class="w-5 h-5"></i></div><div><p class="font-bold text-gray-200 text-sm flex items-center">${t.category} ${t.isRecurring ? '<span class="bg-blue-600/30 text-blue-400 text-[8px] px-1 ml-1 rounded">AUTO</span>' : ''} ${impactBadge}</p><p class="text-[10px] text-gray-500 uppercase mt-0.5">${t.account} • ${new Date(t.timestamp).toLocaleDateString('en-GB',{day:'numeric',month:'short'})}</p></div></div><div class="flex flex-col items-end space-y-1"><div class="flex items-center space-x-2"><p class="font-black text-sm md:text-base ${isI ? 'text-emerald-400' : 'text-rose-400'}">${isI?'+':'-'}₹${t.amount.toLocaleString()}</p><button onclick="deleteTx('${t.id}')" class="action-btn text-gray-500 hover:text-rose-500 p-2"><i data-lucide="trash-2" class="w-4 h-4"></i></button></div>${t.note ? `<p class="text-[10px] text-gray-500 transaction-desc text-right mt-1">${t.note}</p>`:''}</div></div>`;
+          return `<div class="ledger-item flex items-center justify-between p-4 bg-white/5 rounded-2xl border border-white/5 mb-2 hover:bg-white/10 transition-colors"><div class="flex items-center space-x-3 md:space-x-4"><div class="w-10 h-10 rounded-full flex items-center justify-center ${isI ? 'bg-emerald-500/20 text-emerald-400' : 'bg-rose-500/20 text-rose-400'}"><i data-lucide="${isI ? 'arrow-down-left' : 'credit-card'}" class="w-5 h-5"></i></div><div><p class="font-bold text-gray-200 text-sm flex items-center">${t.category} ${t.isRecurring ? '<span class="bg-blue-600/30 text-blue-400 text-[8px] px-1 ml-1 rounded">AUTO</span>' : ''} ${impactBadge}</p><p class="text-[10px] text-gray-500 uppercase mt-0.5">${t.account} • ${new Date(t.timestamp).toLocaleDateString('en-GB',{day:'numeric',month:'short'})}</p></div></div><div class="flex flex-col items-end space-y-1"><div class="flex items-center space-x-2"><p class="font-black text-sm md:text-base ${isI ? 'text-emerald-400' : 'text-rose-400'}">${isI?'+':'-'}₹${t.amount.toLocaleString()}</p><button onclick="openEditModal('${t.id}')" class="action-btn text-gray-500 hover:text-blue-400 p-2"><i data-lucide="edit-2" class="w-4 h-4"></i></button><button onclick="deleteTx('${t.id}')" class="action-btn text-gray-500 hover:text-rose-500 p-2 pl-0"><i data-lucide="trash-2" class="w-4 h-4"></i></button></div>${t.note ? `<p class="text-[10px] text-gray-500 transaction-desc text-right mt-1">${t.note}</p>`:''}</div></div>`;
       }).join(''); lucide.createIcons();
     }
 

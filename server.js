@@ -77,7 +77,6 @@ app.delete('/api/delete-transaction/:id', async (req, res) => {
     } catch (error) { res.status(500).json({ error: 'Failed to delete' }); }
 });
 
-// NEW EDIT ROUTE
 app.put('/api/edit-transaction/:id', async (req, res) => {
     try {
         const { id } = req.params;
@@ -247,9 +246,6 @@ app.post('/api/reject', async (req, res) => {
     } catch (error) { res.status(500).json({ error: 'Rejection routing failed' }); }
 });
 
-// =========================================================================
-//  FIXED AND RE-ENGINEERED COMPLEX BILL ANALYSIS VIA MULTIMODAL GEMINI VISION
-// =========================================================================
 app.post('/api/receipt-ocr', upload.single('receipt'), async (req, res) => {
     try {
         if (!req.file) return res.status(400).json({ error: 'No image element payload detected.' });
@@ -274,10 +270,6 @@ app.post('/api/receipt-ocr', upload.single('receipt'), async (req, res) => {
         res.status(500).json({ error: 'AI Vision decoding exception occurred.' }); 
     }
 });
-
-// ==========================================
-//      HIGH-ACCURACY MULTI-ENGINE SCRAPER
-// ==========================================
 
 app.post('/api/scrape-price', async (req, res) => {
     let browser;
@@ -347,7 +339,7 @@ app.post('/api/scrape-price', async (req, res) => {
                 if (match) price = parseFloat(match[1].replace(/,/g, ''));
             }
 
-            const imgEl = document.querySelector('meta[property="og:image"]')?.content || document.querySelector('#landingImage, #imgTagWrapperId img, .a-dynamic-image, img[class*="v25dir"]')?.src;
+            const imgEl = document.querySelector('meta[property="og:image"]')?.content || document.querySelector('#landingImage, #imgTagWrapperId img, .a-dynamic-image, img[class*="v25dir"], ._396cs4, .product-main-image img')?.src;
             return { title: cleanTitle, price: price, imageUrl: imgEl || '' };
         });
         await browser.close();
@@ -429,13 +421,13 @@ app.get('/api/bookmark', async (req, res) => {
                 if (match) price = parseFloat(match[1].replace(/,/g, ''));
             }
 
-            const imgEl = document.querySelector('meta[property="og:image"]')?.content || document.querySelector('#landingImage, #imgTagWrapperId img, .a-dynamic-image, img[class*="v25dir"]')?.src;
+            const imgEl = document.querySelector('meta[property="og:image"]')?.content || document.querySelector('#landingImage, #imgTagWrapperId img, .a-dynamic-image, img[class*="v25dir"], ._396cs4, .product-main-image img')?.src;
             return { title: cleanTitle, price: price, imageUrl: imgEl || '' };
         });
         await browser.close();
 
         const safeTitle = data.title.replace(/'/g, "\\'").replace(/"/g, '\\"');
-        const item = { id: String(Date.now()), title: data.title, price: data.price, link: targetUrl, imageUrl: data.imageUrl };
+        const item = { id: String(Date.now()), title: data.title, price: data.price, link: targetUrl, imageUrl: data.imageUrl, timestamp: Date.now() };
         
         if (item.price > 0) {
             await db.collection('wishlist').doc(item.id).set(item);
@@ -454,6 +446,9 @@ app.get('/api/bookmark', async (req, res) => {
                 ` : `
                     <div id="manualEntryBox" style="background: rgba(255,255,255,0.05); padding: 20px; border-radius: 16px; margin-top: 20px; border: 1px solid rgba(255,255,255,0.1);">
                         <p style="color:#ef4444; font-size:12px; font-weight:bold; text-transform:uppercase; letter-spacing:1px; margin-bottom:15px;">⚠️ Firewall Blocked Price</p>
+                        <select id="manualCategory" style="background: rgba(0,0,0,0.5); color: #fff; border: 1px solid rgba(255,255,255,0.2); border-radius: 12px; padding: 12px; width: 100%; outline: none; margin-bottom: 12px;">
+                            <option value="Gadgets">💻 Gadgets</option><option value="Apparel">👕 Apparel</option><option value="Lifestyle">✨ Lifestyle</option><option value="Other">📦 Other</option>
+                        </select>
                         <input type="number" id="manualPrice" placeholder="Enter Price (₹)" style="background: rgba(0,0,0,0.5); color: #10b981; font-size: 24px; font-weight: bold; text-align: center; border: 1px solid rgba(255,255,255,0.2); border-radius: 12px; padding: 15px; width: 100%; outline: none; margin-bottom: 15px;" autofocus>
                         <button onclick="saveManualData()" style="background: #3b82f6; color: white; border: none; padding: 15px; width: 100%; border-radius: 12px; font-size: 16px; font-weight: bold; cursor: pointer; transition: 0.2s;">Save to Tracker</button>
                     </div>
@@ -462,6 +457,7 @@ app.get('/api/bookmark', async (req, res) => {
                         function saveManualData() {
                             const btn = document.querySelector('button');
                             const priceInput = document.getElementById('manualPrice').value;
+                            const catInput = document.getElementById('manualCategory').value;
                             
                             if (!priceInput || priceInput <= 0) return;
                             
@@ -476,7 +472,9 @@ app.get('/api/bookmark', async (req, res) => {
                                     title: '${safeTitle}', 
                                     price: parseFloat(priceInput), 
                                     link: '${item.link}', 
-                                    imageUrl: '${item.imageUrl}' 
+                                    imageUrl: '${item.imageUrl}',
+                                    category: catInput,
+                                    timestamp: Date.now()
                                 })
                             }).then(() => {
                                 document.getElementById('manualEntryBox').innerHTML = '<h1 style="color:#10b981; font-size: 30px; margin: 30px 0;">Saved! 🎯</h1><p style="color:#6b7280; font-size:12px;">Closing window...</p>';
@@ -496,6 +494,9 @@ app.get('/api/bookmark', async (req, res) => {
                 <div id="manualEntryBox" style="background: rgba(255,255,255,0.05); padding: 20px; border-radius: 16px; margin-top: 20px; border: 1px solid rgba(255,255,255,0.1);">
                     <p style="color:#ef4444; font-size:12px; font-weight:bold; text-transform:uppercase; letter-spacing:1px; margin-bottom:15px;">⚠️ Scraper Blocked by Site</p>
                     <input type="text" id="manualName" placeholder="Product Name" style="background: rgba(0,0,0,0.5); color: #fff; font-size: 16px; border: 1px solid rgba(255,255,255,0.2); border-radius: 12px; padding: 15px; width: 100%; outline: none; margin-bottom: 10px;">
+                    <select id="manualCategory" style="background: rgba(0,0,0,0.5); color: #fff; border: 1px solid rgba(255,255,255,0.2); border-radius: 12px; padding: 12px; width: 100%; outline: none; margin-bottom: 12px;">
+                        <option value="Gadgets">💻 Gadgets</option><option value="Apparel">👕 Apparel</option><option value="Lifestyle">✨ Lifestyle</option><option value="Other">📦 Other</option>
+                    </select>
                     <input type="number" id="manualPrice" placeholder="Enter Price (₹)" style="background: rgba(0,0,0,0.5); color: #10b981; font-size: 24px; font-weight: bold; text-align: center; border: 1px solid rgba(255,255,255,0.2); border-radius: 12px; padding: 15px; width: 100%; outline: none; margin-bottom: 15px;" autofocus>
                     <button onclick="saveManualData()" style="background: #3b82f6; color: white; border: none; padding: 15px; width: 100%; border-radius: 12px; font-size: 16px; font-weight: bold; cursor: pointer; transition: 0.2s;">Save to Tracker</button>
                 </div>
@@ -505,6 +506,7 @@ app.get('/api/bookmark', async (req, res) => {
                         const btn = document.querySelector('button');
                         const priceInput = document.getElementById('manualPrice').value;
                         const nameInput = document.getElementById('manualName').value || 'Saved Item';
+                        const catInput = document.getElementById('manualCategory').value;
                         
                         if (!priceInput || priceInput <= 0) return;
                         
@@ -519,7 +521,9 @@ app.get('/api/bookmark', async (req, res) => {
                                 title: nameInput, 
                                 price: parseFloat(priceInput), 
                                 link: '${targetUrl}', 
-                                imageUrl: '' 
+                                imageUrl: '',
+                                category: catInput,
+                                timestamp: Date.now()
                             })
                         }).then(() => {
                             document.getElementById('manualEntryBox').innerHTML = '<h1 style="color:#10b981; font-size: 30px; margin: 30px 0;">Saved! 🎯</h1><p style="color:#6b7280; font-size:12px;">Closing window...</p>';
