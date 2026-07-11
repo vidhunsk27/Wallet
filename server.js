@@ -328,9 +328,10 @@ app.post('/api/scrape-price', async (req, res) => {
 
             if (price === 0) {
                 const priceSelectors = [
-                    '.a-price-whole', '._30jeq3', '.Nx9bqj', 
+                    '.a-price-whole', '._30jeq3', '.Nx9bqj', '.Nx9bqj.CrvsUK',
                     '._1V76Xq', '._25b18c', '[data-qa="product-price"]', 
-                    '.price', '.product-price', '.final-price'
+                    '.price', '.product-price', '.final-price',
+                    '.pdp-price', '.discounted-price', '.sell-price', '.fbold'
                 ];
                 for (const sel of priceSelectors) {
                     const el = document.querySelector(sel);
@@ -339,6 +340,11 @@ app.post('/api/scrape-price', async (req, res) => {
                         if (extracted > 0) { price = extracted; break; }
                     }
                 }
+            }
+
+            if (price === 0) {
+                let match = document.body.innerText.match(/(?:₹|Rs\.?)\s*([0-9,]+(?:\.[0-9]{2})?)/i);
+                if (match) price = parseFloat(match[1].replace(/,/g, ''));
             }
 
             const imgEl = document.querySelector('meta[property="og:image"]')?.content || document.querySelector('#landingImage, #imgTagWrapperId img, .a-dynamic-image, img[class*="v25dir"]')?.src;
@@ -404,9 +410,10 @@ app.get('/api/bookmark', async (req, res) => {
 
             if (price === 0) {
                 const priceSelectors = [
-                    '.a-price-whole', '._30jeq3', '.Nx9bqj', 
+                    '.a-price-whole', '._30jeq3', '.Nx9bqj', '.Nx9bqj.CrvsUK',
                     '._1V76Xq', '._25b18c', '[data-qa="product-price"]', 
-                    '.price', '.product-price', '.final-price'
+                    '.price', '.product-price', '.final-price',
+                    '.pdp-price', '.discounted-price', '.sell-price', '.fbold'
                 ];
                 for (const sel of priceSelectors) {
                     const el = document.querySelector(sel);
@@ -415,6 +422,11 @@ app.get('/api/bookmark', async (req, res) => {
                         if (extracted > 0) { price = extracted; break; }
                     }
                 }
+            }
+
+            if (price === 0) {
+                let match = document.body.innerText.match(/(?:₹|Rs\.?)\s*([0-9,]+(?:\.[0-9]{2})?)/i);
+                if (match) price = parseFloat(match[1].replace(/,/g, ''));
             }
 
             const imgEl = document.querySelector('meta[property="og:image"]')?.content || document.querySelector('#landingImage, #imgTagWrapperId img, .a-dynamic-image, img[class*="v25dir"]')?.src;
