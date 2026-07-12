@@ -152,7 +152,7 @@ app.post('/api/jarvis-advice', async (req, res) => {
         
         STRICT RULES:
         1. Speak directly to the user in a cool, helpful tone.
-        2. DO NOT use any markdown formatting (no asterisks, bolding, or hashes).
+        2. DO NOT use any markdown formatting.
         3. Keep it to 3-4 short sentences total.
         4. Use normal line breaks to separate the summary from the advice.`;
 
@@ -169,8 +169,18 @@ app.post('/api/sms-webhook', async (req, res) => {
         if (!rawText) return res.status(400).json({ error: 'No SMS text provided' });
 
         const model = genAI.getGenerativeModel({ model: 'gemini-2.5-flash' });
-        const prompt = `Extract amount, merchant, date, and type (income/expense) from this bank SMS: "${rawText}". 
-        Return ONLY a valid JSON object matching this structure: {"amount": number, "merchant": string, "date": "YYYY-MM-DD", "type": "income" | "expense"}. If you cannot process it, return {"error":"invalid"}`;
+        // SMART AUTO-CATEGORIZATION PROMPT
+        const prompt = `Analyze this bank SMS: "${rawText}". 
+        Extract the amount, merchant, date, type (income/expense), and category.
+        
+        Rules for "category":
+        - For expense, choose the most logical fit from ONLY these: 'Food & Dining', 'Groceries', 'Transport', 'Utilities', 'Shopping', 'Entertainment', 'Health', 'Subscriptions', 'Other'.
+        - Example mapping: Swiggy/Zomato/Zepto/Blinkit -> 'Food & Dining' or 'Groceries'. Uber/Ola/redBus/abhibus/IRCTC -> 'Transport'. Amazon/Flipkart -> 'Shopping'. Netflix/Spotify -> 'Subscriptions'.
+        - For income, choose from: 'Salary', 'Freelance', 'Investments', 'Refund', 'Other'.
+        
+        Return ONLY a valid JSON object matching this structure exactly: 
+        {"amount": number, "merchant": string, "date": "YYYY-MM-DD", "type": "income" | "expense", "category": string}. 
+        If you cannot process it, return {"error":"invalid"}`;
 
         const result = await model.generateContent(prompt);
         let cleanText = result.response.text().replace(/```json/gi, '').replace(/```/g, '').trim();
@@ -185,7 +195,7 @@ app.post('/api/sms-webhook', async (req, res) => {
             amount: parsedData.amount || 0, 
             merchant: parsedData.merchant || 'Unknown Vendor', 
             account: 'UPI', 
-            category: 'Other', 
+            category: parsedData.category || 'Other', 
             note: (parsedData.merchant || 'Transaction') + " (SMS)", 
             timestamp: Date.now(), 
             isRecurring: false,
@@ -347,6 +357,41 @@ app.post('/api/scrape-price', async (req, res) => {
     } catch (error) {
         if (browser) await browser.close();
         res.status(500).json({ error: 'Scraping failed' });
+    }
+});
+
+// FAST FIREWALL BYPASS ROUTE
+app.get('/api/bookmark-auto', async (req, res) => {
+    const { title, price, link, img } = req.query;
+    
+    if (!link || !price) return res.send("Error: Missing data parameters.");
+
+    let hostname = 'ONLINE';
+    try { hostname = new URL(link).hostname.replace('www.', '').split('.')[0].toUpperCase(); } catch(e) {}
+
+    const item = { 
+        id: String(Date.now()), 
+        title: decodeURIComponent(title) || 'Saved Item', 
+        price: parseFloat(price) || 0, 
+        link: decodeURIComponent(link), 
+        imageUrl: img ? decodeURIComponent(img) : '',
+        category: hostname,
+        addedOn: new Date().toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' })
+    };
+    
+    try {
+        await db.collection('wishlist').doc(item.id).set(item);
+        res.send(`
+            <html style="background:#050505; color:#10b981; font-family:sans-serif; text-align:center; padding:2rem;">
+                <h2 style="margin-top: 20px; color:#3b82f6;">🎯 Wallet V2.0</h2>
+                <h1 style="color:#10b981; font-size: 40px; margin: 20px 0;">₹${item.price}</h1>
+                <p style="color:#10b981; font-weight:bold;">Saved to Cloud Database Successfully!</p>
+                <p style="color:#6b7280; font-size:12px; margin-top:20px;">Closing window...</p>
+                <script>setTimeout(() => window.close(), 1500);</script>
+            </html>
+        `);
+    } catch(err) {
+        res.send("<h2 style='color:#ef4444; text-align:center;'>Database sync failed.</h2>");
     }
 });
 
