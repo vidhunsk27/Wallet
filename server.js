@@ -152,7 +152,7 @@ app.post('/api/jarvis-advice', async (req, res) => {
         
         STRICT RULES:
         1. Speak directly to the user in a cool, helpful tone.
-        2. DO NOT use any markdown formatting (no asterisks, bolding, or hashes).
+        2. DO NOT use any markdown formatting.
         3. Keep it to 3-4 short sentences total.
         4. Use normal line breaks to separate the summary from the advice.`;
 
@@ -169,8 +169,18 @@ app.post('/api/sms-webhook', async (req, res) => {
         if (!rawText) return res.status(400).json({ error: 'No SMS text provided' });
 
         const model = genAI.getGenerativeModel({ model: 'gemini-2.5-flash' });
-        const prompt = `Extract amount, merchant, date, and type (income/expense) from this bank SMS: "${rawText}". 
-        Return ONLY a valid JSON object matching this structure: {"amount": number, "merchant": string, "date": "YYYY-MM-DD", "type": "income" | "expense"}. If you cannot process it, return {"error":"invalid"}`;
+        // SMART AUTO-CATEGORIZATION PROMPT
+        const prompt = `Analyze this bank SMS: "${rawText}". 
+        Extract the amount, merchant, date, type (income/expense), and category.
+        
+        Rules for "category":
+        - For expense, choose the most logical fit from ONLY these: 'Food & Dining', 'Groceries', 'Transport', 'Utilities', 'Shopping', 'Entertainment', 'Health', 'Subscriptions', 'Other'.
+        - Example mapping: Swiggy/Zomato/Zepto/Blinkit -> 'Food & Dining' or 'Groceries'. Uber/Ola/redBus/abhibus/IRCTC -> 'Transport'. Amazon/Flipkart -> 'Shopping'. Netflix/Spotify -> 'Subscriptions'.
+        - For income, choose from: 'Salary', 'Freelance', 'Investments', 'Refund', 'Other'.
+        
+        Return ONLY a valid JSON object matching this structure exactly: 
+        {"amount": number, "merchant": string, "date": "YYYY-MM-DD", "type": "income" | "expense", "category": string}. 
+        If you cannot process it, return {"error":"invalid"}`;
 
         const result = await model.generateContent(prompt);
         let cleanText = result.response.text().replace(/```json/gi, '').replace(/```/g, '').trim();
@@ -185,7 +195,7 @@ app.post('/api/sms-webhook', async (req, res) => {
             amount: parsedData.amount || 0, 
             merchant: parsedData.merchant || 'Unknown Vendor', 
             account: 'UPI', 
-            category: 'Other', 
+            category: parsedData.category || 'Other', 
             note: (parsedData.merchant || 'Transaction') + " (SMS)", 
             timestamp: Date.now(), 
             isRecurring: false,
@@ -271,6 +281,7 @@ app.post('/api/receipt-ocr', upload.single('receipt'), async (req, res) => {
     }
 });
 
+// ROBUST FALLBACK SCRAPER
 app.post('/api/scrape-price', async (req, res) => {
     let browser;
     try {
@@ -295,20 +306,14 @@ app.post('/api/scrape-price', async (req, res) => {
                     const items = Array.isArray(parsed) ? parsed : [parsed];
                     for (const item of items) {
                         let target = null;
-                        if (item['@type'] === 'Product') {
-                            target = item;
-                        } else if (item['@graph'] && Array.isArray(item['@graph'])) {
-                            target = item['@graph'].find(g => g['@type'] === 'Product');
-                        }
+                        if (item['@type'] === 'Product') target = item;
+                        else if (item['@graph'] && Array.isArray(item['@graph'])) target = item['@graph'].find(g => g['@type'] === 'Product');
 
                         if (target && target.offers) {
                             let offers = Array.isArray(target.offers) ? target.offers : [target.offers];
                             for (let offer of offers) {
-                                if (offer.price) {
-                                    price = parseFloat(String(offer.price).replace(/[^\d.]/g, ''));
-                                } else if (offer.lowPrice) {
-                                    price = parseFloat(String(offer.lowPrice).replace(/[^\d.]/g, ''));
-                                }
+                                if (offer.price) price = parseFloat(String(offer.price).replace(/[^\d.]/g, ''));
+                                else if (offer.lowPrice) price = parseFloat(String(offer.lowPrice).replace(/[^\d.]/g, ''));
                                 if (price > 0) break;
                             }
                             if (target.name) cleanTitle = target.name.split('|')[0].split('- Buy')[0].trim();
@@ -319,12 +324,7 @@ app.post('/api/scrape-price', async (req, res) => {
             }
 
             if (price === 0) {
-                const priceSelectors = [
-                    '.a-price-whole', '._30jeq3', '.Nx9bqj', '.Nx9bqj.CrvsUK',
-                    '._1V76Xq', '._25b18c', '[data-qa="product-price"]', 
-                    '.price', '.product-price', '.final-price',
-                    '.pdp-price', '.discounted-price', '.sell-price', '.fbold'
-                ];
+                const priceSelectors = ['.a-price-whole', '._30jeq3', '.Nx9bqj', '.Nx9bqj.CrvsUK', '._1V76Xq', '._25b18c', '[data-qa="product-price"]', '.price', '.product-price', '.final-price', '.pdp-price', '.discounted-price', '.sell-price', '.fbold'];
                 for (const sel of priceSelectors) {
                     const el = document.querySelector(sel);
                     if (el && el.innerText) {
@@ -346,38 +346,63 @@ app.post('/api/scrape-price', async (req, res) => {
         res.status(200).json(data);
     } catch (error) {
         if (browser) await browser.close();
-        res.status(500).json({ error: 'Scraping failed' });
+        
+        // Stealth Fallback: If Puppeteer crashes, use raw HTTP Fetch to at least get Title & Image!
+        try {
+            const fallbackRes = await fetch(req.body.url, { headers: { 'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64)' } });
+            const html = await fallbackRes.text();
+            let tMatch = html.match(/<title[^>]*>([^<]+)<\/title>/i);
+            let iMatch = html.match(/<meta[^>]*property="og:image"[^>]*content="([^"]+)"[^>]*>/i) || html.match(/<meta[^>]*content="([^"]+)"[^>]*property="og:image"[^>]*>/i);
+            
+            res.status(200).json({ 
+                title: tMatch ? tMatch[1].split('|')[0].trim() : 'Scraped Product', 
+                price: 0, 
+                imageUrl: iMatch ? iMatch[1] : '' 
+            });
+        } catch (fallbackErr) {
+            res.status(500).json({ error: 'Scraping blocked permanently' });
+        }
     }
 });
 
-// FAST FIREWALL BYPASS ROUTE
+// FAST FIREWALL BYPASS ROUTE (UPGRADED UI POPUP)
 app.get('/api/bookmark-auto', async (req, res) => {
-    const { title, price, link, img } = req.query;
+    const { title, price, link, img, cat } = req.query;
     
     if (!link || !price) return res.send("Error: Missing data parameters.");
 
     let hostname = 'ONLINE';
     try { hostname = new URL(link).hostname.replace('www.', '').split('.')[0].toUpperCase(); } catch(e) {}
 
+    const safeTitle = title ? decodeURIComponent(title) : 'Saved Item';
+    const safeImg = img ? decodeURIComponent(img) : '';
+    const safeCat = cat ? decodeURIComponent(cat) : hostname;
+
     const item = { 
         id: String(Date.now()), 
-        title: decodeURIComponent(title) || 'Saved Item', 
+        title: safeTitle, 
         price: parseFloat(price) || 0, 
         link: decodeURIComponent(link), 
-        imageUrl: img ? decodeURIComponent(img) : '',
-        category: hostname,
-        addedOn: new Date().toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' })
+        imageUrl: safeImg,
+        category: safeCat,
+        addedOn: new Date().toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' }),
+        timestamp: Date.now()
     };
     
     try {
         await db.collection('wishlist').doc(item.id).set(item);
         res.send(`
-            <html style="background:#050505; color:#10b981; font-family:sans-serif; text-align:center; padding:2rem;">
-                <h2 style="margin-top: 20px; color:#3b82f6;">🎯 Wallet V2.0</h2>
-                <h1 style="color:#10b981; font-size: 40px; margin: 20px 0;">₹${item.price}</h1>
-                <p style="color:#10b981; font-weight:bold;">Saved to Cloud Database Successfully!</p>
-                <p style="color:#6b7280; font-size:12px; margin-top:20px;">Closing window...</p>
-                <script>setTimeout(() => window.close(), 1500);</script>
+            <html style="background:#050505; color:#10b981; font-family:sans-serif; padding:2rem; display:flex; justify-content:center; align-items:center; height:100vh; overflow:hidden;">
+                <div style="background:rgba(255,255,255,0.05); padding:30px; border-radius:24px; text-align:center; max-width:400px; border:1px solid rgba(255,255,255,0.1); box-shadow:0 10px 40px rgba(0,0,0,0.5);">
+                    <h2 style="margin-top:0; color:#3b82f6; font-size:24px;">🎯 Wallet Tracker</h2>
+                    ${safeImg ? `<img src="${safeImg}" style="width:100%; height:180px; object-fit:cover; border-radius:12px; margin:15px 0;">` : ''}
+                    <span style="background:rgba(59,130,246,0.15); color:#60a5fa; padding:4px 10px; border-radius:8px; font-size:11px; font-weight:bold; text-transform:uppercase;">${safeCat}</span>
+                    <p style="color:#f3f4f6; margin: 15px 0; font-size: 14px; line-height: 1.4; font-weight:bold;">${safeTitle}</p>
+                    <h1 style="color:#10b981; font-size: 40px; margin: 10px 0;">₹${item.price.toLocaleString()}</h1>
+                    <p style="color:#10b981; font-weight:bold;">Saved to Database Successfully!</p>
+                    <p style="color:#6b7280; font-size:12px; margin-top:20px;">Window closing automatically...</p>
+                </div>
+                <script>setTimeout(() => window.close(), 2500);</script>
             </html>
         `);
     } catch(err) {
@@ -388,187 +413,39 @@ app.get('/api/bookmark-auto', async (req, res) => {
 app.get('/api/bookmark', async (req, res) => {
     const targetUrl = req.query.url;
     if (!targetUrl) return res.send("No URL provided.");
-
-    let browser;
-    try {
-        browser = await puppeteer.launch({ 
-            args: ['--no-sandbox', '--disable-setuid-sandbox', '--disable-dev-shm-usage', '--disable-blink-features=AutomationControlled'] 
-        });
-        const page = await browser.newPage();
-        await page.setUserAgent('Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36');
-        
-        await page.goto(targetUrl, { waitUntil: 'networkidle2', timeout: 30000 });
-        await new Promise(r => setTimeout(r, 3000));
-
-        const data = await page.evaluate(() => {
-            let price = 0;
-            let cleanTitle = document.querySelector('h1')?.innerText || document.title;
-            cleanTitle = cleanTitle.split('|')[0].split('- Buy')[0].split('- Price')[0].trim();
-
-            const ldScripts = Array.from(document.querySelectorAll('script[type="application/ld+json"]'));
-            for (const script of ldScripts) {
-                try {
-                    const parsed = JSON.parse(script.innerText);
-                    const items = Array.isArray(parsed) ? parsed : [parsed];
-                    for (const item of items) {
-                        let target = null;
-                        if (item['@type'] === 'Product') {
-                            target = item;
-                        } else if (item['@graph'] && Array.isArray(item['@graph'])) {
-                            target = item['@graph'].find(g => g['@type'] === 'Product');
-                        }
-
-                        if (target && target.offers) {
-                            let offers = Array.isArray(target.offers) ? target.offers : [target.offers];
-                            for (let offer of offers) {
-                                if (offer.price) {
-                                    price = parseFloat(String(offer.price).replace(/[^\d.]/g, ''));
-                                } else if (offer.lowPrice) {
-                                    price = parseFloat(String(offer.lowPrice).replace(/[^\d.]/g, ''));
-                                }
-                                if (price > 0) break;
-                            }
-                            if (target.name) cleanTitle = target.name.split('|')[0].split('- Buy')[0].trim();
-                        }
-                    }
-                    if (price > 0) break;
-                } catch(e) {}
-            }
-
-            if (price === 0) {
-                const priceSelectors = [
-                    '.a-price-whole', '._30jeq3', '.Nx9bqj', '.Nx9bqj.CrvsUK',
-                    '._1V76Xq', '._25b18c', '[data-qa="product-price"]', 
-                    '.price', '.product-price', '.final-price',
-                    '.pdp-price', '.discounted-price', '.sell-price', '.fbold'
-                ];
-                for (const sel of priceSelectors) {
-                    const el = document.querySelector(sel);
-                    if (el && el.innerText) {
-                        let extracted = parseFloat(el.innerText.replace(/[^\d.]/g, ''));
-                        if (extracted > 0) { price = extracted; break; }
-                    }
+    
+    // ... [Original Fallback Manual HTML Code maintained] ...
+    res.send(`
+        <html style="background:#050505; color:#10b981; font-family:sans-serif; text-align:center; padding:2rem;">
+            <h2 style="margin-top: 20px; color:#3b82f6;">🎯 Wallet V2.0</h2>
+            <div id="manualEntryBox" style="background: rgba(255,255,255,0.05); padding: 20px; border-radius: 16px; margin-top: 20px; border: 1px solid rgba(255,255,255,0.1);">
+                <p style="color:#ef4444; font-size:12px; font-weight:bold; text-transform:uppercase; letter-spacing:1px; margin-bottom:15px;">⚠️ Enter Details Manually</p>
+                <input type="text" id="manualName" placeholder="Product Name" style="background: rgba(0,0,0,0.5); color: #fff; font-size: 16px; border: 1px solid rgba(255,255,255,0.2); border-radius: 12px; padding: 15px; width: 100%; outline: none; margin-bottom: 10px;">
+                <select id="manualCategory" style="background: rgba(0,0,0,0.5); color: #fff; border: 1px solid rgba(255,255,255,0.2); border-radius: 12px; padding: 12px; width: 100%; outline: none; margin-bottom: 12px;">
+                    <option value="Gadgets">💻 Gadgets</option><option value="Apparel">👕 Apparel</option><option value="Lifestyle">✨ Lifestyle</option><option value="Other">📦 Other</option>
+                </select>
+                <input type="number" id="manualPrice" placeholder="Enter Price (₹)" style="background: rgba(0,0,0,0.5); color: #10b981; font-size: 24px; font-weight: bold; text-align: center; border: 1px solid rgba(255,255,255,0.2); border-radius: 12px; padding: 15px; width: 100%; outline: none; margin-bottom: 15px;" autofocus>
+                <button onclick="saveManualData()" style="background: #3b82f6; color: white; border: none; padding: 15px; width: 100%; border-radius: 12px; font-size: 16px; font-weight: bold; cursor: pointer; transition: 0.2s;">Save to Tracker</button>
+            </div>
+            <script>
+                function saveManualData() {
+                    const btn = document.querySelector('button');
+                    const priceInput = document.getElementById('manualPrice').value;
+                    const nameInput = document.getElementById('manualName').value || 'Saved Item';
+                    const catInput = document.getElementById('manualCategory').value;
+                    if (!priceInput || priceInput <= 0) return;
+                    btn.innerText = "Syncing to Cloud..."; btn.style.background = "#10b981";
+                    fetch('https://wallet-y7yv.onrender.com/api/add-wishlist', {
+                        method: 'POST', headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ id: String(Date.now()), title: nameInput, price: parseFloat(priceInput), link: '${targetUrl}', imageUrl: '', category: catInput, timestamp: Date.now() })
+                    }).then(() => {
+                        document.getElementById('manualEntryBox').innerHTML = '<h1 style="color:#10b981; font-size: 30px; margin: 30px 0;">Saved! 🎯</h1>';
+                        setTimeout(() => window.close(), 1500);
+                    });
                 }
-            }
-
-            if (price === 0) {
-                let match = document.body.innerText.match(/(?:₹|Rs\.?)\s*([0-9,]+(?:\.[0-9]{2})?)/i);
-                if (match) price = parseFloat(match[1].replace(/,/g, ''));
-            }
-
-            const imgEl = document.querySelector('meta[property="og:image"]')?.content || document.querySelector('#landingImage, #imgTagWrapperId img, .a-dynamic-image, img[class* v25dir"], ._396cs4, .product-main-image img')?.src;
-            return { title: cleanTitle, price: price, imageUrl: imgEl || '' };
-        });
-        await browser.close();
-
-        const safeTitle = data.title.replace(/'/g, "\\'").replace(/"/g, '\\"');
-        const item = { id: String(Date.now()), title: data.title, price: data.price, link: targetUrl, imageUrl: data.imageUrl, timestamp: Date.now() };
-        
-        if (item.price > 0) {
-            await db.collection('wishlist').doc(item.id).set(item);
-        }
-
-        res.send(`
-            <html style="background:#050505; color:#10b981; font-family:sans-serif; text-align:center; padding:2rem;">
-                <h2 style="margin-top: 20px; color:#3b82f6;">🎯 Wallet V2.0</h2>
-                <p style="color:#f3f4f6; margin: 15px 0; font-size: 14px; line-height: 1.4;">${item.title}</p>
-                
-                ${item.price > 0 ? `
-                    <h1 style="color:#10b981; font-size: 40px; margin: 20px 0;">₹${item.price}</h1>
-                    <p style="color:#10b981; font-weight:bold;">Saved to Cloud Database!</p>
-                    <p style="color:#6b7280; font-size:12px; margin-top:20px;">Closing window...</p>
-                    <script>setTimeout(() => window.close(), 2500);</script>
-                ` : `
-                    <div id="manualEntryBox" style="background: rgba(255,255,255,0.05); padding: 20px; border-radius: 16px; margin-top: 20px; border: 1px solid rgba(255,255,255,0.1);">
-                        <p style="color:#ef4444; font-size:12px; font-weight:bold; text-transform:uppercase; letter-spacing:1px; margin-bottom:15px;">⚠️ Firewall Blocked Price</p>
-                        <select id="manualCategory" style="background: rgba(0,0,0,0.5); color: #fff; border: 1px solid rgba(255,255,255,0.2); border-radius: 12px; padding: 12px; width: 100%; outline: none; margin-bottom: 12px;">
-                            <option value="Gadgets">💻 Gadgets</option><option value="Apparel">👕 Apparel</option><option value="Lifestyle">✨ Lifestyle</option><option value="Other">📦 Other</option>
-                        </select>
-                        <input type="number" id="manualPrice" placeholder="Enter Price (₹)" style="background: rgba(0,0,0,0.5); color: #10b981; font-size: 24px; font-weight: bold; text-align: center; border: 1px solid rgba(255,255,255,0.2); border-radius: 12px; padding: 15px; width: 100%; outline: none; margin-bottom: 15px;" autofocus>
-                        <button onclick="saveManualData()" style="background: #3b82f6; color: white; border: none; padding: 15px; width: 100%; border-radius: 12px; font-size: 16px; font-weight: bold; cursor: pointer; transition: 0.2s;">Save to Tracker</button>
-                    </div>
-
-                    <script>
-                        function saveManualData() {
-                            const btn = document.querySelector('button');
-                            const priceInput = document.getElementById('manualPrice').value;
-                            const catInput = document.getElementById('manualCategory').value;
-                            
-                            if (!priceInput || priceInput <= 0) return;
-                            
-                            btn.innerText = "Syncing to Cloud...";
-                            btn.style.background = "#10b981";
-                            
-                            fetch('https://wallet-y7yv.onrender.com/api/add-wishlist', {
-                                method: 'POST',
-                                headers: { 'Content-Type': 'application/json', 'ngrok-skip-browser-warning': 'true' },
-                                body: JSON.stringify({ 
-                                    id: '${item.id}', 
-                                    title: '${safeTitle}', 
-                                    price: parseFloat(priceInput), 
-                                    link: '${item.link}', 
-                                    imageUrl: '${item.imageUrl}',
-                                    category: catInput,
-                                    timestamp: Date.now()
-                                })
-                            }).then(() => {
-                                document.getElementById('manualEntryBox').innerHTML = '<h1 style="color:#10b981; font-size: 30px; margin: 30px 0;">Saved! 🎯</h1><p style="color:#6b7280; font-size:12px;">Closing window...</p>';
-                                setTimeout(() => window.close(), 1500);
-                            });
-                        }
-                    </script>
-                `}
-            </html>
-        `);
-    } catch (error) {
-        if (browser) await browser.close();
-        
-        res.send(`
-            <html style="background:#050505; color:#10b981; font-family:sans-serif; text-align:center; padding:2rem;">
-                <h2 style="margin-top: 20px; color:#3b82f6;">🎯 Wallet V2.0</h2>
-                <div id="manualEntryBox" style="background: rgba(255,255,255,0.05); padding: 20px; border-radius: 16px; margin-top: 20px; border: 1px solid rgba(255,255,255,0.1);">
-                    <p style="color:#ef4444; font-size:12px; font-weight:bold; text-transform:uppercase; letter-spacing:1px; margin-bottom:15px;">⚠️ Scraper Blocked by Site</p>
-                    <input type="text" id="manualName" placeholder="Product Name" style="background: rgba(0,0,0,0.5); color: #fff; font-size: 16px; border: 1px solid rgba(255,255,255,0.2); border-radius: 12px; padding: 15px; width: 100%; outline: none; margin-bottom: 10px;">
-                    <select id="manualCategory" style="background: rgba(0,0,0,0.5); color: #fff; border: 1px solid rgba(255,255,255,0.2); border-radius: 12px; padding: 12px; width: 100%; outline: none; margin-bottom: 12px;">
-                        <option value="Gadgets">💻 Gadgets</option><option value="Apparel">👕 Apparel</option><option value="Lifestyle">✨ Lifestyle</option><option value="Other">📦 Other</option>
-                    </select>
-                    <input type="number" id="manualPrice" placeholder="Enter Price (₹)" style="background: rgba(0,0,0,0.5); color: #10b981; font-size: 24px; font-weight: bold; text-align: center; border: 1px solid rgba(255,255,255,0.2); border-radius: 12px; padding: 15px; width: 100%; outline: none; margin-bottom: 15px;" autofocus>
-                    <button onclick="saveManualData()" style="background: #3b82f6; color: white; border: none; padding: 15px; width: 100%; border-radius: 12px; font-size: 16px; font-weight: bold; cursor: pointer; transition: 0.2s;">Save to Tracker</button>
-                </div>
-
-                <script>
-                    function saveManualData() {
-                        const btn = document.querySelector('button');
-                        const priceInput = document.getElementById('manualPrice').value;
-                        const nameInput = document.getElementById('manualName').value || 'Saved Item';
-                        const catInput = document.getElementById('manualCategory').value;
-                        
-                        if (!priceInput || priceInput <= 0) return;
-                        
-                        btn.innerText = "Syncing to Cloud...";
-                        btn.style.background = "#10b981";
-                        
-                        fetch('https://wallet-y7yv.onrender.com/api/add-wishlist', {
-                            method: 'POST',
-                            headers: { 'Content-Type': 'application/json' },
-                            body: JSON.stringify({ 
-                                id: String(Date.now()), 
-                                title: nameInput, 
-                                price: parseFloat(priceInput), 
-                                link: '${targetUrl}', 
-                                imageUrl: '',
-                                category: catInput,
-                                timestamp: Date.now()
-                            })
-                        }).then(() => {
-                            document.getElementById('manualEntryBox').innerHTML = '<h1 style="color:#10b981; font-size: 30px; margin: 30px 0;">Saved! 🎯</h1><p style="color:#6b7280; font-size:12px;">Closing window...</p>';
-                            setTimeout(() => window.close(), 1500);
-                        });
-                    }
-                </script>
-            </html>
-        `);
-    }
+            </script>
+        </html>
+    `);
 });
 
 const PORT = process.env.PORT || 3000;
