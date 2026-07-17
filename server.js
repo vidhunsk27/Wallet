@@ -152,7 +152,7 @@ app.post('/api/jarvis-advice', async (req, res) => {
         
         STRICT RULES:
         1. Speak directly to the user in a cool, helpful tone.
-        2. DO NOT use any markdown formatting.
+        2. DO NOT use any markdown formatting (no asterisks, bolding, or hashes).
         3. Keep it to 3-4 short sentences total.
         4. Use normal line breaks to separate the summary from the advice.`;
 
@@ -169,18 +169,8 @@ app.post('/api/sms-webhook', async (req, res) => {
         if (!rawText) return res.status(400).json({ error: 'No SMS text provided' });
 
         const model = genAI.getGenerativeModel({ model: 'gemini-2.5-flash' });
-        // SMART AUTO-CATEGORIZATION PROMPT
-        const prompt = `Analyze this bank SMS: "${rawText}". 
-        Extract the amount, merchant, date, type (income/expense), and category.
-        
-        Rules for "category":
-        - For expense, choose the most logical fit from ONLY these: 'Food & Dining', 'Groceries', 'Transport', 'Utilities', 'Shopping', 'Entertainment', 'Health', 'Subscriptions', 'Other'.
-        - Example mapping: Swiggy/Zomato/Zepto/Blinkit -> 'Food & Dining' or 'Groceries'. Uber/Ola/redBus/abhibus/IRCTC -> 'Transport'. Amazon/Flipkart -> 'Shopping'. Netflix/Spotify -> 'Subscriptions'.
-        - For income, choose from: 'Salary', 'Freelance', 'Investments', 'Refund', 'Other'.
-        
-        Return ONLY a valid JSON object matching this structure exactly: 
-        {"amount": number, "merchant": string, "date": "YYYY-MM-DD", "type": "income" | "expense", "category": string}. 
-        If you cannot process it, return {"error":"invalid"}`;
+        const prompt = `Extract amount, merchant, date, and type (income/expense) from this bank SMS: "${rawText}". 
+        Return ONLY a valid JSON object matching this structure: {"amount": number, "merchant": string, "date": "YYYY-MM-DD", "type": "income" | "expense"}. If you cannot process it, return {"error":"invalid"}`;
 
         const result = await model.generateContent(prompt);
         let cleanText = result.response.text().replace(/```json/gi, '').replace(/```/g, '').trim();
@@ -195,7 +185,7 @@ app.post('/api/sms-webhook', async (req, res) => {
             amount: parsedData.amount || 0, 
             merchant: parsedData.merchant || 'Unknown Vendor', 
             account: 'UPI', 
-            category: parsedData.category || 'Other', 
+            category: 'Other', 
             note: (parsedData.merchant || 'Transaction') + " (SMS)", 
             timestamp: Date.now(), 
             isRecurring: false,
@@ -466,7 +456,7 @@ app.get('/api/bookmark', async (req, res) => {
                 if (match) price = parseFloat(match[1].replace(/,/g, ''));
             }
 
-            const imgEl = document.querySelector('meta[property="og:image"]')?.content || document.querySelector('#landingImage, #imgTagWrapperId img, .a-dynamic-image, img[class*="v25dir"], ._396cs4, .product-main-image img')?.src;
+            const imgEl = document.querySelector('meta[property="og:image"]')?.content || document.querySelector('#landingImage, #imgTagWrapperId img, .a-dynamic-image, img[class* v25dir"], ._396cs4, .product-main-image img')?.src;
             return { title: cleanTitle, price: price, imageUrl: imgEl || '' };
         });
         await browser.close();

@@ -8,47 +8,52 @@
   <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
   <script src="https://unpkg.com/lucide@latest"></script>
   <style>
-    @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;600;800;900&display=swap');
-    body { font-family: 'Inter', sans-serif; background-color: #050505; color: #f3f4f6; -webkit-overflow-scrolling: touch; }
-    .glass-panel { background: rgba(255, 255, 255, 0.03); backdrop-filter: blur(16px); border: 1px solid rgba(255, 255, 255, 0.05); box-shadow: 0 4px 30px rgba(0, 0, 0, 0.5); }
+    @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap');
+    body { font-family: 'Plus Jakarta Sans', sans-serif; background-color: #050505; color: #f3f4f6; -webkit-overflow-scrolling: touch; }
+    .glass-panel { background: rgba(255, 255, 255, 0.03); backdrop-filter: blur(16px); border: 1px solid rgba(255, 255, 255, 0.05); box-shadow: 0 4px 30px rgba(0, 0, 0, 0.5); transition: transform 0.3s ease, box-shadow 0.3s ease; }
+    .glass-panel:hover { box-shadow: 0 8px 40px rgba(59, 130, 246, 0.1); }
     .glass-input { background: rgba(0, 0, 0, 0.4); border: 1px solid rgba(255, 255, 255, 0.1); transition: all 0.3s ease; -webkit-appearance: none; }
-    .glass-input:focus { border-color: #3b82f6; outline: none; }
+    .glass-input:focus { border-color: #3b82f6; box-shadow: 0 0 15px rgba(59, 130, 246, 0.2); outline: none; }
     ::-webkit-scrollbar { width: 6px; height: 6px; } 
     ::-webkit-scrollbar-track { background: transparent; } 
     ::-webkit-scrollbar-thumb { background: rgba(255, 255, 255, 0.1); border-radius: 10px; }
     ::-webkit-calendar-picker-indicator { filter: invert(1); opacity: 0.5; cursor: pointer; }
     .view-hidden { display: none; } 
-    .view-active { display: block; animation: fadeSlideUp 0.4s ease-out forwards; }
-    @keyframes fadeSlideUp { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
+    .view-active { display: block; animation: fadeSlideUp 0.5s cubic-bezier(0.16, 1, 0.3, 1) forwards; }
+    @keyframes fadeSlideUp { from { opacity: 0; transform: translateY(30px); } to { opacity: 1; transform: translateY(0); } }
     .ai-typing { border-right: 2px solid #3b82f6; white-space: pre-wrap; overflow: hidden; animation: blink 1s step-end infinite; }
     @keyframes blink { 50% { border-color: transparent; } }
-    .ledger-item .action-btn { opacity: 1; transform: scale(1); }
     
-    /* --- NEW ADDITIONS FOR FIXES AND TOOLTIPS --- */
     .transaction-desc { white-space: normal !important; word-wrap: break-word; overflow: visible; line-height: 1.4; display: block; max-width: 100%; }
     .info-icon { display: inline-block; margin-left: 6px; color: #888; cursor: help; font-size: 0.85rem; position: relative; }
     .info-icon::after { content: attr(data-tooltip); position: absolute; bottom: 150%; left: 50%; transform: translateX(-50%); background: #2a2a2a; border: 1px solid #444; color: #e0e0e0; padding: 8px 12px; border-radius: 6px; white-space: nowrap; opacity: 0; pointer-events: none; transition: all 0.2s ease; font-size: 0.75rem; z-index: 100; box-shadow: 0 4px 12px rgba(0,0,0,0.5); font-weight: normal; text-transform: none; }
     .info-icon::before { content: ''; position: absolute; bottom: 110%; left: 50%; transform: translateX(-50%); border-width: 6px; border-style: solid; border-color: #2a2a2a transparent transparent transparent; opacity: 0; pointer-events: none; transition: all 0.2s ease; z-index: 101; }
     .info-icon:hover::after, .info-icon:hover::before { opacity: 1; transform: translateX(-50%) translateY(-2px); }
 
-    @media (min-width: 768px) { .ledger-item .action-btn { opacity: 0; transform: scale(0.8); transition: all 0.2s; } .ledger-item:hover .action-btn { opacity: 1; transform: scale(1); } }
+    .modal-active { animation: modalPop 0.4s cubic-bezier(0.16, 1, 0.3, 1) forwards; }
+    @keyframes modalPop { 0% { opacity: 0; transform: scale(0.95) translateY(20px); } 100% { opacity: 1; transform: scale(1) translateY(0); } }
+
+    .ledger-item { transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1); border: 1px solid transparent; }
+    .ledger-item:hover { transform: translateY(-3px); box-shadow: 0 8px 25px rgba(0,0,0,0.4); border-color: rgba(255,255,255,0.1); background-color: rgba(255,255,255,0.08); }
+    .ledger-item .action-btn { opacity: 1; transform: scale(1); transition: all 0.2s; }
+    @media (min-width: 768px) { .ledger-item .action-btn { opacity: 0; transform: scale(0.8); } .ledger-item:hover .action-btn { opacity: 1; transform: scale(1); } }
   </style>
 </head>
 <body class="p-3 md:p-8 min-h-screen pb-24">
 
-  <div class="fixed top-0 left-1/4 w-72 md:w-96 h-72 md:h-96 bg-blue-600/10 rounded-full blur-[100px] pointer-events-none -z-10"></div>
-  <div class="fixed bottom-0 right-1/4 w-72 md:w-96 h-72 md:h-96 bg-purple-600/5 rounded-full blur-[100px] pointer-events-none -z-10"></div>
+  <div class="fixed top-0 left-1/4 w-72 md:w-96 h-72 md:h-96 bg-blue-600/10 rounded-full blur-[100px] pointer-events-none -z-10 transition-colors duration-1000"></div>
+  <div class="fixed bottom-0 right-1/4 w-72 md:w-96 h-72 md:h-96 bg-purple-600/5 rounded-full blur-[100px] pointer-events-none -z-10 transition-colors duration-1000"></div>
 
   <div class="max-w-7xl mx-auto space-y-4 md:space-y-6">
     
     <header class="flex flex-col sm:flex-row justify-between items-center gap-4 glass-panel rounded-3xl p-4 px-6">
       <div class="flex items-center space-x-4">
         <div class="relative">
-          <div class="w-12 h-12 bg-gradient-to-br from-blue-600 to-purple-600 rounded-full flex items-center justify-center shadow-lg shadow-blue-500/20 text-white font-black text-xl border border-white/10">V</div>
+          <div class="w-12 h-12 bg-gradient-to-br from-blue-600 to-purple-600 rounded-full flex items-center justify-center shadow-lg shadow-blue-500/20 text-white font-black text-xl border border-white/10 hover:rotate-12 transition-transform duration-500">V</div>
           <div class="absolute bottom-0 right-0 w-3.5 h-3.5 bg-emerald-500 border-2 border-[#050505] rounded-full animate-pulse shadow-[0_0_8px_rgba(16,185,129,0.8)]"></div>
         </div>
         <div>
-          <h1 class="text-xl font-black tracking-tight text-white">Welcome back, <span class="text-blue-400">Vidhun</span></h1>
+          <h1 class="text-xl font-black tracking-tight text-white">Welcome back, <span class="text-transparent bg-clip-text bg-gradient-to-r from-blue-400 to-purple-400">Vidhun</span></h1>
           <p class="text-[10px] text-gray-400 font-bold uppercase tracking-widest flex items-center mt-0.5"><i data-lucide="shield-check" class="w-3 h-3 mr-1 text-emerald-400"></i> Server Encrypted</p>
         </div>
       </div>
@@ -60,9 +65,8 @@
 
     <div id="viewDashboard" class="view-active space-y-4 md:space-y-6">
       
-      <!-- PENDING SMS CONFIRMATION UI -->
       <div id="pendingContainer" class="hidden mb-6">
-          <div class="bg-gray-900 border border-blue-500/30 rounded-xl p-4 md:p-6 shadow-lg relative overflow-hidden">
+          <div class="bg-gray-900 border border-blue-500/30 rounded-xl p-4 md:p-6 shadow-[0_0_30px_rgba(59,130,246,0.15)] relative overflow-hidden transition-all">
                <div class="absolute inset-0 bg-gradient-to-r from-blue-600/10 to-purple-600/10 pointer-events-none"></div>
                <h2 class="text-sm font-bold text-blue-400 mb-4 uppercase tracking-widest flex items-center">
                    <div class="w-2 h-2 rounded-full bg-blue-500 mr-2 animate-pulse"></div> Action Required: Pending SMS
@@ -71,7 +75,6 @@
           </div>
       </div>
 
-      <!-- PRIMARY ASSET CARDS -->
       <div class="grid grid-cols-1 md:grid-cols-3 gap-4 md:gap-6">
         <div class="glass-panel rounded-3xl p-6 md:p-8 relative overflow-hidden group">
           <div class="absolute inset-0 bg-gradient-to-br from-blue-500/10 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
@@ -80,7 +83,7 @@
               <h3 class="text-xs font-bold text-gray-400 uppercase tracking-widest flex items-center"><div class="w-2 h-2 rounded-full bg-blue-500 mr-2 animate-pulse"></div> Total Assets</h3>
               <div class="px-2 py-1 bg-black/40 border border-white/5 rounded-lg flex items-center shadow-sm backdrop-blur-md">
                   <span class="text-[9px] text-gray-500 uppercase font-bold mr-1.5">Health</span>
-                  <span id="healthScore" class="text-xs font-black text-emerald-400">0/100</span>
+                  <span id="healthScore" class="text-xs font-black text-emerald-400 cursor-help" data-tooltip="Base 50. Adds points for high savings velocity, long liquid runaway timeline, and minimal recurring debt liabilities.">0/100</span>
               </div>
           </div>
 
@@ -100,34 +103,33 @@
         <div class="glass-panel rounded-3xl p-6 md:p-8 flex flex-col justify-center">
           <div class="flex justify-between items-start">
             <div><h3 class="text-xs font-bold text-gray-400 uppercase tracking-widest mb-1">Total Expenses</h3><h2 id="totalExpense" class="text-3xl md:text-4xl font-black text-rose-400 mt-2">₹0</h2></div>
-            <button onclick="setGoal()" class="text-white/30 hover:text-white transition-colors p-1" title="Set Budget"><i data-lucide="settings-2" class="w-5 h-5"></i></button>
+            <button onclick="setGoal()" class="text-white/30 hover:text-white transition-transform hover:rotate-90 p-1" title="Set Budget"><i data-lucide="settings-2" class="w-5 h-5"></i></button>
           </div>
           <div class="mt-4 md:mt-6 w-full bg-black/50 rounded-full h-2 border border-white/5"><div id="goalProgress" class="bg-gradient-to-r from-rose-500 to-orange-400 h-2 rounded-full transition-all duration-1000" style="width: 0%"></div></div>
           <p id="goalText" class="text-xs text-gray-500 mt-3 text-right">Budget: ₹0</p>
         </div>
       </div>
 
-      <!-- ADVANCED MINI-STATS STRIP (WITH TOOLTIPS) -->
       <div class="grid grid-cols-2 md:grid-cols-4 gap-4 md:gap-6 mt-2">
-        <div class="bg-gradient-to-r from-blue-900/20 to-blue-800/10 backdrop-blur-xl rounded-2xl p-4 md:p-5 border border-blue-500/20 shadow-lg shadow-blue-900/10">
+        <div class="bg-gradient-to-r from-blue-900/20 to-blue-800/10 backdrop-blur-xl rounded-2xl p-4 md:p-5 border border-blue-500/20 shadow-lg hover:-translate-y-1 transition-transform">
           <p class="text-[10px] uppercase text-blue-400 font-bold tracking-widest mb-1 flex items-center">
             <i data-lucide="flame" class="w-3 h-3 mr-1"></i> Daily Burn <span class="info-icon" data-tooltip="Avg money spent per day this month">ⓘ</span>
           </p>
           <p id="statBurnRate" class="text-xl font-black text-white">₹0</p>
         </div>
-        <div class="bg-gradient-to-r from-emerald-900/20 to-emerald-800/10 backdrop-blur-xl rounded-2xl p-4 md:p-5 border border-emerald-500/20 shadow-lg shadow-emerald-900/10">
+        <div class="bg-gradient-to-r from-emerald-900/20 to-emerald-800/10 backdrop-blur-xl rounded-2xl p-4 md:p-5 border border-emerald-500/20 shadow-lg hover:-translate-y-1 transition-transform">
           <p class="text-[10px] uppercase text-emerald-400 font-bold tracking-widest mb-1 flex items-center">
             <i data-lucide="trending-up" class="w-3 h-3 mr-1"></i> Savings Velocity <span class="info-icon" data-tooltip="Percentage of income saved">ⓘ</span>
           </p>
           <p id="statSavingsRate" class="text-xl font-black text-white">0%</p>
         </div>
-        <div class="bg-gradient-to-r from-rose-900/20 to-rose-800/10 backdrop-blur-xl rounded-2xl p-4 md:p-5 border border-rose-500/20 shadow-lg shadow-rose-900/10">
+        <div class="bg-gradient-to-r from-rose-900/20 to-rose-800/10 backdrop-blur-xl rounded-2xl p-4 md:p-5 border border-rose-500/20 shadow-lg hover:-translate-y-1 transition-transform">
           <p class="text-[10px] uppercase text-rose-400 font-bold tracking-widest mb-1 flex items-center">
             <i data-lucide="repeat" class="w-3 h-3 mr-1"></i> Recurring Debt <span class="info-icon" data-tooltip="Total monthly fixed subscriptions">ⓘ</span>
           </p>
           <p id="statLiabilities" class="text-xl font-black text-white">₹0</p>
         </div>
-        <div class="bg-gradient-to-r from-purple-900/20 to-purple-800/10 backdrop-blur-xl rounded-2xl p-4 md:p-5 border border-purple-500/20 shadow-lg shadow-purple-900/10">
+        <div class="bg-gradient-to-r from-purple-900/20 to-purple-800/10 backdrop-blur-xl rounded-2xl p-4 md:p-5 border border-purple-500/20 shadow-lg hover:-translate-y-1 transition-transform">
           <p class="text-[10px] uppercase text-purple-400 font-bold tracking-widest mb-1 flex items-center">
             <i data-lucide="clock" class="w-3 h-3 mr-1"></i> Liquid Runway <span class="info-icon" data-tooltip="Days your balance will last at current burn rate">ⓘ</span>
           </p>
@@ -138,12 +140,11 @@
       <div class="grid grid-cols-1 lg:grid-cols-3 gap-4 md:gap-6">
         <div class="lg:col-span-2 space-y-4 md:space-y-6">
           
-          <!-- CHART GRID: DONUT & LINE -->
           <div class="grid grid-cols-1 md:grid-cols-2 gap-4 md:gap-6">
             <div class="glass-panel rounded-3xl p-5 md:p-6 flex flex-col">
               <div class="flex justify-between items-center mb-6">
                 <h3 class="text-sm font-bold text-gray-300 uppercase tracking-widest">Analytics</h3>
-                <button onclick="getAIInsights()" id="aiButton" class="bg-blue-600/20 text-blue-400 hover:bg-blue-600 hover:text-white px-3 py-1.5 rounded-lg text-xs font-bold transition-all border border-blue-500/30 flex items-center">
+                <button onclick="getAIInsights()" id="aiButton" class="bg-blue-600/20 text-blue-400 hover:bg-blue-600 hover:text-white px-3 py-1.5 rounded-lg text-xs font-bold transition-all border border-blue-500/30 flex items-center shadow-lg shadow-blue-500/20">
                   <i data-lucide="sparkles" class="w-3 h-3 mr-1"></i> Jarvis AI
                 </button>
               </div>
@@ -157,17 +158,23 @@
             </div>
           </div>
 
-          <!-- CHART GRID: RADAR MATRIX -->
-          <div class="glass-panel rounded-3xl p-5 md:p-6 border border-white/5 bg-gradient-to-b from-transparent to-white/5">
-              <div class="flex justify-between items-center mb-4">
-                  <h3 class="text-sm font-bold text-gray-300 uppercase tracking-widest">Behavioral Spending Matrix</h3>
-                  <i data-lucide="radar" class="text-blue-500 w-5 h-5"></i>
+          <div class="grid grid-cols-1 md:grid-cols-2 gap-4 md:gap-6">
+              <div class="glass-panel rounded-3xl p-5 md:p-6 border border-white/5 bg-gradient-to-b from-transparent to-white/5">
+                  <div class="flex justify-between items-center mb-4">
+                      <h3 class="text-[11px] font-bold text-gray-300 uppercase tracking-widest">Spending Radar</h3>
+                      <i data-lucide="radar" class="text-blue-500 w-4 h-4"></i>
+                  </div>
+                  <div class="h-44 md:h-52 relative flex justify-center"><canvas id="radarChart"></canvas></div>
               </div>
-              <p class="text-xs text-gray-500 mb-4">Visualizing allocation density across primary fixed categories.</p>
-              <div class="h-52 md:h-64 relative flex justify-center"><canvas id="radarChart"></canvas></div>
+              <div class="glass-panel rounded-3xl p-5 md:p-6 border border-white/5 bg-gradient-to-b from-transparent to-white/5">
+                  <div class="flex justify-between items-center mb-4">
+                      <h3 class="text-[11px] font-bold text-gray-300 uppercase tracking-widest">Account Density</h3>
+                      <i data-lucide="pie-chart" class="text-purple-500 w-4 h-4"></i>
+                  </div>
+                  <div class="h-44 md:h-52 relative flex justify-center"><canvas id="polarChart"></canvas></div>
+              </div>
           </div>
           
-          <!-- NEW: 7-DAY CASHFLOW CHART -->
           <div class="glass-panel rounded-3xl p-5 md:p-6 border border-white/5 bg-gradient-to-b from-transparent to-white/5">
               <div class="flex justify-between items-center mb-4">
                   <h3 class="text-sm font-bold text-gray-300 uppercase tracking-widest">7-Day Cashflow</h3>
@@ -179,61 +186,60 @@
           <div class="glass-panel rounded-3xl p-4 md:p-6">
             <div class="flex flex-col gap-4 mb-6">
                <div class="flex justify-between items-center">
-                 <h3 class="text-sm font-bold text-gray-300 uppercase tracking-widest flex items-center">Ledger<span id="recordCount" class="ml-3 px-2 py-0.5 bg-white/10 rounded-md text-xs text-white">0</span></h3>
+                 <h3 class="text-sm font-bold text-gray-300 uppercase tracking-widest flex items-center">Ledger<span id="recordCount" class="ml-3 px-2 py-0.5 bg-white/10 rounded-md text-xs text-white shadow-inner">0</span></h3>
                  <div class="flex items-center space-x-1.5">
-                   <button onclick="exportData()" class="bg-white/5 hover:bg-white/10 text-gray-300 p-2 rounded-xl border border-white/5" title="Backup (JSON)"><i data-lucide="download" class="w-4 h-4"></i></button>
-                   <label class="bg-white/5 hover:bg-white/10 text-gray-300 p-2 rounded-xl border border-white/5 cursor-pointer" title="Restore (JSON)"><i data-lucide="upload" class="w-4 h-4"></i><input type="file" id="importFile" accept=".json" class="hidden" onchange="importData(event)"></label>
+                   <button onclick="exportData()" class="bg-white/5 hover:bg-white/10 text-gray-300 p-2 rounded-xl border border-white/5 transition-colors" title="Backup (JSON)"><i data-lucide="download" class="w-4 h-4"></i></button>
+                   <label class="bg-white/5 hover:bg-white/10 text-gray-300 p-2 rounded-xl border border-white/5 cursor-pointer transition-colors" title="Restore (JSON)"><i data-lucide="upload" class="w-4 h-4"></i><input type="file" id="importFile" accept=".json" class="hidden" onchange="importData(event)"></label>
                  </div>
                </div>
                <div class="flex space-x-2">
                  <select id="monthFilter" class="glass-input rounded-xl py-2 px-3 text-sm text-white flex-1 max-w-[130px]"></select>
-                 <div class="relative flex-grow"><i data-lucide="search" class="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-gray-500"></i><input type="text" id="searchInput" placeholder="Search parameters..." class="w-full glass-input rounded-xl py-2 pl-9 pr-3 text-sm text-white" /></div>
+                 <div class="relative flex-grow"><i data-lucide="search" class="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-gray-500"></i><input type="text" id="searchInput" placeholder="Search parameters..." class="w-full glass-input rounded-xl py-2 pl-9 pr-3 text-sm text-white focus:ring-2 focus:ring-blue-500/50" /></div>
                </div>
             </div>
-            <div id="ledgerList" class="space-y-2 max-h-[350px] md:max-h-[400px] overflow-y-auto pr-1 touch-pan-y"></div>
+            <div id="ledgerList" class="space-y-3 max-h-[350px] md:max-h-[400px] overflow-y-auto pr-2 touch-pan-y"></div>
           </div>
         </div>
 
-        <!-- QUICK ENTRY SIDEBAR -->
         <div class="lg:col-span-1">
           <div class="glass-panel rounded-3xl p-5 md:p-6 sticky top-6">
             <h3 class="text-sm font-bold text-gray-300 mb-6 uppercase tracking-widest">Quick Entry</h3>
-            <div class="flex rounded-xl bg-black/40 p-1 mb-6 border border-white/5">
-              <button id="tabExpense" class="flex-1 py-2 text-sm font-bold rounded-lg bg-white/10 text-white transition-all" onclick="switchTab('expense')">Expense</button>
+            <div class="flex rounded-xl bg-black/40 p-1 mb-6 border border-white/5 shadow-inner">
+              <button id="tabExpense" class="flex-1 py-2 text-sm font-bold rounded-lg bg-white/10 text-white transition-all shadow-md" onclick="switchTab('expense')">Expense</button>
               <button id="tabIncome" class="flex-1 py-2 text-sm font-bold rounded-lg text-gray-500 hover:text-white transition-all" onclick="switchTab('income')">Income</button>
             </div>
 
             <form id="transactionForm" class="space-y-4 md:space-y-5">
               <div>
-                <div class="relative flex items-center">
-                  <span id="currencySymbol" class="absolute left-4 text-2xl font-bold text-rose-500">₹</span>
-                  <input type="number" id="amount" placeholder="0.00" step="0.01" required class="w-full glass-input rounded-2xl py-5 pl-12 pr-24 text-3xl font-black text-white" />
+                <div class="relative flex items-center group">
+                  <span id="currencySymbol" class="absolute left-4 text-2xl font-bold text-rose-500 transition-colors">₹</span>
+                  <input type="number" id="amount" placeholder="0.00" step="0.01" required class="w-full glass-input rounded-2xl py-5 pl-12 pr-24 text-3xl font-black text-white group-hover:border-blue-500/50" />
                   
-                  <button type="button" onclick="handleSMSPaste()" class="absolute right-14 p-2 bg-gray-800 hover:bg-gray-700 text-gray-300 rounded-lg transition-colors" title="Paste Transaction SMS">
+                  <button type="button" onclick="handleSMSPaste()" class="absolute right-14 p-2 bg-gray-800 hover:bg-gray-700 text-gray-300 rounded-lg transition-colors shadow-md" title="Paste Transaction SMS">
                     <i id="smsIcon" data-lucide="message-square" class="w-5 h-5"></i>
                   </button>
                   
-                  <label for="receiptUpload" class="absolute right-4 p-2 bg-gray-800 hover:bg-gray-700 text-gray-300 rounded-lg cursor-pointer transition-colors" title="Scan Receipt/PDF">
+                  <label for="receiptUpload" class="absolute right-4 p-2 bg-gray-800 hover:bg-gray-700 text-gray-300 rounded-lg cursor-pointer transition-colors shadow-md" title="Scan Receipt/PDF">
                     <i id="scanIcon" data-lucide="camera" class="w-5 h-5"></i>
                   </label>
                   <input type="file" id="receiptUpload" accept="image/*" capture="camera" class="hidden" onchange="scanReceipt(event)">
                 </div>
                 <div class="flex gap-1.5 mt-3 overflow-x-auto pb-1 touch-pan-x">
-                  <button type="button" onclick="addAmount(100)" class="flex-1 min-w-[55px] bg-white/5 hover:bg-white/10 text-gray-300 text-xs font-bold py-2 rounded-lg border border-white/5">+100</button>
-                  <button type="button" onclick="addAmount(500)" class="flex-1 min-w-[55px] bg-white/5 hover:bg-white/10 text-gray-300 text-xs font-bold py-2 rounded-lg border border-white/5">+500</button>
-                  <button type="button" onclick="addAmount(1000)" class="flex-1 min-w-[55px] bg-white/5 hover:bg-white/10 text-gray-300 text-xs font-bold py-2 rounded-lg border border-white/5">+1k</button>
-                  <button type="button" onclick="addAmount(5000)" class="flex-1 min-w-[55px] bg-white/5 hover:bg-white/10 text-gray-300 text-xs font-bold py-2 rounded-lg border border-white/5">+5k</button>
+                  <button type="button" onclick="addAmount(100)" class="flex-1 min-w-[55px] bg-white/5 hover:bg-blue-500/20 hover:text-blue-400 hover:border-blue-500/30 text-gray-300 text-xs font-bold py-2 rounded-lg border border-white/5 transition-all">+100</button>
+                  <button type="button" onclick="addAmount(500)" class="flex-1 min-w-[55px] bg-white/5 hover:bg-blue-500/20 hover:text-blue-400 hover:border-blue-500/30 text-gray-300 text-xs font-bold py-2 rounded-lg border border-white/5 transition-all">+500</button>
+                  <button type="button" onclick="addAmount(1000)" class="flex-1 min-w-[55px] bg-white/5 hover:bg-blue-500/20 hover:text-blue-400 hover:border-blue-500/30 text-gray-300 text-xs font-bold py-2 rounded-lg border border-white/5 transition-all">+1k</button>
+                  <button type="button" onclick="addAmount(5000)" class="flex-1 min-w-[55px] bg-white/5 hover:bg-blue-500/20 hover:text-blue-400 hover:border-blue-500/30 text-gray-300 text-xs font-bold py-2 rounded-lg border border-white/5 transition-all">+5k</button>
                 </div>
               </div>
               
               <div class="grid grid-cols-2 gap-4">
                 <div>
                   <label class="block text-[10px] font-bold text-gray-500 uppercase tracking-wider mb-2 pl-1">Category</label>
-                  <select id="category" class="w-full glass-input rounded-xl p-3.5 text-sm text-white"></select>
+                  <select id="category" class="w-full glass-input rounded-xl p-3.5 text-sm text-white hover:border-blue-500/30 transition-colors"></select>
                 </div>
                 <div>
                   <label class="block text-[10px] font-bold text-gray-500 uppercase tracking-wider mb-2 pl-1">Account</label>
-                  <select id="account" class="w-full glass-input rounded-xl p-3.5 text-sm text-white">
+                  <select id="account" class="w-full glass-input rounded-xl p-3.5 text-sm text-white hover:border-blue-500/30 transition-colors">
                     <option value="UPI">📱 UPI</option><option value="Card">💳 Card</option><option value="Cash">💵 Cash</option>
                   </select>
                 </div>
@@ -241,23 +247,23 @@
 
               <div>
                 <label class="block text-[10px] font-bold text-gray-500 uppercase tracking-wider mb-2 pl-1">Date</label>
-                <input type="date" id="date" required class="w-full glass-input rounded-xl p-3.5 text-sm text-white" />
+                <input type="date" id="date" required class="w-full glass-input rounded-xl p-3.5 text-sm text-white hover:border-blue-500/30 transition-colors" />
               </div>
               
               <div>
                 <label class="block text-[10px] font-bold text-gray-500 uppercase tracking-wider mb-2 pl-1">Description</label>
-                <input type="text" id="note" placeholder="Transaction context info..." class="w-full glass-input rounded-xl p-3.5 text-sm text-white" />
+                <input type="text" id="note" placeholder="Transaction context info..." class="w-full glass-input rounded-xl p-3.5 text-sm text-white hover:border-blue-500/30 transition-colors" />
               </div>
 
-              <div id="recurringToggleDiv" class="flex items-center justify-between p-4 bg-black/40 rounded-xl border border-white/5">
+              <div id="recurringToggleDiv" class="flex items-center justify-between p-4 bg-black/40 rounded-xl border border-white/5 hover:border-white/10 transition-colors shadow-inner">
                 <div class="flex items-center"><i data-lucide="repeat" class="w-4 h-4 text-blue-400 mr-2"></i><span class="text-xs font-bold text-gray-300 uppercase tracking-widest">Auto-Renew Monthly</span></div>
                 <label class="relative inline-flex items-center cursor-pointer">
                   <input type="checkbox" id="isRecurring" class="sr-only peer">
-                  <div class="w-9 h-5 bg-gray-700 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-4 after:w-4 after:transition-all peer-checked:bg-blue-500"></div>
+                  <div class="w-9 h-5 bg-gray-700 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-4 after:w-4 after:transition-all peer-checked:bg-blue-500 shadow-md"></div>
                 </label>
               </div>
               
-              <button id="submitBtn" type="submit" class="w-full mt-4 bg-gradient-to-r from-rose-600 to-rose-500 hover:from-rose-500 hover:to-rose-400 text-white font-black py-4 rounded-2xl transition-all shadow-lg shadow-rose-500/25 active:scale-[0.98]">Add Transaction</button>
+              <button id="submitBtn" type="submit" class="w-full mt-4 bg-gradient-to-r from-rose-600 to-rose-500 hover:from-rose-500 hover:to-rose-400 text-white font-black py-4 rounded-2xl transition-all shadow-[0_0_20px_rgba(244,63,94,0.4)] active:scale-[0.98]">Add Transaction</button>
             </form>
           </div>
         </div>
@@ -276,10 +282,41 @@
         </div>
       </div>
       <div class="grid grid-cols-1 lg:grid-cols-3 gap-4 md:gap-6">
-        <div class="lg:col-span-1"><div class="glass-panel rounded-3xl p-5 md:p-6 sticky top-6"><h3 class="text-sm font-bold text-gray-300 mb-6 uppercase tracking-widest">Auto-Fetch Item</h3><form id="wishlistForm" class="space-y-4"><div class="relative"><input type="url" id="wishLink" placeholder="Paste product URL link..." class="w-full glass-input rounded-xl p-4 pr-10 text-sm text-white" /><i id="linkStatusIcon" data-lucide="link" class="absolute right-4 top-1/2 transform -translate-y-1/2 w-4 h-4 text-gray-500"></i></div><input type="text" id="wishName" placeholder="Product Name Target" required class="w-full glass-input rounded-xl p-4 text-sm text-white" /><input type="number" id="wishPrice" placeholder="Price Matrix (₹)" required class="w-full glass-input rounded-xl p-4 text-sm text-white" /><input type="url" id="wishImage" placeholder="Image Resource Address" class="w-full glass-input rounded-xl p-4 text-sm text-white" /><button type="submit" class="w-full bg-blue-600 hover:bg-blue-500 text-white font-bold py-4 rounded-xl transition-all shadow-lg shadow-blue-500/25">Save to Tracker</button></form></div></div>
+        <div class="lg:col-span-1"><div class="glass-panel rounded-3xl p-5 md:p-6 sticky top-6"><h3 class="text-sm font-bold text-gray-300 mb-6 uppercase tracking-widest">Auto-Fetch Item</h3><form id="wishlistForm" class="space-y-4"><div class="relative"><input type="url" id="wishLink" placeholder="Paste product URL link..." class="w-full glass-input rounded-xl p-4 pr-10 text-sm text-white hover:border-blue-500/30 transition-colors" /><i id="linkStatusIcon" data-lucide="link" class="absolute right-4 top-1/2 transform -translate-y-1/2 w-4 h-4 text-gray-500"></i></div><input type="text" id="wishName" placeholder="Product Name Target" required class="w-full glass-input rounded-xl p-4 text-sm text-white hover:border-blue-500/30 transition-colors" /><input type="number" id="wishPrice" placeholder="Price Matrix (₹)" required class="w-full glass-input rounded-xl p-4 text-sm text-white hover:border-blue-500/30 transition-colors" /><div><label class="block text-[10px] font-bold text-gray-500 uppercase tracking-wider mb-1.5 pl-1">Wish Category</label><select id="wishCategory" class="w-full glass-input rounded-xl p-4 text-sm text-white"><option value="Gadgets">💻 Gadgets</option><option value="Apparel">👕 Apparel</option><option value="Lifestyle">✨ Lifestyle</option><option value="Other">📦 Other</option></select></div><input type="url" id="wishImage" placeholder="Image Resource Address" class="w-full glass-input rounded-xl p-4 text-sm text-white hover:border-blue-500/30 transition-colors" /><button type="submit" class="w-full bg-gradient-to-r from-blue-600 to-blue-500 hover:to-blue-400 text-white font-black py-4 rounded-xl transition-all shadow-[0_0_20px_rgba(59,130,246,0.4)] active:scale-[0.98]">Save to Tracker</button></form></div></div>
         <div class="lg:col-span-2"><div id="wishlistGrid" class="grid grid-cols-1 md:grid-cols-2 gap-4 md:gap-6"></div></div>
       </div>
     </div>
+  </div>
+
+  <div id="editModal" class="hidden fixed inset-0 bg-black/80 backdrop-blur-md z-50 flex items-center justify-center p-4 transition-opacity">
+      <div class="glass-panel modal-active rounded-3xl p-6 w-full max-w-sm border border-white/10 shadow-[0_0_50px_rgba(59,130,246,0.2)]">
+          <div class="flex justify-between items-center mb-5 border-b border-white/5 pb-3">
+             <h3 class="text-white font-black uppercase tracking-widest text-sm flex items-center"><i data-lucide="edit-2" class="w-4 h-4 mr-2 text-blue-400"></i> Edit Entry</h3>
+             <button onclick="closeEditModal()" class="text-gray-500 hover:text-white transition-colors"><i data-lucide="x" class="w-5 h-5"></i></button>
+          </div>
+          <input type="hidden" id="editId">
+          <div class="space-y-4">
+              <div class="relative">
+                  <label class="block text-[10px] font-bold text-gray-500 uppercase tracking-wider mb-1 pl-1">Amount (₹)</label>
+                  <input type="number" id="editAmount" class="w-full glass-input rounded-xl p-3.5 text-sm text-white font-bold" placeholder="Amount">
+              </div>
+              <div>
+                  <label class="block text-[10px] font-bold text-gray-500 uppercase tracking-wider mb-1 pl-1">Category</label>
+                  <select id="editCategory" class="w-full glass-input rounded-xl p-3.5 text-sm text-white"></select>
+              </div>
+              <div>
+                  <label class="block text-[10px] font-bold text-gray-500 uppercase tracking-wider mb-1 pl-1">Account</label>
+                  <select id="editAccount" class="w-full glass-input rounded-xl p-3.5 text-sm text-white">
+                      <option value="UPI">UPI</option><option value="Card">Card</option><option value="Cash">Cash</option>
+                  </select>
+              </div>
+              <div>
+                  <label class="block text-[10px] font-bold text-gray-500 uppercase tracking-wider mb-1 pl-1">Description</label>
+                  <input type="text" id="editNote" class="w-full glass-input rounded-xl p-3.5 text-sm text-white" placeholder="Description">
+              </div>
+              <button onclick="saveEditTx()" class="w-full mt-2 py-4 rounded-xl text-white bg-gradient-to-r from-blue-600 to-blue-500 hover:to-blue-400 text-sm font-black transition-all shadow-[0_0_15px_rgba(59,130,246,0.5)] active:scale-[0.98]">Save Changes</button>
+          </div>
+      </div>
   </div>
 
   <script>
@@ -296,7 +333,7 @@
 
     const EXPENSE_CATEGORIES = ['Food & Dining', 'Groceries', 'Transport', 'Utilities', 'Shopping', 'Entertainment', 'Health', 'Subscriptions', 'Other'];
     const INCOME_CATEGORIES = ['Salary', 'Freelance', 'Investments', 'Refund', 'Other'];
-    const CAT_COLORS = { 'Food & Dining': '#ef4444', 'Groceries': '#f97316', 'Subscriptions': '#8b5cf6', 'Transport': '#3b82f6', 'Utilities': '#eab308', 'Shopping': '#a855f7', 'Salary': '#10b981', 'Other': '#6b7280' };
+    const CAT_COLORS = { 'Food & Dining': '#ef4444', 'Groceries': '#f97316', 'Subscriptions': '#8b5cf6', 'Transport': '#3b82f6', 'Utilities': '#eab308', 'Shopping': '#a855f7', 'Salary': '#10b981', 'Other': '#6b7280', 'Entertainment': '#ec4899', 'Health': '#14b8a6' };
 
     async function loadPendingTransactions() {
         try {
@@ -322,19 +359,20 @@
         pendingTxns.forEach(txn => {
             const isI = txn.type === 'income';
             list.innerHTML += `
-                <div class="bg-black/50 p-3 md:p-4 rounded-lg flex flex-col md:flex-row md:items-center justify-between space-y-3 md:space-y-0 border border-white/5">
+                <div class="bg-black/50 p-3 md:p-4 rounded-lg flex flex-col md:flex-row md:items-center justify-between space-y-3 md:space-y-0 border border-white/5 hover:bg-black/70 transition-colors">
                     <div class="flex-1">
                         <div class="flex justify-between md:block">
                             <span class="text-xs font-bold text-gray-300 uppercase">${txn.sender || txn.merchant || 'Bank SMS'}</span>
                             <span class="font-black text-sm md:hidden ${isI ? 'text-emerald-400' : 'text-rose-400'}">${isI ? '+' : '-'}₹${txn.amount}</span>
                         </div>
+                        <p class="text-[9px] text-blue-400 uppercase tracking-widest font-bold mt-0.5">AI Suggestion: ${txn.category || 'Other'}</p>
                         <p class="text-gray-400 text-xs mt-1 italic">"${txn.rawMessage}"</p>
                     </div>
                     <div class="flex items-center justify-between md:justify-end md:space-x-4">
                         <span class="hidden md:inline font-black text-lg mr-2 ${isI ? 'text-emerald-400' : 'text-rose-400'}">${isI ? '+' : '-'}₹${txn.amount}</span>
                         <div class="flex space-x-2 w-full md:w-auto">
-                            <button onclick="handleDecision('${txn.id}', 'reject')" class="flex-1 md:flex-none px-3 py-1.5 bg-rose-600/20 hover:bg-rose-600 text-rose-400 hover:text-white text-xs font-bold rounded-lg transition-all border border-rose-500/30">Reject</button>
-                            <button onclick="handleDecision('${txn.id}', 'approve')" class="flex-1 md:flex-none px-3 py-1.5 bg-emerald-600/20 hover:bg-emerald-600 text-emerald-400 hover:text-white text-xs font-bold rounded-lg transition-all border border-emerald-500/30">Approve</button>
+                            <button onclick="handleDecision('${txn.id}', 'reject')" class="flex-1 md:flex-none px-3 py-1.5 bg-rose-600/20 hover:bg-rose-600 text-rose-400 hover:text-white text-xs font-bold rounded-lg transition-all border border-rose-500/30 shadow-sm">Reject</button>
+                            <button onclick="handleDecision('${txn.id}', 'approve')" class="flex-1 md:flex-none px-3 py-1.5 bg-emerald-600/20 hover:bg-emerald-600 text-emerald-400 hover:text-white text-xs font-bold rounded-lg transition-all border border-emerald-500/30 shadow-sm">Approve</button>
                         </div>
                     </div>
                 </div>`;
@@ -360,7 +398,7 @@
         icon.setAttribute('data-lucide', 'loader-2'); icon.classList.add('animate-spin'); lucide.createIcons();
         try {
             const res = await fetch(`${API_BASE}/sms-webhook`, { method: 'POST', headers: apiHeaders, body: JSON.stringify({ smsText: smsText }) });
-            if (res.ok) { alert("SMS added to persistent queue!"); loadPendingTransactions(); } 
+            if (res.ok) { alert("SMS added to persistent queue! AI is categorizing..."); loadPendingTransactions(); } 
         } catch (error) { } finally { icon.setAttribute('data-lucide', 'message-square'); icon.classList.remove('animate-spin'); lucide.createIcons(); }
     }
 
@@ -379,21 +417,21 @@
       document.getElementById('viewWishlist').className = view === 'wishlist' ? 'view-active space-y-4 md:space-y-6' : 'view-hidden';
       const dBtn = document.getElementById('navDashboard'); const wBtn = document.getElementById('navWishlist');
       if (view === 'dashboard') {
-          dBtn.className = 'flex-1 sm:flex-none px-4 md:px-5 py-2.5 rounded-xl font-bold text-sm bg-white/10 text-white shadow-sm transition-all';
-          wBtn.className = 'flex-1 sm:flex-none px-4 md:px-5 py-2.5 rounded-xl font-bold text-sm text-gray-400 hover:text-white hover:bg-white/5 transition-all';
+          dBtn.className = 'flex-1 sm:flex-none px-4 md:px-5 py-2.5 rounded-xl font-bold text-sm bg-white/10 text-white shadow-sm transition-all border border-white/5';
+          wBtn.className = 'flex-1 sm:flex-none px-4 md:px-5 py-2.5 rounded-xl font-bold text-sm text-gray-400 hover:text-white hover:bg-white/5 transition-all border border-transparent';
       } else {
-          wBtn.className = 'flex-1 sm:flex-none px-4 md:px-5 py-2.5 rounded-xl font-bold text-sm bg-blue-600/80 text-white shadow-sm transition-all border border-blue-500/50';
-          dBtn.className = 'flex-1 sm:flex-none px-4 md:px-5 py-2.5 rounded-xl font-bold text-sm text-gray-400 hover:text-white hover:bg-white/5 transition-all';
+          wBtn.className = 'flex-1 sm:flex-none px-4 md:px-5 py-2.5 rounded-xl font-bold text-sm bg-blue-600/80 text-white shadow-sm transition-all border border-blue-500/50 shadow-[0_0_15px_rgba(59,130,246,0.3)]';
+          dBtn.className = 'flex-1 sm:flex-none px-4 md:px-5 py-2.5 rounded-xl font-bold text-sm text-gray-400 hover:text-white hover:bg-white/5 transition-all border border-transparent';
       }
     }
 
     function switchTab(type) {
       currentType = type;
       document.getElementById('recurringToggleDiv').style.display = type === 'expense' ? 'flex' : 'none';
-      document.getElementById('tabExpense').className = `flex-1 py-2 text-sm font-bold rounded-lg transition-all ${type === 'expense' ? 'bg-white/10 text-white' : 'text-gray-500 hover:text-white'}`;
-      document.getElementById('tabIncome').className = `flex-1 py-2 text-sm font-bold rounded-lg transition-all ${type === 'income' ? 'bg-white/10 text-white' : 'text-gray-500 hover:text-white'}`;
-      document.getElementById('currencySymbol').className = `absolute left-4 text-2xl font-bold ${type === 'expense' ? 'text-rose-500' : 'text-emerald-500'}`;
-      document.getElementById('submitBtn').className = `w-full mt-4 text-white font-black py-4 rounded-2xl transition-all shadow-lg active:scale-[0.98] ${type === 'expense' ? 'bg-gradient-to-r from-rose-600 to-rose-500 shadow-rose-500/25' : 'bg-gradient-to-r from-emerald-600 to-emerald-500 shadow-emerald-500/25'}`;
+      document.getElementById('tabExpense').className = `flex-1 py-2 text-sm font-bold rounded-lg transition-all ${type === 'expense' ? 'bg-white/10 text-white shadow-md border border-white/5' : 'text-gray-500 hover:text-white border border-transparent'}`;
+      document.getElementById('tabIncome').className = `flex-1 py-2 text-sm font-bold rounded-lg transition-all ${type === 'income' ? 'bg-white/10 text-white shadow-md border border-white/5' : 'text-gray-500 hover:text-white border border-transparent'}`;
+      document.getElementById('currencySymbol').className = `absolute left-4 text-2xl font-black transition-colors drop-shadow-md ${type === 'expense' ? 'text-rose-500' : 'text-emerald-500'}`;
+      document.getElementById('submitBtn').className = `w-full mt-4 text-white font-black py-4 rounded-2xl transition-all shadow-[0_0_20px_rgba(0,0,0,0.4)] active:scale-[0.98] border border-white/10 ${type === 'expense' ? 'bg-gradient-to-r from-rose-600 to-rose-500 shadow-[0_0_20px_rgba(244,63,94,0.3)]' : 'bg-gradient-to-r from-emerald-600 to-emerald-500 shadow-[0_0_20px_rgba(16,185,129,0.3)]'}`;
       populateCategories();
     }
 
@@ -402,7 +440,7 @@
       (currentType === 'expense' ? EXPENSE_CATEGORIES : INCOME_CATEGORIES).forEach(c => sel.innerHTML += `<option value="${c}">${c}</option>`);
     }
 
-    function setGoal() { const g = prompt("Set Budget Constraint (₹):", expenseGoal); if (g && !isNaN(g)) { expenseGoal = parseFloat(g); localStorage.setItem('walletGoal', expenseGoal); updateUI(); } }
+    function setGoal() { const g = prompt("Set Hard Threshold Budget (₹):", expenseGoal); if (g && !isNaN(g)) { expenseGoal = parseFloat(g); localStorage.setItem('walletGoal', expenseGoal); updateUI(); } }
     function addAmount(val) { document.getElementById('amount').value = (parseFloat(document.getElementById('amount').value) || 0) + val; }
 
     function populateMonthFilter() {
@@ -430,7 +468,7 @@
             expenseGoal = imported.goal || 25000; monthlyWishlistSavings = imported.savings || 0;
             localStorage.setItem('walletGoal', expenseGoal); localStorage.setItem('walletWishlistSavings', monthlyWishlistSavings);
             document.getElementById('wishlistSavingsInput').value = monthlyWishlistSavings || '';
-            alert("Backup imported successfully!"); syncDataFromServer(); 
+            alert("Secure Backup imported successfully!"); syncDataFromServer(); 
           }
         } catch (err) {}
       }; reader.readAsText(file);
@@ -438,19 +476,19 @@
 
     async function scanReceipt(event) {
         const file = event.target.files[0]; if (!file) return;
-        const icon = document.getElementById('scanIcon'); icon.setAttribute('data-lucide', 'loader-2'); icon.classList.add('animate-spin'); lucide.createIcons();
+        const icon = document.getElementById('scanIcon'); icon.setAttribute('data-lucide', 'loader-2'); icon.classList.add('animate-spin', 'text-blue-400'); lucide.createIcons();
         const formData = new FormData(); formData.append('receipt', file);
         try {
             const res = await fetch(`${API_BASE}/receipt-ocr`, { method: 'POST', body: formData });
             const data = await res.json();
-            if (data.total > 0) { document.getElementById('amount').value = data.total; document.getElementById('note').value = 'Document Scan Data Extraction'; } 
-        } catch (error) {} finally { icon.setAttribute('data-lucide', 'camera'); icon.classList.remove('animate-spin'); lucide.createIcons(); event.target.value = ''; }
+            if (data.total > 0) { document.getElementById('amount').value = data.total; document.getElementById('note').value = 'Vision OCR Scan'; } 
+        } catch (error) {} finally { icon.setAttribute('data-lucide', 'camera'); icon.classList.remove('animate-spin', 'text-blue-400'); lucide.createIcons(); event.target.value = ''; }
     }
 
     async function getAIInsights() {
         const term = document.getElementById('aiTerminal'); const btn = document.getElementById('aiButton');
         btn.disabled = true; btn.classList.add('opacity-50', 'cursor-not-allowed');
-        clearTimeout(aiTypingTimer); term.classList.remove('hidden'); term.innerHTML = '<span class="text-blue-400 animate-pulse">Jarvis is compiling budget logs...</span>';
+        clearTimeout(aiTypingTimer); term.classList.remove('hidden'); term.innerHTML = '<span class="text-blue-400 animate-pulse">Jarvis AI is compiling analytical budget logs...</span>';
         try {
             let tIncTotal = 0, tExpTotal = 0;
             transactions.forEach(t => { if(t.type === 'income') tIncTotal += t.amount; else tExpTotal += t.amount; });
@@ -459,7 +497,7 @@
             const data = await res.json(); 
             term.innerHTML = ''; let i = 0; const txt = data.advice; term.classList.add('ai-typing');
             function typeWriter() { 
-                if (i < txt.length) { term.innerHTML += txt.charAt(i); i++; aiTypingTimer = setTimeout(typeWriter, 20); } 
+                if (i < txt.length) { term.innerHTML += txt.charAt(i); i++; aiTypingTimer = setTimeout(typeWriter, 15); } 
                 else { term.classList.remove('ai-typing'); btn.disabled = false; btn.classList.remove('opacity-50', 'cursor-not-allowed'); } 
             }
             typeWriter();
@@ -479,8 +517,63 @@
         try { await fetch(`${API_BASE}/add-transaction`, { method: 'POST', headers: apiHeaders, body: JSON.stringify(newTx) }); } catch(err) {}
     });
 
+    function openEditModal(id) {
+        const tx = transactions.find(t => t.id === id);
+        if (!tx) return;
+        
+        document.getElementById('editId').value = tx.id;
+        document.getElementById('editAmount').value = tx.amount;
+        
+        const catSelect = document.getElementById('editCategory');
+        catSelect.innerHTML = '';
+        (tx.type === 'expense' ? EXPENSE_CATEGORIES : INCOME_CATEGORIES).forEach(c => {
+            catSelect.innerHTML += `<option value="${c}">${c}</option>`;
+        });
+        
+        document.getElementById('editCategory').value = tx.category;
+        document.getElementById('editAccount').value = tx.account;
+        document.getElementById('editNote').value = tx.note || '';
+        
+        document.getElementById('editModal').classList.remove('hidden');
+        lucide.createIcons();
+    }
+
+    function closeEditModal() {
+        document.getElementById('editModal').classList.add('hidden');
+    }
+
+    async function saveEditTx() {
+        const id = document.getElementById('editId').value;
+        const txIndex = transactions.findIndex(t => t.id === id);
+        if (txIndex === -1) return;
+
+        const newAmt = parseFloat(document.getElementById('editAmount').value);
+        if (isNaN(newAmt) || newAmt <= 0) return alert("Invalid amount parameter.");
+
+        transactions[txIndex].amount = newAmt;
+        transactions[txIndex].category = document.getElementById('editCategory').value;
+        transactions[txIndex].account = document.getElementById('editAccount').value;
+        transactions[txIndex].note = document.getElementById('editNote').value;
+
+        closeEditModal();
+        updateUI();
+
+        try {
+            await fetch(`${API_BASE}/edit-transaction/${id}`, {
+                method: 'PUT',
+                headers: apiHeaders,
+                body: JSON.stringify({ 
+                    amount: transactions[txIndex].amount, 
+                    category: transactions[txIndex].category, 
+                    account: transactions[txIndex].account, 
+                    note: transactions[txIndex].note 
+                })
+            });
+        } catch (error) { console.error('Failed to sync edit.'); }
+    }
+
     async function deleteTx(id) { 
-        if(confirm("Confirm entry deletion?")) { 
+        if(confirm("Confirm permanent entry deletion?")) { 
             transactions = transactions.filter(t => t.id !== id);
             updateUI(); 
             try { await fetch(`${API_BASE}/delete-transaction/${id}`, { method: 'DELETE' }); } catch(err){}
@@ -490,7 +583,7 @@
     function updateWishlistSavings(v) { monthlyWishlistSavings = parseFloat(v) || 0; localStorage.setItem('walletWishlistSavings', monthlyWishlistSavings); renderWishlist(); }
     
     async function deleteWishlistItem(id) { 
-        if(confirm("Remove tracking index?")) { 
+        if(confirm("Remove tracking index from database?")) { 
             wishlistItems = wishlistItems.filter(w => w.id !== id);
             renderWishlist(); 
             try { await fetch(`${API_BASE}/delete-wishlist/${id}`, { method: 'DELETE' }); } catch(err){}
@@ -499,64 +592,101 @@
 
     document.getElementById('wishLink').addEventListener('change', async (e) => {
         const url = e.target.value; const icn = document.getElementById('linkStatusIcon'); if(!url) return;
-        icn.setAttribute('data-lucide', 'loader-2'); icn.classList.add('animate-spin'); lucide.createIcons();
+        icn.setAttribute('data-lucide', 'loader-2'); icn.classList.add('animate-spin', 'text-blue-400'); lucide.createIcons();
         try {
             const res = await fetch(`${API_BASE}/scrape-price`, { method: 'POST', headers: apiHeaders, body: JSON.stringify({url}) });
             const result = await res.json();
             if(result.title) document.getElementById('wishName').value = result.title.split('|')[0].trim();
             if(result.price) document.getElementById('wishPrice').value = result.price;
             if(result.imageUrl) document.getElementById('wishImage').value = result.imageUrl;
-        } catch(err) {} finally { icn.setAttribute('data-lucide', 'link'); icn.classList.remove('animate-spin'); lucide.createIcons(); }
+        } catch(err) {} finally { icn.setAttribute('data-lucide', 'link'); icn.classList.remove('animate-spin', 'text-blue-400'); lucide.createIcons(); }
     });
 
     document.getElementById('wishlistForm').addEventListener('submit', async (e) => {
         e.preventDefault(); 
         const btn = e.target.querySelector('button[type="submit"]'); const orig = btn.innerText;
-        btn.innerText = "Saving..."; btn.disabled = true;
-        const newItem = { id: String(Date.now()), title: document.getElementById('wishName').value, price: parseFloat(document.getElementById('wishPrice').value), link: document.getElementById('wishLink').value, imageUrl: document.getElementById('wishImage').value };
+        btn.innerText = "Saving Node..."; btn.disabled = true;
+        
+        const newItem = { 
+            id: String(Date.now()), 
+            title: document.getElementById('wishName').value, 
+            price: parseFloat(document.getElementById('wishPrice').value), 
+            link: document.getElementById('wishLink').value, 
+            imageUrl: document.getElementById('wishImage').value,
+            category: document.getElementById('wishCategory').value,
+            timestamp: Date.now()
+        };
         wishlistItems.push(newItem); e.target.reset(); renderWishlist();
         try { await fetch(`${API_BASE}/add-wishlist`, { method: 'POST', headers: apiHeaders, body: JSON.stringify(newItem) }); } catch (error) {} finally { btn.innerText = orig; btn.disabled = false; }
     });
 
     function renderWishlist() {
       const grid = document.getElementById('wishlistGrid');
-      if (!wishlistItems.length) { grid.innerHTML = `<p class="text-gray-500 text-sm">No trackable items stored inside current database frame.</p>`; return; }
+      if (!wishlistItems.length) { grid.innerHTML = `<p class="text-gray-500 text-sm py-4">No trackable items stored inside current database frame.</p>`; return; }
       grid.innerHTML = [...wishlistItems].reverse().map(item => {
         let actionPlanHTML = '';
         if (monthlyWishlistSavings > 0) {
           const daysNeeded = Math.ceil((item.price / monthlyWishlistSavings) * 30);
-          actionPlanHTML = `<div class="mt-4 bg-white/5 rounded-xl p-3 border border-white/5 flex items-center"><i data-lucide="calendar-clock" class="text-blue-400 w-5 h-5 mr-3"></i><div><p class="text-[10px] uppercase tracking-widest text-gray-500 font-bold">Velocity Strategy Plan</p><p class="text-xs text-gray-300"><span class="font-bold text-blue-400">${daysNeeded} sequential days</span> remaining until lock acquisition.</p></div></div>`;
+          actionPlanHTML = `<div class="mt-4 bg-black/40 rounded-xl p-3 border border-white/5 flex items-center shadow-inner"><i data-lucide="calendar-clock" class="text-blue-400 w-4 h-4 mr-2.5 drop-shadow-[0_0_5px_rgba(59,130,246,0.5)]"></i><div><p class="text-[9px] uppercase tracking-widest text-gray-500 font-bold">Velocity Strategy Plan</p><p class="text-[11px] text-gray-300"><span class="font-bold text-blue-400">${daysNeeded} days</span> remaining until lock acquisition.</p></div></div>`;
         }
-        const img = item.imageUrl ? `<img src="${item.imageUrl}" class="w-full h-40 object-cover rounded-xl mb-4 bg-black/50">` : '';
-        return `<div class="glass-panel rounded-3xl p-5 relative group border border-white/5 flex flex-col"><button onclick="deleteWishlistItem('${item.id}')" class="absolute top-3 right-3 bg-red-500/20 text-red-500 p-2 rounded-full opacity-100 md:opacity-0 group-hover:opacity-100 transition-all backdrop-blur-md z-10"><i data-lucide="x" class="w-4 h-4"></i></button>${img}<div class="flex-grow"><h3 class="font-bold text-white leading-tight line-clamp-2">${item.title}</h3><h4 class="text-2xl font-black text-emerald-400 mt-2">₹${item.price.toLocaleString()}</h4></div>${actionPlanHTML}${item.link ? `<a href="${item.link}" target="_blank" class="block w-full text-center mt-4 bg-white/5 hover:bg-white/10 py-2 rounded-xl text-xs font-bold transition-all border border-white/10 text-white">View Online Node</a>` : ''}</div>`;
+        
+        const img = item.imageUrl ? 
+            `<img src="${item.imageUrl}" class="w-full h-44 object-cover rounded-xl mb-4 bg-black/50 border border-white/5 shadow-inner">` : 
+            `<div class="w-full h-44 rounded-xl mb-4 bg-gradient-to-br from-blue-900/20 to-purple-900/10 border border-white/5 flex flex-col items-center justify-center text-gray-500 shadow-inner"><i data-lucide="package" class="w-8 h-8 mb-2 text-blue-500/40"></i><span class="text-[10px] uppercase font-bold tracking-widest text-gray-400/60">No Image Asset</span></div>`;
+            
+        let storeLabel = 'Store Node';
+        try { if(item.link) storeLabel = new URL(item.link).hostname.replace('www.', ''); } catch(e){}
+        const catTag = item.category || 'Unassigned';
+        const formattedDate = item.timestamp ? new Date(item.timestamp).toLocaleDateString('en-GB', {day:'numeric', month:'short'}) : 'Recent';
+
+        return `<div class="glass-panel rounded-3xl p-5 relative group border border-white/5 flex flex-col justify-between hover:-translate-y-1.5 transition-transform shadow-[0_8px_30px_rgba(0,0,0,0.4)]">
+            <button onclick="deleteWishlistItem('${item.id}')" class="absolute top-3 right-3 bg-red-500/20 text-red-500 p-2 rounded-full opacity-100 md:opacity-0 group-hover:opacity-100 transition-all backdrop-blur-md z-10 hover:bg-red-500 hover:text-white"><i data-lucide="x" class="w-4 h-4"></i></button>
+            ${img}
+            <div class="flex-grow space-y-2">
+                <div class="flex items-center justify-between gap-2">
+                    <span class="px-2 py-0.5 bg-blue-500/10 text-blue-400 border border-blue-500/20 rounded text-[9px] font-black uppercase tracking-wider shadow-sm">${catTag}</span>
+                    <span class="text-[9px] text-gray-500 font-medium uppercase tracking-widest">${formattedDate}</span>
+                </div>
+                <h3 class="font-bold text-white leading-tight line-clamp-2 pt-1">${item.title}</h3>
+                <div class="flex items-baseline justify-between pt-1 mt-auto">
+                    <h4 class="text-2xl font-black text-emerald-400 drop-shadow-[0_0_8px_rgba(16,185,129,0.3)]">₹${item.price.toLocaleString()}</h4>
+                    <span class="text-[9px] font-bold text-gray-400 uppercase tracking-widest flex items-center bg-white/5 px-2 py-1 rounded border border-white/5"><i data-lucide="shopping-bag" class="w-3 h-3 mr-1 text-purple-400"></i> ${storeLabel}</span>
+                </div>
+            </div>
+            ${actionPlanHTML}
+            ${item.link ? `<a href="${item.link}" target="_blank" class="block w-full text-center mt-4 bg-white/5 hover:bg-white/10 hover:text-blue-300 py-2.5 rounded-xl text-xs font-bold transition-all border border-white/10 text-white shadow-sm hover:border-blue-500/30">View Online Node</a>` : ''}
+        </div>`;
       }).join(''); lucide.createIcons();
     }
 
-    Chart.defaults.color = '#9ca3af'; Chart.defaults.font.family = 'Inter'; 
-    let donutChart, lineChart, radarChart, cashflowChart;
+    Chart.defaults.color = '#9ca3af'; Chart.defaults.font.family = 'Plus Jakarta Sans'; 
+    Chart.defaults.borderColor = 'rgba(255,255,255,0.05)';
+    let donutChart, lineChart, radarChart, cashflowChart, polarChart;
 
     function initCharts() {
-      donutChart = new Chart(document.getElementById('walletChart').getContext('2d'), { type: 'doughnut', data: { labels:[], datasets:[{data:[], backgroundColor:[], borderWidth:0}] }, options: { responsive: true, maintainAspectRatio: false, cutout: '80%', plugins: { legend: { display: false } } } });
+      donutChart = new Chart(document.getElementById('walletChart').getContext('2d'), { type: 'doughnut', data: { labels:[], datasets:[{data:[], backgroundColor:[], borderWidth:0}] }, options: { responsive: true, maintainAspectRatio: false, cutout: '80%', plugins: { legend: { display: false }, tooltip: { backgroundColor: 'rgba(15, 23, 42, 0.9)', titleFont: { size: 10 }, bodyFont: { font: 'Plus Jakarta Sans', weight: 'bold' }, padding: 10, cornerRadius: 8, borderColor: 'rgba(255,255,255,0.1)', borderWidth: 1 } } } });
       
       lineChart = new Chart(document.getElementById('trendChart').getContext('2d'), { 
         type: 'line', data: { labels:[], datasets:[] }, 
-        options: { responsive: true, maintainAspectRatio: false, elements: { line: { tension: 0.4 } }, plugins: { legend: { display: false } }, scales: { x: { grid: { display: false } }, y: { grid: { color: 'rgba(255,255,255,0.05)' }, border:{display:false} } } } 
+        options: { responsive: true, maintainAspectRatio: false, hover: { mode: 'index', intersect: false }, elements: { line: { tension: 0.4 }, point: { radius: 0, hitRadius: 10, hoverRadius: 4 } }, plugins: { legend: { display: false }, tooltip: { mode: 'index', intersect: false, backgroundColor: 'rgba(15, 23, 42, 0.9)', titleFont: { size: 10 }, bodyFont: { font: 'Plus Jakarta Sans', weight: 'bold' }, padding: 10, cornerRadius: 8, borderColor: 'rgba(255,255,255,0.1)', borderWidth: 1 } }, scales: { x: { grid: { display: false } }, y: { border:{display:false} } } } 
       });
 
       radarChart = new Chart(document.getElementById('radarChart').getContext('2d'), {
         type: 'radar',
         data: { labels: ['Dining', 'Transport', 'Shopping', 'Utilities', 'Subs'], datasets: [{ label: 'Allocation', data: [0, 0, 0, 0, 0], backgroundColor: 'rgba(59, 130, 246, 0.2)', borderColor: '#3b82f6', pointBackgroundColor: '#60a5fa', borderWidth: 2 }] },
-        options: {
-            responsive: true, maintainAspectRatio: false,
-            scales: { r: { angleLines: { color: 'rgba(255,255,255,0.05)' }, grid: { color: 'rgba(255,255,255,0.05)' }, pointLabels: { color: '#9ca3af', font: { family: 'Inter', size: 10 } }, ticks: { display: false } } },
-            plugins: { legend: { display: false } }
-        }
+        options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false }, tooltip: { backgroundColor: 'rgba(15, 23, 42, 0.9)', padding: 10, cornerRadius: 8, borderColor: 'rgba(255,255,255,0.1)', borderWidth: 1 } }, scales: { r: { angleLines: { color: 'rgba(255,255,255,0.05)' }, grid: { color: 'rgba(255,255,255,0.05)' }, pointLabels: { color: '#9ca3af', font: { family: 'Plus Jakarta Sans', size: 10 } }, ticks: { display: false } } } }
       });
       
       cashflowChart = new Chart(document.getElementById('cashflowChart').getContext('2d'), {
         type: 'bar',
         data: { labels: [], datasets: [ { label: 'Income', data: [], backgroundColor: '#10b981', borderRadius: 4 }, { label: 'Expense', data: [], backgroundColor: '#f43f5e', borderRadius: 4 } ] },
-        options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { position: 'top', labels: { color: '#9ca3af', font: {size: 10}, boxWidth: 12 } } }, scales: { x: { grid: { display: false }, ticks: {color: '#9ca3af'} }, y: { grid: { color: 'rgba(255,255,255,0.05)' }, border:{display:false}, ticks: {color: '#9ca3af'} } } }
+        options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { position: 'top', labels: { color: '#9ca3af', font: {size: 10}, boxWidth: 12 } }, tooltip: { mode: 'index', intersect: false, backgroundColor: 'rgba(15, 23, 42, 0.9)', titleFont: { size: 10 }, bodyFont: { font: 'Plus Jakarta Sans', weight: 'bold' }, padding: 10, cornerRadius: 8, borderColor: 'rgba(255,255,255,0.1)', borderWidth: 1 } }, scales: { x: { grid: { display: false }, ticks: {color: '#9ca3af'} }, y: { border:{display:false}, ticks: {color: '#9ca3af'} } } }
+      });
+
+      polarChart = new Chart(document.getElementById('polarChart').getContext('2d'), {
+        type: 'polarArea',
+        data: { labels: ['UPI', 'Card', 'Cash'], datasets: [{ data: [0, 0, 0], backgroundColor: ['rgba(59, 130, 246, 0.7)', 'rgba(139, 92, 246, 0.7)', 'rgba(16, 185, 129, 0.7)'], borderWidth: 0 }] },
+        options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { position: 'right', labels: { color: '#9ca3af', font: {size: 10}, boxWidth: 10 } }, tooltip: { backgroundColor: 'rgba(15, 23, 42, 0.9)', padding: 10, cornerRadius: 8, borderColor: 'rgba(255,255,255,0.1)', borderWidth: 1 } }, scales: { r: { grid: { color: 'rgba(255,255,255,0.05)' }, ticks: { display: false } } } }
       });
     }
 
@@ -573,41 +703,32 @@
 
       document.getElementById('totalIncome').innerText = `₹${tInc.toLocaleString()}`; document.getElementById('totalExpense').innerText = `₹${tExp.toLocaleString()}`; document.getElementById('chartCenterText').innerText = `₹${tExp.toLocaleString()}`;
       document.getElementById('netBalance').innerText = `₹${(bal.UPI+bal.Card+bal.Cash).toLocaleString()}`; ['UPI', 'Card', 'Cash'].forEach(a => document.getElementById(`bal${a}`).innerText = `₹${bal[a].toLocaleString()}`);
+      
       const pct = Math.min((tExp / expenseGoal) * 100, 100) || 0; document.getElementById('goalProgress').style.width = `${pct}%`; document.getElementById('goalText').innerText = `Target Threshold: ₹${expenseGoal.toLocaleString()} (${Math.round(pct)}%)`;
       document.getElementById('recordCount').innerText = filtered.length;
 
       const currentDay = Math.max(1, new Date().getDate());
-      const burnRate = tExp / currentDay;
-      document.getElementById('statBurnRate').innerText = `₹${Math.round(burnRate).toLocaleString()}`;
+      const burnRate = tExp / currentDay; document.getElementById('statBurnRate').innerText = `₹${Math.round(burnRate).toLocaleString()}`;
+      const savingsRate = tInc > 0 ? ((tInc - tExp) / tInc) * 100 : 0; document.getElementById('statSavingsRate').innerText = `${Math.max(0, savingsRate).toFixed(1)}%`;
 
-      const savingsRate = tInc > 0 ? ((tInc - tExp) / tInc) * 100 : 0;
-      document.getElementById('statSavingsRate').innerText = `${Math.max(0, savingsRate).toFixed(1)}%`;
-
-      let tLiabilities = 0;
-      filtered.forEach(t => { if(t.type === 'expense' && t.isRecurring) tLiabilities += t.amount; });
-      document.getElementById('statLiabilities').innerText = `₹${tLiabilities.toLocaleString()}`;
-
-      const liquidAssets = bal.UPI + bal.Cash + bal.Card;
-      const runway = burnRate > 0 ? liquidAssets / burnRate : 0;
-      document.getElementById('statRunway').innerText = `${Math.round(runway)} Days`;
+      let tLiabilities = 0; filtered.forEach(t => { if(t.type === 'expense' && t.isRecurring) tLiabilities += t.amount; }); document.getElementById('statLiabilities').innerText = `₹${tLiabilities.toLocaleString()}`;
+      const liquidAssets = bal.UPI + bal.Cash + bal.Card; const runway = burnRate > 0 ? liquidAssets / burnRate : 0; document.getElementById('statRunway').innerText = `${Math.round(runway)} Days`;
 
       let healthScore = 50; 
       if (savingsRate > 20) healthScore += 20; else if (savingsRate > 5) healthScore += 10;
       if (runway > 30) healthScore += 20; else if (runway > 15) healthScore += 10;
       if (tLiabilities < (tInc * 0.2)) healthScore += 10;
-      
       const finalHealth = Math.min(100, Math.max(10, Math.round(healthScore)));
-      const healthEl = document.getElementById('healthScore');
-      healthEl.innerText = `${finalHealth}/100`;
-      healthEl.className = `text-xs font-black ${finalHealth > 75 ? 'text-emerald-400' : (finalHealth > 40 ? 'text-orange-400' : 'text-rose-400')}`;
+      const healthEl = document.getElementById('healthScore'); healthEl.innerText = `${finalHealth}/100`; healthEl.className = `text-xs font-black drop-shadow-[0_0_8px_rgba(16,185,129,0.5)] ml-1 ${finalHealth > 75 ? 'text-emerald-400' : (finalHealth > 40 ? 'text-orange-400' : 'text-rose-400')}`;
 
       const catData = {}; filtered.filter(t=>t.type==='expense').forEach(e => catData[e.category] = (catData[e.category]||0)+e.amount);
       const sCats = Object.entries(catData).sort((a,b)=>b[1]-a[1]);
       donutChart.data = { labels: sCats.map(c=>c[0]), datasets: [{ data: sCats.map(c=>c[1]), backgroundColor: sCats.map(c=>CAT_COLORS[c[0]]||'#6b7280') }] }; donutChart.update();
 
       const radarMappings = ['Food & Dining', 'Transport', 'Shopping', 'Utilities', 'Subscriptions'];
-      radarChart.data.datasets[0].data = radarMappings.map(c => catData[c] || 0);
-      radarChart.update();
+      radarChart.data.datasets[0].data = radarMappings.map(c => catData[c] || 0); radarChart.update();
+
+      polarChart.data.datasets[0].data = [Math.max(0, bal.UPI), Math.max(0, bal.Card), Math.max(0, bal.Cash)]; polarChart.update();
 
       const dates = {}; const sortedFiltered = [...filtered].sort((a,b)=>a.timestamp-b.timestamp);
       if(sortedFiltered.length > 0) {
@@ -618,10 +739,8 @@
       }
       
       const labels = Object.keys(dates); 
-      lineChart.data = { labels, datasets: [ { data: labels.map(l=>dates[l].i), borderColor: '#10b981', backgroundColor: 'rgba(16, 185, 129, 0.1)', fill:true, pointRadius:2 }, { data: labels.map(l=>dates[l].e), borderColor: '#f43f5e', backgroundColor: 'rgba(244, 63, 94, 0.1)', fill:true, pointRadius:2 } ]}; 
-      lineChart.update();
+      lineChart.data = { labels, datasets: [ { data: labels.map(l=>dates[l].i), borderColor: '#10b981', backgroundColor: 'rgba(16, 185, 129, 0.1)', fill:true, pointRadius:2 }, { data: labels.map(l=>dates[l].e), borderColor: '#f43f5e', backgroundColor: 'rgba(244, 63, 94, 0.1)', fill:true, pointRadius:2 } ]}; lineChart.update();
 
-      // Update new 7-Day Cashflow Bar Chart
       const last7Labels = labels.slice(-7);
       cashflowChart.data.labels = last7Labels;
       cashflowChart.data.datasets[0].data = last7Labels.map(l => dates[l].i);
@@ -630,31 +749,26 @@
 
       const insightsEl = document.getElementById('topInsights'); insightsEl.className = "mt-4 space-y-3 pt-4 border-t border-white/10 flex-grow overflow-y-auto max-h-[160px] pr-2";
       if (sCats.length === 0) { insightsEl.innerHTML = `<p class="text-xs text-gray-500 text-center py-2">No category logs processed.</p>`; } 
-      else { insightsEl.innerHTML = sCats.map(([cat, val]) => { const catPct = tExp ? Math.round((val / tExp) * 100) : 0; return `<div><div class="flex justify-between text-[10px] font-bold mb-1"><span class="text-gray-300 uppercase">${cat}</span><span class="text-gray-400">₹${val.toLocaleString()} (${catPct}%)</span></div><div class="w-full bg-white/5 rounded-full h-1.5"><div class="h-1.5 rounded-full" style="width: ${catPct}%; background-color: ${CAT_COLORS[cat] || '#6b7280'}"></div></div></div>`; }).join(''); }
+      else { insightsEl.innerHTML = sCats.map(([cat, val]) => { const catPct = tExp ? Math.round((val / tExp) * 100) : 0; return `<div><div class="flex justify-between text-[10px] font-bold mb-1"><span class="text-gray-300 uppercase tracking-widest">${cat}</span><span class="text-gray-400 font-mono">₹${val.toLocaleString()} (${catPct}%)</span></div><div class="w-full bg-black/40 rounded-full h-1.5 shadow-inner border border-white/5"><div class="h-1.5 rounded-full shadow-[0_0_8px_rgba(255,255,255,0.2)]" style="width: ${catPct}%; background-color: ${CAT_COLORS[cat] || '#6b7280'}"></div></div></div>`; }).join(''); }
 
       const list = document.getElementById('ledgerList');
-      if(!filtered.length) list.innerHTML = `<p class="text-gray-500 text-sm py-4 text-center">No structural entry indexes.</p>`;
+      if(!filtered.length) list.innerHTML = `<p class="text-gray-500 text-sm py-8 text-center font-bold uppercase tracking-widest">No Database Entries Found.</p>`;
       else list.innerHTML = [...filtered].sort((a,b)=>b.timestamp-a.timestamp).map(t => {
           const isI = t.type === 'income';
           let impactBadge = '';
           if (t.amount > 10000 && !isI) impactBadge = `<span class="px-1.5 py-0.5 bg-rose-500/20 text-rose-400 border border-rose-500/30 rounded text-[8px] font-black uppercase ml-2 tracking-widest relative -top-0.5 shadow-sm">High Impact</span>`;
           else if (t.amount < 100 && !isI) impactBadge = `<span class="px-1.5 py-0.5 bg-gray-500/20 text-gray-400 border border-gray-500/30 rounded text-[8px] font-black uppercase ml-2 tracking-widest relative -top-0.5 shadow-sm">Micro</span>`;
 
-          // Removed the truncate logic below so text wraps naturally using the new .transaction-desc class
-          return `<div class="ledger-item flex items-center justify-between p-4 bg-white/5 rounded-2xl border border-white/5 mb-2 hover:bg-white/10 transition-colors"><div class="flex items-center space-x-3 md:space-x-4"><div class="w-10 h-10 rounded-full flex items-center justify-center ${isI ? 'bg-emerald-500/20 text-emerald-400' : 'bg-rose-500/20 text-rose-400'}"><i data-lucide="${isI ? 'arrow-down-left' : 'credit-card'}" class="w-5 h-5"></i></div><div><p class="font-bold text-gray-200 text-sm flex items-center">${t.category} ${t.isRecurring ? '<span class="bg-blue-600/30 text-blue-400 text-[8px] px-1 ml-1 rounded">AUTO</span>' : ''} ${impactBadge}</p><p class="text-[10px] text-gray-500 uppercase mt-0.5">${t.account} • ${new Date(t.timestamp).toLocaleDateString('en-GB',{day:'numeric',month:'short'})}</p></div></div><div class="flex flex-col items-end space-y-1"><div class="flex items-center space-x-2"><p class="font-black text-sm md:text-base ${isI ? 'text-emerald-400' : 'text-rose-400'}">${isI?'+':'-'}₹${t.amount.toLocaleString()}</p><button onclick="deleteTx('${t.id}')" class="action-btn text-gray-500 hover:text-rose-500 p-2"><i data-lucide="trash-2" class="w-4 h-4"></i></button></div>${t.note ? `<p class="text-[10px] text-gray-500 transaction-desc text-right mt-1">${t.note}</p>`:''}</div></div>`;
+          return `<div class="ledger-item flex items-center justify-between p-4 rounded-2xl mb-2.5 relative overflow-hidden"><div class="absolute inset-0 bg-gradient-to-r from-transparent via-white/[0.01] to-transparent opacity-0 hover:opacity-100 transition-opacity pointer-events-none"></div><div class="flex items-center space-x-3 md:space-x-4 relative z-10"><div class="w-10 h-10 rounded-full flex items-center justify-center shadow-inner border border-white/5 ${isI ? 'bg-emerald-500/10 text-emerald-400 shadow-[0_0_15px_rgba(16,185,129,0.1)]' : 'bg-rose-500/10 text-rose-400 shadow-[0_0_15px_rgba(244,63,94,0.1)]'}"><i data-lucide="${isI ? 'arrow-down-left' : 'credit-card'}" class="w-5 h-5 drop-shadow-md"></i></div><div><p class="font-bold text-gray-200 text-sm flex items-center">${t.category} ${t.isRecurring ? '<span class="bg-blue-600/30 text-blue-400 text-[8px] px-1 ml-1 rounded border border-blue-500/20 shadow-sm">AUTO</span>' : ''} ${impactBadge}</p><p class="text-[10px] text-gray-500 uppercase mt-0.5 tracking-wider font-bold">${t.account} • ${new Date(t.timestamp).toLocaleDateString('en-GB',{day:'numeric',month:'short'})}</p></div></div><div class="flex flex-col items-end space-y-1 relative z-10"><div class="flex items-center space-x-2"><p class="font-black text-sm md:text-base ${isI ? 'text-emerald-400 drop-shadow-[0_0_5px_rgba(16,185,129,0.4)]' : 'text-rose-400 drop-shadow-[0_0_5px_rgba(244,63,94,0.4)]'}">${isI?'+':'-'}₹${t.amount.toLocaleString()}</p><button onclick="openEditModal('${t.id}')" class="action-btn text-gray-500 hover:text-blue-400 p-2 transition-colors hover:scale-110 active:scale-95"><i data-lucide="edit-2" class="w-4 h-4"></i></button><button onclick="deleteTx('${t.id}')" class="action-btn text-gray-500 hover:text-rose-500 p-2 pl-0 transition-colors hover:scale-110 active:scale-95"><i data-lucide="trash-2" class="w-4 h-4"></i></button></div>${t.note ? `<p class="text-[10px] text-gray-500 transaction-desc text-right mt-1 font-medium tracking-wide">"${t.note}"</p>`:''}</div></div>`;
       }).join(''); lucide.createIcons();
     }
 
     document.addEventListener('DOMContentLoaded', () => { 
-        populateCategories(); 
-        document.getElementById('date').valueAsDate = new Date(); 
-        initCharts(); 
-        syncDataFromServer(); 
+        populateCategories(); document.getElementById('date').valueAsDate = new Date(); 
+        initCharts(); syncDataFromServer(); 
         document.getElementById('searchInput').addEventListener('input', (e) => { searchQuery = e.target.value; updateUI(); }); 
         document.getElementById('monthFilter').addEventListener('change', (e) => { selectedMonth = e.target.value; updateUI(); }); 
-        
-        loadPendingTransactions();
-        setInterval(loadPendingTransactions, 8000); 
+        loadPendingTransactions(); setInterval(loadPendingTransactions, 8000); 
     });
   </script>
 </body>
