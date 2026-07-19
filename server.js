@@ -60,21 +60,27 @@ app.get('/api/get-transactions', async (req, res) => {
     try {
         const snapshot = await db.collection('transactions').get();
         res.status(200).json(snapshot.docs.map(doc => doc.data()));
-    } catch (error) { res.status(500).json({ error: 'Failed to fetch' }); }
+    } catch (error) { 
+        res.status(500).json({ error: 'Failed to fetch' }); 
+    }
 });
 
 app.post('/api/add-transaction', async (req, res) => {
     try {
         await db.collection('transactions').doc(req.body.id).set(req.body);
         res.status(201).json({ message: 'Added successfully' });
-    } catch (error) { res.status(500).json({ error: 'Failed to add' }); }
+    } catch (error) { 
+        res.status(500).json({ error: 'Failed to add' }); 
+    }
 });
 
 app.delete('/api/delete-transaction/:id', async (req, res) => {
     try {
         await db.collection('transactions').doc(req.params.id).delete();
         res.status(200).json({ message: 'Deleted' });
-    } catch (error) { res.status(500).json({ error: 'Failed to delete' }); }
+    } catch (error) { 
+        res.status(500).json({ error: 'Failed to delete' }); 
+    }
 });
 
 app.put('/api/edit-transaction/:id', async (req, res) => {
@@ -98,28 +104,36 @@ app.post('/api/sync-transactions', async (req, res) => {
         });
         await batch.commit();
         res.status(200).json({ message: 'Sync complete' });
-    } catch (error) { res.status(500).json({ error: 'Failed to sync' }); }
+    } catch (error) { 
+        res.status(500).json({ error: 'Failed to sync' }); 
+    }
 });
 
 app.get('/api/get-wishlist', async (req, res) => {
     try {
         const snapshot = await db.collection('wishlist').get();
         res.status(200).json(snapshot.docs.map(doc => doc.data()));
-    } catch (error) { res.status(500).json({ error: 'Failed to fetch' }); }
+    } catch (error) { 
+        res.status(500).json({ error: 'Failed to fetch' }); 
+    }
 });
 
 app.post('/api/add-wishlist', async (req, res) => {
     try {
         await db.collection('wishlist').doc(req.body.id).set(req.body);
         res.status(201).json({ message: 'Added successfully' });
-    } catch (error) { res.status(500).json({ error: 'Failed to add' }); }
+    } catch (error) { 
+        res.status(500).json({ error: 'Failed to add' }); 
+    }
 });
 
 app.delete('/api/delete-wishlist/:id', async (req, res) => {
     try {
         await db.collection('wishlist').doc(req.params.id).delete();
         res.status(200).json({ message: 'Deleted' });
-    } catch (error) { res.status(500).json({ error: 'Failed to delete' }); }
+    } catch (error) { 
+        res.status(500).json({ error: 'Failed to delete' }); 
+    }
 });
 
 app.post('/api/sync-wishlist', async (req, res) => {
@@ -132,7 +146,9 @@ app.post('/api/sync-wishlist', async (req, res) => {
         });
         await batch.commit();
         res.status(200).json({ message: 'Wishlist sync complete' });
-    } catch (error) { res.status(500).json({ error: 'Failed to sync wishlist' }); }
+    } catch (error) { 
+        res.status(500).json({ error: 'Failed to sync wishlist' }); 
+    }
 });
 
 // ==========================================
@@ -158,7 +174,9 @@ app.post('/api/jarvis-advice', async (req, res) => {
 
         const result = await model.generateContent(prompt);
         res.status(200).json({ advice: result.response.text() });
-    } catch (error) { res.status(500).json({ error: 'Failed to generate' }); }
+    } catch (error) { 
+        res.status(500).json({ error: 'Failed to generate' }); 
+    }
 });
 
 app.post('/api/sms-webhook', async (req, res) => {
@@ -169,6 +187,7 @@ app.post('/api/sms-webhook', async (req, res) => {
         if (!rawText) return res.status(400).json({ error: 'No SMS text provided' });
 
         const model = genAI.getGenerativeModel({ model: 'gemini-2.5-flash' });
+        
         const prompt = `Analyze this bank SMS: "${rawText}". 
         Extract the amount, merchant, date, type (income/expense), and category.
         
@@ -214,7 +233,9 @@ app.get('/api/pending', async (req, res) => {
     try {
         const snapshot = await db.collection('pending').get();
         res.status(200).json(snapshot.docs.map(doc => doc.data()));
-    } catch (error) { res.status(500).json({ error: 'Failed to pull queue logs' }); }
+    } catch (error) { 
+        res.status(500).json({ error: 'Failed to pull queue logs' }); 
+    }
 });
 
 app.post('/api/approve', async (req, res) => {
@@ -244,7 +265,9 @@ app.post('/api/approve', async (req, res) => {
         } else {
             res.status(404).json({ error: "Transaction index tracking vector not found" });
         }
-    } catch (error) { res.status(500).json({ error: 'Approval processing failure' }); }
+    } catch (error) { 
+        res.status(500).json({ error: 'Approval processing failure' }); 
+    }
 });
 
 app.post('/api/reject', async (req, res) => {
@@ -252,7 +275,9 @@ app.post('/api/reject', async (req, res) => {
         const { id } = req.body;
         await db.collection('pending').doc(id).delete();
         res.json({ success: true, message: "Rejected and safely expunged from dataset" });
-    } catch (error) { res.status(500).json({ error: 'Rejection routing failed' }); }
+    } catch (error) { 
+        res.status(500).json({ error: 'Rejection routing failed' }); 
+    }
 });
 
 app.post('/api/receipt-ocr', upload.single('receipt'), async (req, res) => {
@@ -280,7 +305,7 @@ app.post('/api/receipt-ocr', upload.single('receipt'), async (req, res) => {
     }
 });
 
-// RE-ENGINEERED LINK SCRAPER WITH DEEP TEXT PARSING
+// ROBUST FALLBACK SCRAPER (FRONTEND FORM API)
 app.post('/api/scrape-price', async (req, res) => {
     let browser;
     try {
@@ -305,14 +330,20 @@ app.post('/api/scrape-price', async (req, res) => {
                     const items = Array.isArray(parsed) ? parsed : [parsed];
                     for (const item of items) {
                         let target = null;
-                        if (item['@type'] === 'Product') target = item;
-                        else if (item['@graph'] && Array.isArray(item['@graph'])) target = item['@graph'].find(g => g['@type'] === 'Product');
+                        if (item['@type'] === 'Product') {
+                            target = item;
+                        } else if (item['@graph'] && Array.isArray(item['@graph'])) {
+                            target = item['@graph'].find(g => g['@type'] === 'Product');
+                        }
 
                         if (target && target.offers) {
                             let offers = Array.isArray(target.offers) ? target.offers : [target.offers];
                             for (let offer of offers) {
-                                if (offer.price) price = parseFloat(String(offer.price).replace(/[^\d.]/g, ''));
-                                else if (offer.lowPrice) price = parseFloat(String(offer.lowPrice).replace(/[^\d.]/g, ''));
+                                if (offer.price) {
+                                    price = parseFloat(String(offer.price).replace(/[^\d.]/g, ''));
+                                } else if (offer.lowPrice) {
+                                    price = parseFloat(String(offer.lowPrice).replace(/[^\d.]/g, ''));
+                                }
                                 if (price > 0) break;
                             }
                             if (target.name) cleanTitle = target.name.split('|')[0].split('- Buy')[0].trim();
@@ -323,7 +354,12 @@ app.post('/api/scrape-price', async (req, res) => {
             }
 
             if (price === 0) {
-                const priceSelectors = ['.a-price-whole', '._30jeq3', '.Nx9bqj', '.Nx9bqj.CrvsUK', '._1V76Xq', '._25b18c', '[data-qa="product-price"]', '.price', '.product-price', '.final-price', '.pdp-price', '.discounted-price', '.sell-price', '.fbold'];
+                const priceSelectors = [
+                    '.a-price-whole', '._30jeq3', '.Nx9bqj', '.Nx9bqj.CrvsUK', 
+                    '._1V76Xq', '._25b18c', '[data-qa="product-price"]', 
+                    '.price', '.product-price', '.final-price', 
+                    '.pdp-price', '.discounted-price', '.sell-price', '.fbold'
+                ];
                 for (const sel of priceSelectors) {
                     const el = document.querySelector(sel);
                     if (el && el.innerText) {
@@ -334,11 +370,15 @@ app.post('/api/scrape-price', async (req, res) => {
             }
 
             if (price === 0) {
-                let match = document.body.innerText.match(/(?:₹|Rs\.?)\s*([0-9,]+(:\.[0-9]{2})?)/i);
-                if (match) price = parseFloat(match[1].replace(/,/g, ''));
+                let match = document.body.innerText.match(/(?:₹|Rs\.?)\s*([0-9,]+(?:\.[0-9]{2})?)/i);
+                if (match) {
+                    price = parseFloat(match[1].replace(/,/g, ''));
+                }
             }
 
-            const imgEl = document.querySelector('meta[property="og:image"]')?.content || document.querySelector('#landingImage, #imgTagWrapperId img, .a-dynamic-image, img[class*="v25dir"], ._396cs4, .product-main-image img')?.src;
+            const imgEl = document.querySelector('meta[property="og:image"]')?.content || 
+                          document.querySelector('#landingImage, #imgTagWrapperId img, .a-dynamic-image, img[class*="v25dir"], ._396cs4, .product-main-image img')?.src;
+            
             return { title: cleanTitle, price: price, imageUrl: imgEl || '' };
         });
         await browser.close();
@@ -370,7 +410,9 @@ app.get('/api/bookmark-auto', async (req, res) => {
     if (!link || !price) return res.send("Error: Missing parameters.");
 
     let hostname = 'ONLINE';
-    try { hostname = new URL(link).hostname.replace('www.', '').split('.')[0].toUpperCase(); } catch(e) {}
+    try { 
+        hostname = new URL(link).hostname.replace('www.', '').split('.')[0].toUpperCase(); 
+    } catch(e) {}
 
     const safeTitle = title ? decodeURIComponent(title) : 'Saved Item';
     const safeImg = img ? decodeURIComponent(img) : '';
@@ -394,7 +436,9 @@ app.get('/api/bookmark-auto', async (req, res) => {
                 <div style="background:rgba(255,255,255,0.05); padding:30px; border-radius:24px; text-align:center; max-width:400px; border:1px solid rgba(255,255,255,0.1); box-shadow:0 10px 40px rgba(0,0,0,0.5);">
                     <h2 style="margin-top:0; color:#3b82f6; font-size:24px;">🎯 Wishlist Added</h2>
                     ${safeImg ? `<img src="${safeImg}" style="width:100%; height:180px; object-fit:cover; border-radius:12px; margin:15px 0;">` : ''}
-                    <div style="margin: 10px 0;"><span style="background:rgba(59,130,246,0.15); color:#60a5fa; padding:4px 10px; border-radius:8px; font-size:11px; font-weight:bold; text-transform:uppercase;">${safeCat}</span></div>
+                    <div style="margin: 10px 0;">
+                        <span style="background:rgba(59,130,246,0.15); color:#60a5fa; padding:4px 10px; border-radius:8px; font-size:11px; font-weight:bold; text-transform:uppercase;">${safeCat}</span>
+                    </div>
                     <p style="color:#f3f4f6; margin: 15px 0; font-size: 14px; line-height: 1.4; font-weight:bold;">${safeTitle}</p>
                     <h1 style="color:#10b981; font-size: 40px; margin: 10px 0;">₹${item.price.toLocaleString()}</h1>
                     <p style="color:#10b981; font-weight:bold;">Saved to Database Successfully!</p>
@@ -408,6 +452,7 @@ app.get('/api/bookmark-auto', async (req, res) => {
     }
 });
 
+// MANUAL FALLBACK BOOKMARKLET ROUTE
 app.get('/api/bookmark', async (req, res) => {
     const targetUrl = req.query.url;
     if (!targetUrl) return res.send("No URL provided.");
@@ -419,7 +464,10 @@ app.get('/api/bookmark', async (req, res) => {
                 <p style="color:#ef4444; font-size:12px; font-weight:bold; text-transform:uppercase; letter-spacing:1px; margin-bottom:15px;">⚠️ Enter Details Manually</p>
                 <input type="text" id="manualName" placeholder="Product Name" style="background: rgba(0,0,0,0.5); color: #fff; font-size: 16px; border: 1px solid rgba(255,255,255,0.2); border-radius: 12px; padding: 15px; width: 100%; outline: none; margin-bottom: 10px;">
                 <select id="manualCategory" style="background: rgba(0,0,0,0.5); color: #fff; border: 1px solid rgba(255,255,255,0.2); border-radius: 12px; padding: 12px; width: 100%; outline: none; margin-bottom: 12px;">
-                    <option value="Gadgets">💻 Gadgets</option><option value="Apparel">👕 Apparel</option><option value="Lifestyle">✨ Lifestyle</option><option value="Other">📦 Other</option>
+                    <option value="Gadgets">💻 Gadgets</option>
+                    <option value="Apparel">👕 Apparel</option>
+                    <option value="Lifestyle">✨ Lifestyle</option>
+                    <option value="Other">📦 Other</option>
                 </select>
                 <input type="number" id="manualPrice" placeholder="Enter Price (₹)" style="background: rgba(0,0,0,0.5); color: #10b981; font-size: 24px; font-weight: bold; text-align: center; border: 1px solid rgba(255,255,255,0.2); border-radius: 12px; padding: 15px; width: 100%; outline: none; margin-bottom: 15px;" autofocus>
                 <button onclick="saveManualData()" style="background: #3b82f6; color: white; border: none; padding: 15px; width: 100%; border-radius: 12px; font-size: 16px; font-weight: bold; cursor: pointer; transition: 0.2s;">Save to Tracker</button>
@@ -430,11 +478,25 @@ app.get('/api/bookmark', async (req, res) => {
                     const priceInput = document.getElementById('manualPrice').value;
                     const nameInput = document.getElementById('manualName').value || 'Saved Item';
                     const catInput = document.getElementById('manualCategory').value;
+                    
                     if (!priceInput || priceInput <= 0) return;
-                    btn.innerText = "Syncing to Cloud..."; btn.style.background = "#10b981";
+                    
+                    btn.innerText = "Syncing to Cloud..."; 
+                    btn.style.background = "#10b981";
+                    
                     fetch('https://wallet-y7yv.onrender.com/api/add-wishlist', {
-                        method: 'POST', headers: { 'Content-Type': 'application/json' },
-                        body: JSON.stringify({ id: String(Date.now()), title: nameInput, price: parseFloat(priceInput), link: '${targetUrl}', imageUrl: '', category: 'MANUAL', wishCategory: catInput, timestamp: Date.now() })
+                        method: 'POST', 
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ 
+                            id: String(Date.now()), 
+                            title: nameInput, 
+                            price: parseFloat(priceInput), 
+                            link: '${targetUrl}', 
+                            imageUrl: '', 
+                            category: 'MANUAL', 
+                            wishCategory: catInput, 
+                            timestamp: Date.now() 
+                        })
                     }).then(() => {
                         document.getElementById('manualEntryBox').innerHTML = '<h1 style="color:#10b981; font-size: 30px; margin: 30px 0;">Saved! 🎯</h1>';
                         setTimeout(() => window.close(), 1500);
