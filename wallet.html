@@ -8,15 +8,55 @@
   <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
   <script src="https://unpkg.com/lucide@latest"></script>
   <style>
-    @import url('https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;700;900&display=swap');
-    body { font-family: 'Outfit', sans-serif; background-color: #050505; color: #f3f4f6; -webkit-overflow-scrolling: touch; overflow-x: hidden; }
+    @import url('https://fonts.googleapis.com/css2?family=Lora:ital,wght@0,400;0,500;0,600;0,700;1,400;1,500&display=swap');
     
-    .glass-panel { background: rgba(255, 255, 255, 0.02); backdrop-filter: blur(24px); border: 1px solid rgba(255, 255, 255, 0.05); box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.5); transition: transform 0.4s cubic-bezier(0.16, 1, 0.3, 1), box-shadow 0.4s ease; position: relative; }
-    .glass-panel::before { content: ""; position: absolute; inset: 0; border-radius: inherit; padding: 1px; background: linear-gradient(180deg, rgba(255,255,255,0.1), transparent); -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0); -webkit-mask-composite: xor; pointer-events: none; }
-    .glass-panel:hover { box-shadow: 0 12px 48px rgba(59, 130, 246, 0.15); transform: translateY(-2px); }
+    body { 
+        font-family: 'Lora', serif; 
+        background-color: #050505; 
+        color: #f3f4f6; 
+        -webkit-overflow-scrolling: touch; 
+        overflow-x: hidden; 
+    }
     
-    .glass-input { background: rgba(0, 0, 0, 0.4); border: 1px solid rgba(255, 255, 255, 0.1); transition: all 0.3s ease; -webkit-appearance: none; }
-    .glass-input:focus { border-color: #3b82f6; box-shadow: 0 0 20px rgba(59, 130, 246, 0.25); outline: none; background: rgba(0, 0, 0, 0.6); }
+    .glass-panel { 
+        background: rgba(255, 255, 255, 0.02); 
+        backdrop-filter: blur(24px); 
+        border: 1px solid rgba(255, 255, 255, 0.05); 
+        box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.5); 
+        transition: transform 0.4s cubic-bezier(0.16, 1, 0.3, 1), box-shadow 0.4s ease; 
+        position: relative; 
+    }
+    
+    .glass-panel::before { 
+        content: ""; 
+        position: absolute; 
+        inset: 0; 
+        border-radius: inherit; 
+        padding: 1px; 
+        background: linear-gradient(180deg, rgba(255,255,255,0.1), transparent); 
+        -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0); 
+        -webkit-mask-composite: xor; 
+        pointer-events: none; 
+    }
+    
+    .glass-panel:hover { 
+        box-shadow: 0 12px 48px rgba(59, 130, 246, 0.15); 
+        transform: translateY(-2px); 
+    }
+    
+    .glass-input { 
+        background: rgba(0, 0, 0, 0.4); 
+        border: 1px solid rgba(255, 255, 255, 0.1); 
+        transition: all 0.3s ease; 
+        -webkit-appearance: none; 
+    }
+    
+    .glass-input:focus { 
+        border-color: #3b82f6; 
+        box-shadow: 0 0 20px rgba(59, 130, 246, 0.25); 
+        outline: none; 
+        background: rgba(0, 0, 0, 0.6); 
+    }
     
     ::-webkit-scrollbar { width: 4px; height: 4px; } 
     ::-webkit-scrollbar-track { background: transparent; } 
@@ -26,28 +66,126 @@
 
     .view-hidden { display: none; } 
     .view-active { display: block; }
-    .card-enter { animation: cardSlideUp 0.7s cubic-bezier(0.16, 1, 0.3, 1) both; opacity: 0; transform: translateY(30px) scale(0.98); }
-    .delay-100 { animation-delay: 100ms; } .delay-200 { animation-delay: 200ms; } .delay-300 { animation-delay: 300ms; }
-    @keyframes cardSlideUp { to { opacity: 1; transform: translateY(0) scale(1); } }
+    
+    .card-enter { 
+        animation: cardSlideUp 0.7s cubic-bezier(0.16, 1, 0.3, 1) both; 
+        opacity: 0; 
+        transform: translateY(30px) scale(0.98); 
+    }
+    
+    .delay-100 { animation-delay: 100ms; } 
+    .delay-200 { animation-delay: 200ms; } 
+    .delay-300 { animation-delay: 300ms; }
+    
+    @keyframes cardSlideUp { 
+        to { opacity: 1; transform: translateY(0) scale(1); } 
+    }
     
     .blob-anim { animation: pulseBlob 12s infinite alternate cubic-bezier(0.4, 0, 0.2, 1); }
-    @keyframes pulseBlob { 0% { transform: scale(1) translate(0, 0); opacity: 0.8; } 50% { transform: scale(1.1) translate(5%, 5%); opacity: 0.4; } 100% { transform: scale(0.95) translate(-5%, -5%); opacity: 0.8; } }
+    @keyframes pulseBlob { 
+        0% { transform: scale(1) translate(0, 0); opacity: 0.8; } 
+        50% { transform: scale(1.1) translate(5%, 5%); opacity: 0.4; } 
+        100% { transform: scale(0.95) translate(-5%, -5%); opacity: 0.8; } 
+    }
 
-    .ai-typing { border-right: 2px solid #3b82f6; white-space: pre-wrap; overflow: hidden; animation: blink 1s step-end infinite; }
+    .ai-typing { 
+        border-right: 2px solid #3b82f6; 
+        white-space: pre-wrap; 
+        overflow: hidden; 
+        animation: blink 1s step-end infinite; 
+    }
     @keyframes blink { 50% { border-color: transparent; } }
     
-    .info-icon { display: inline-flex; align-items: center; justify-content: center; margin-left: 6px; color: #60a5fa; cursor: help; position: relative; width: 14px; height: 14px; background: rgba(59, 130, 246, 0.15); border-radius: 50%; text-align: center; line-height: 1; font-size: 9px; font-weight: 900; }
-    .info-icon::after { content: attr(data-tooltip); position: absolute; bottom: 150%; left: 50%; transform: translateX(-50%); background: rgba(15, 23, 42, 0.95); backdrop-filter: blur(8px); border: 1px solid rgba(59, 130, 246, 0.3); color: #e2e8f0; padding: 10px 14px; border-radius: 8px; width: max-content; max-width: 260px; white-space: normal; line-height: 1.4; opacity: 0; pointer-events: none; transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1); font-size: 0.8rem; z-index: 100; box-shadow: 0 10px 30px rgba(0,0,0,0.8); font-weight: 500; font-family: 'Outfit'; text-transform: none; text-align: left; }
-    .info-icon::before { content: ''; position: absolute; bottom: 110%; left: 50%; transform: translateX(-50%); border-width: 6px; border-style: solid; border-color: rgba(59, 130, 246, 0.3) transparent transparent transparent; opacity: 0; pointer-events: none; transition: all 0.3s ease; z-index: 101; }
-    .info-icon:hover::after, .info-icon:hover::before { opacity: 1; transform: translateX(-50%) translateY(-4px); }
+    .info-icon { 
+        display: inline-flex; 
+        align-items: center; 
+        justify-content: center; 
+        margin-left: 6px; 
+        color: #60a5fa; 
+        cursor: help; 
+        position: relative; 
+        width: 14px; 
+        height: 14px; 
+        background: rgba(59, 130, 246, 0.15); 
+        border-radius: 50%; 
+        text-align: center; 
+        line-height: 1; 
+        font-size: 9px; 
+        font-weight: 900; 
+    }
+    
+    .info-icon::after { 
+        content: attr(data-tooltip); 
+        position: absolute; 
+        bottom: 150%; 
+        left: 50%; 
+        transform: translateX(-50%); 
+        background: rgba(15, 23, 42, 0.95); 
+        backdrop-filter: blur(8px); 
+        border: 1px solid rgba(59, 130, 246, 0.3); 
+        color: #e2e8f0; 
+        padding: 10px 14px; 
+        border-radius: 8px; 
+        width: max-content; 
+        max-width: 260px; 
+        white-space: normal; 
+        line-height: 1.4; 
+        opacity: 0; 
+        pointer-events: none; 
+        transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1); 
+        font-size: 0.8rem; 
+        z-index: 100; 
+        box-shadow: 0 10px 30px rgba(0,0,0,0.8); 
+        font-weight: 500; 
+        font-family: 'Lora'; 
+        text-transform: none; 
+        text-align: left; 
+    }
+    
+    .info-icon::before { 
+        content: ''; 
+        position: absolute; 
+        bottom: 110%; 
+        left: 50%; 
+        transform: translateX(-50%); 
+        border-width: 6px; 
+        border-style: solid; 
+        border-color: rgba(59, 130, 246, 0.3) transparent transparent transparent; 
+        opacity: 0; 
+        pointer-events: none; 
+        transition: all 0.3s ease; 
+        z-index: 101; 
+    }
+    
+    .info-icon:hover::after, .info-icon:hover::before { 
+        opacity: 1; 
+        transform: translateX(-50%) translateY(-4px); 
+    }
 
     .modal-active { animation: modalPop 0.5s cubic-bezier(0.16, 1, 0.3, 1) forwards; }
-    @keyframes modalPop { 0% { opacity: 0; transform: scale(0.92) translateY(20px); } 100% { opacity: 1; transform: scale(1) translateY(0); } }
+    @keyframes modalPop { 
+        0% { opacity: 0; transform: scale(0.92) translateY(20px); } 
+        100% { opacity: 1; transform: scale(1) translateY(0); } 
+    }
 
-    .ledger-item { transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1); border: 1px solid transparent; background: rgba(255,255,255,0.02); }
-    .ledger-item:hover { transform: translateY(-3px) scale(1.01); box-shadow: 0 12px 30px rgba(0,0,0,0.5); border-color: rgba(255,255,255,0.08); background-color: rgba(255,255,255,0.05); }
+    .ledger-item { 
+        transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1); 
+        border: 1px solid transparent; 
+        background: rgba(255,255,255,0.02); 
+    }
+    
+    .ledger-item:hover { 
+        transform: translateY(-3px) scale(1.01); 
+        box-shadow: 0 12px 30px rgba(0,0,0,0.5); 
+        border-color: rgba(255,255,255,0.08); 
+        background-color: rgba(255,255,255,0.05); 
+    }
+    
     .ledger-item .action-btn { opacity: 1; transform: scale(1); transition: all 0.2s; }
-    @media (min-width: 768px) { .ledger-item .action-btn { opacity: 0; transform: scale(0.8); } .ledger-item:hover .action-btn { opacity: 1; transform: scale(1); } }
+    @media (min-width: 768px) { 
+        .ledger-item .action-btn { opacity: 0; transform: scale(0.8); } 
+        .ledger-item:hover .action-btn { opacity: 1; transform: scale(1); } 
+    }
   </style>
 </head>
 <body class="p-3 md:p-8 min-h-screen pb-24 relative overflow-x-hidden">
@@ -379,9 +517,15 @@
     const API_BASE = 'https://wallet-y7yv.onrender.com/api';
     const apiHeaders = { 'Content-Type': 'application/json' };
 
-    let currentType = 'expense'; let expenseGoal = parseFloat(localStorage.getItem('walletGoal')) || 25000; let selectedMonth = 'all'; let searchQuery = '';
-    let transactions = []; let wishlistItems = []; let monthlyWishlistSavings = parseFloat(localStorage.getItem('walletWishlistSavings')) || 0;
-    let aiTypingTimer; let allTimeChartObj = null;
+    let currentType = 'expense'; 
+    let expenseGoal = parseFloat(localStorage.getItem('walletGoal')) || 25000; 
+    let selectedMonth = 'all'; 
+    let searchQuery = '';
+    let transactions = []; 
+    let wishlistItems = []; 
+    let monthlyWishlistSavings = parseFloat(localStorage.getItem('walletWishlistSavings')) || 0;
+    let aiTypingTimer; 
+    let allTimeChartObj = null;
 
     document.getElementById('wishlistSavingsInput').value = monthlyWishlistSavings || '';
 
@@ -395,7 +539,9 @@
             if (!response.ok) return;
             const data = await response.json();
             renderPendingUI(data);
-        } catch (error) { console.warn("Pending pipeline offline."); }
+        } catch (error) { 
+            console.warn("Pending pipeline offline."); 
+        }
     }
 
     function renderPendingUI(pendingTxns) {
@@ -436,10 +582,17 @@
 
     async function handleDecision(id, action) {
         try {
-            const res = await fetch(`${API_BASE}/${action}`, { method: 'POST', headers: apiHeaders, body: JSON.stringify({ id: id }) });
+            const res = await fetch(`${API_BASE}/${action}`, { 
+                method: 'POST', 
+                headers: apiHeaders, 
+                body: JSON.stringify({ id: id }) 
+            });
             const result = await res.json();
             if (result.success) {
-                if (action === 'approve' && result.data) { transactions.push(result.data); updateUI(); }
+                if (action === 'approve' && result.data) { 
+                    transactions.push(result.data); 
+                    updateUI(); 
+                }
                 loadPendingTransactions();
             }
         } catch (error) {}
@@ -449,27 +602,63 @@
         const smsText = prompt("Paste raw transaction SMS here:");
         if (!smsText) return;
         const icon = document.getElementById('smsIcon');
-        icon.setAttribute('data-lucide', 'loader-2'); icon.classList.add('animate-spin', 'text-blue-400'); lucide.createIcons();
+        icon.setAttribute('data-lucide', 'loader-2'); 
+        icon.classList.add('animate-spin', 'text-blue-400'); 
+        lucide.createIcons();
         try {
-            const res = await fetch(`${API_BASE}/sms-webhook`, { method: 'POST', headers: apiHeaders, body: JSON.stringify({ smsText: smsText }) });
-            if (res.ok) { alert("SMS processed! Jarvis AI is categorizing the data."); loadPendingTransactions(); } 
-        } catch (error) { } finally { icon.setAttribute('data-lucide', 'message-square'); icon.classList.remove('animate-spin', 'text-blue-400'); lucide.createIcons(); }
+            const res = await fetch(`${API_BASE}/sms-webhook`, { 
+                method: 'POST', 
+                headers: apiHeaders, 
+                body: JSON.stringify({ smsText: smsText }) 
+            });
+            if (res.ok) { 
+                alert("SMS processed! Jarvis AI is categorizing the data."); 
+                loadPendingTransactions(); 
+            } 
+        } catch (error) { 
+        } finally { 
+            icon.setAttribute('data-lucide', 'message-square'); 
+            icon.classList.remove('animate-spin', 'text-blue-400'); 
+            lucide.createIcons(); 
+        }
     }
 
     async function syncDataFromServer() {
         try {
-            const localTx = localStorage.getItem('walletTx'); const localWish = localStorage.getItem('walletWish');
-            if (localTx && localTx !== "undefined") { const parsedTx = JSON.parse(localTx); if (parsedTx.length > 0) { await fetch(`${API_BASE}/sync-transactions`, { method: 'POST', headers: apiHeaders, body: localTx }); localStorage.removeItem('walletTx'); } }
-            if (localWish && localWish !== "undefined") { const parsedWish = JSON.parse(localWish); if (parsedWish.length > 0) { await fetch(`${API_BASE}/sync-wishlist`, { method: 'POST', headers: apiHeaders, body: localWish }); localStorage.removeItem('walletWish'); } }
-            const [txRes, wRes] = await Promise.all([ fetch(`${API_BASE}/get-transactions`), fetch(`${API_BASE}/get-wishlist`) ]);
-            if (txRes.ok) transactions = await txRes.json(); if (wRes.ok) wishlistItems = await wRes.json();
-        } catch (err) {} finally { updateUI(); renderWishlist(); }
+            const localTx = localStorage.getItem('walletTx'); 
+            const localWish = localStorage.getItem('walletWish');
+            if (localTx && localTx !== "undefined") { 
+                const parsedTx = JSON.parse(localTx); 
+                if (parsedTx.length > 0) { 
+                    await fetch(`${API_BASE}/sync-transactions`, { method: 'POST', headers: apiHeaders, body: localTx }); 
+                    localStorage.removeItem('walletTx'); 
+                } 
+            }
+            if (localWish && localWish !== "undefined") { 
+                const parsedWish = JSON.parse(localWish); 
+                if (parsedWish.length > 0) { 
+                    await fetch(`${API_BASE}/sync-wishlist`, { method: 'POST', headers: apiHeaders, body: localWish }); 
+                    localStorage.removeItem('walletWish'); 
+                } 
+            }
+            const [txRes, wRes] = await Promise.all([ 
+                fetch(`${API_BASE}/get-transactions`), 
+                fetch(`${API_BASE}/get-wishlist`) 
+            ]);
+            if (txRes.ok) transactions = await txRes.json(); 
+            if (wRes.ok) wishlistItems = await wRes.json();
+        } catch (err) {
+        } finally { 
+            updateUI(); 
+            renderWishlist(); 
+        }
     }
 
     function switchMainView(view) {
       document.getElementById('viewDashboard').className = view === 'dashboard' ? 'view-active space-y-4 md:space-y-6' : 'view-hidden';
       document.getElementById('viewWishlist').className = view === 'wishlist' ? 'view-active space-y-4 md:space-y-6' : 'view-hidden';
-      const dBtn = document.getElementById('navDashboard'); const wBtn = document.getElementById('navWishlist');
+      const dBtn = document.getElementById('navDashboard'); 
+      const wBtn = document.getElementById('navWishlist');
       if (view === 'dashboard') {
           dBtn.className = 'flex-1 sm:flex-none px-4 md:px-5 py-2.5 rounded-xl font-bold text-sm bg-white/10 text-white shadow-sm transition-all border border-white/5';
           wBtn.className = 'flex-1 sm:flex-none px-4 md:px-5 py-2.5 rounded-xl font-bold text-sm text-gray-400 hover:text-white hover:bg-white/5 transition-all border border-transparent';
@@ -490,85 +679,179 @@
     }
 
     function populateCategories() {
-      const sel = document.getElementById('category'); sel.innerHTML = '';
-      (currentType === 'expense' ? EXPENSE_CATEGORIES : INCOME_CATEGORIES).forEach(c => sel.innerHTML += `<option value="${c}">${c}</option>`);
+      const sel = document.getElementById('category'); 
+      sel.innerHTML = '';
+      (currentType === 'expense' ? EXPENSE_CATEGORIES : INCOME_CATEGORIES).forEach(c => {
+          sel.innerHTML += `<option value="${c}">${c}</option>`;
+      });
     }
 
-    function setGoal() { const g = prompt("Set Hard Threshold Budget (₹):", expenseGoal); if (g && !isNaN(g)) { expenseGoal = parseFloat(g); localStorage.setItem('walletGoal', expenseGoal); updateUI(); } }
-    function addAmount(val) { document.getElementById('amount').value = (parseFloat(document.getElementById('amount').value) || 0) + val; }
+    function setGoal() { 
+        const g = prompt("Set Hard Threshold Budget (₹):", expenseGoal); 
+        if (g && !isNaN(g)) { 
+            expenseGoal = parseFloat(g); 
+            localStorage.setItem('walletGoal', expenseGoal); 
+            updateUI(); 
+        } 
+    }
+    
+    function addAmount(val) { 
+        document.getElementById('amount').value = (parseFloat(document.getElementById('amount').value) || 0) + val; 
+    }
 
     function populateMonthFilter() {
-      const filter = document.getElementById('monthFilter'); const months = new Set();
-      transactions.forEach(t => { const d = new Date(t.timestamp); months.add(`${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}`); });
-      const sortedMonths = Array.from(months).sort().reverse(); const currentVal = filter.value;
+      const filter = document.getElementById('monthFilter'); 
+      const months = new Set();
+      transactions.forEach(t => { 
+          const d = new Date(t.timestamp); 
+          months.add(`${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}`); 
+      });
+      const sortedMonths = Array.from(months).sort().reverse(); 
+      const currentVal = filter.value;
       filter.innerHTML = '<option value="all">All Time</option>';
-      sortedMonths.forEach(m => { const [y, mo] = m.split('-'); filter.innerHTML += `<option value="${m}">${new Date(y, mo - 1).toLocaleDateString('en-GB', { month: 'short', year: 'numeric' })}</option>`; });
+      sortedMonths.forEach(m => { 
+          const [y, mo] = m.split('-'); 
+          filter.innerHTML += `<option value="${m}">${new Date(y, mo - 1).toLocaleDateString('en-GB', { month: 'short', year: 'numeric' })}</option>`; 
+      });
       if (Array.from(filter.options).some(o => o.value === currentVal)) filter.value = currentVal;
     }
 
     function exportData() {
       const dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify({ transactions, wishlist: wishlistItems, goal: expenseGoal, savings: monthlyWishlistSavings }));
-      const link = document.createElement("a"); link.href = dataStr; link.download = "wallet_v2_backup.json"; document.body.appendChild(link); link.click(); link.remove();
+      const link = document.createElement("a"); 
+      link.href = dataStr; 
+      link.download = "wallet_v2_backup.json"; 
+      document.body.appendChild(link); 
+      link.click(); 
+      link.remove();
     }
 
     function importData(event) {
-      const file = event.target.files[0]; if (!file) return; const reader = new FileReader();
+      const file = event.target.files[0]; 
+      if (!file) return; 
+      const reader = new FileReader();
       reader.onload = async function(e) {
         try {
           const imported = JSON.parse(e.target.result);
           if (imported.transactions) {
             await fetch(`${API_BASE}/sync-transactions`, { method: 'POST', headers: apiHeaders, body: JSON.stringify(imported.transactions) });
             if (imported.wishlist) await fetch(`${API_BASE}/sync-wishlist`, { method: 'POST', headers: apiHeaders, body: JSON.stringify(imported.wishlist) });
-            expenseGoal = imported.goal || 25000; monthlyWishlistSavings = imported.savings || 0;
-            localStorage.setItem('walletGoal', expenseGoal); localStorage.setItem('walletWishlistSavings', monthlyWishlistSavings);
+            expenseGoal = imported.goal || 25000; 
+            monthlyWishlistSavings = imported.savings || 0;
+            localStorage.setItem('walletGoal', expenseGoal); 
+            localStorage.setItem('walletWishlistSavings', monthlyWishlistSavings);
             document.getElementById('wishlistSavingsInput').value = monthlyWishlistSavings || '';
-            alert("Secure Backup imported successfully!"); syncDataFromServer(); 
+            alert("Secure Backup imported successfully!"); 
+            syncDataFromServer(); 
           }
         } catch (err) {}
-      }; reader.readAsText(file);
+      }; 
+      reader.readAsText(file);
     }
 
     async function scanReceipt(event) {
-        const file = event.target.files[0]; if (!file) return;
-        const icon = document.getElementById('scanIcon'); icon.setAttribute('data-lucide', 'loader-2'); icon.classList.add('animate-spin', 'text-blue-400'); lucide.createIcons();
-        const formData = new FormData(); formData.append('receipt', file);
+        const file = event.target.files[0]; 
+        if (!file) return;
+        const icon = document.getElementById('scanIcon'); 
+        icon.setAttribute('data-lucide', 'loader-2'); 
+        icon.classList.add('animate-spin', 'text-blue-400'); 
+        lucide.createIcons();
+        const formData = new FormData(); 
+        formData.append('receipt', file);
         try {
             const res = await fetch(`${API_BASE}/receipt-ocr`, { method: 'POST', body: formData });
             const data = await res.json();
-            if (data.total > 0) { document.getElementById('amount').value = data.total; document.getElementById('note').value = 'Vision OCR Scan'; } 
-        } catch (error) {} finally { icon.setAttribute('data-lucide', 'camera'); icon.classList.remove('animate-spin', 'text-blue-400'); lucide.createIcons(); event.target.value = ''; }
+            if (data.total > 0) { 
+                document.getElementById('amount').value = data.total; 
+                document.getElementById('note').value = 'Vision OCR Scan'; 
+            } 
+        } catch (error) {
+        } finally { 
+            icon.setAttribute('data-lucide', 'camera'); 
+            icon.classList.remove('animate-spin', 'text-blue-400'); 
+            lucide.createIcons(); 
+            event.target.value = ''; 
+        }
     }
 
     async function getAIInsights() {
-        const term = document.getElementById('aiTerminal'); const btn = document.getElementById('aiButton');
-        btn.disabled = true; btn.classList.add('opacity-50', 'cursor-not-allowed');
-        clearTimeout(aiTypingTimer); term.classList.remove('hidden'); term.innerHTML = '<span class="text-blue-400 animate-pulse font-medium">Jarvis AI is compiling analytical budget logs...</span>';
+        const term = document.getElementById('aiTerminal'); 
+        const btn = document.getElementById('aiButton');
+        btn.disabled = true; 
+        btn.classList.add('opacity-50', 'cursor-not-allowed');
+        clearTimeout(aiTypingTimer); 
+        term.classList.remove('hidden'); 
+        term.innerHTML = '<span class="text-blue-400 animate-pulse font-medium">Jarvis AI is compiling analytical budget logs...</span>';
         try {
             let tIncTotal = 0, tExpTotal = 0;
-            transactions.forEach(t => { if(t.type === 'income') tIncTotal += t.amount; else tExpTotal += t.amount; });
+            transactions.forEach(t => { 
+                if(t.type === 'income') tIncTotal += t.amount; 
+                else tExpTotal += t.amount; 
+            });
             const aiPayloadData = { summary: `Totals: Income ₹${tIncTotal}, Expense ₹${tExpTotal}.`, rawLedger: transactions };
-            const res = await fetch(`${API_BASE}/jarvis-advice`, { method: 'POST', headers: apiHeaders, body: JSON.stringify({ transactions: aiPayloadData, monthlyBudget: expenseGoal }) });
+            const res = await fetch(`${API_BASE}/jarvis-advice`, { 
+                method: 'POST', 
+                headers: apiHeaders, 
+                body: JSON.stringify({ transactions: aiPayloadData, monthlyBudget: expenseGoal }) 
+            });
             const data = await res.json(); 
-            term.innerHTML = ''; let i = 0; const txt = data.advice; term.classList.add('ai-typing');
+            term.innerHTML = ''; 
+            let i = 0; 
+            const txt = data.advice; 
+            term.classList.add('ai-typing');
+            
             function typeWriter() { 
-                if (i < txt.length) { term.innerHTML += txt.charAt(i); i++; aiTypingTimer = setTimeout(typeWriter, 15); } 
-                else { term.classList.remove('ai-typing'); btn.disabled = false; btn.classList.remove('opacity-50', 'cursor-not-allowed'); } 
+                if (i < txt.length) { 
+                    term.innerHTML += txt.charAt(i); 
+                    i++; 
+                    aiTypingTimer = setTimeout(typeWriter, 15); 
+                } else { 
+                    term.classList.remove('ai-typing'); 
+                    btn.disabled = false; 
+                    btn.classList.remove('opacity-50', 'cursor-not-allowed'); 
+                } 
             }
             typeWriter();
-        } catch (err) { term.innerHTML = '<span class="text-red-400">Analysis stream offline.</span>'; btn.disabled = false; btn.classList.remove('opacity-50', 'cursor-not-allowed'); }
+        } catch (err) { 
+            term.innerHTML = '<span class="text-red-400">Analysis stream offline.</span>'; 
+            btn.disabled = false; 
+            btn.classList.remove('opacity-50', 'cursor-not-allowed'); 
+        }
     }
 
     document.getElementById('transactionForm').addEventListener('submit', async (e) => {
         e.preventDefault(); 
-        const amt = parseFloat(document.getElementById('amount').value); if (!amt) return;
-        const dateObj = new Date(document.getElementById('date').value); const now = new Date(); dateObj.setHours(now.getHours(), now.getMinutes());
-        const newTx = { id: String(Date.now()), type: currentType, amount: amt, account: document.getElementById('account').value, category: document.getElementById('category').value, note: document.getElementById('note').value, timestamp: dateObj.getTime(), isRecurring: document.getElementById('isRecurring')?.checked };
+        const amt = parseFloat(document.getElementById('amount').value); 
+        if (!amt) return;
+        
+        const dateObj = new Date(document.getElementById('date').value); 
+        const now = new Date(); 
+        dateObj.setHours(now.getHours(), now.getMinutes());
+        
+        const newTx = { 
+            id: String(Date.now()), 
+            type: currentType, 
+            amount: amt, 
+            account: document.getElementById('account').value, 
+            category: document.getElementById('category').value, 
+            note: document.getElementById('note').value, 
+            timestamp: dateObj.getTime(), 
+            isRecurring: document.getElementById('isRecurring')?.checked 
+        };
         
         transactions.push(newTx);
-        document.getElementById('amount').value = ''; document.getElementById('note').value = ''; 
+        document.getElementById('amount').value = ''; 
+        document.getElementById('note').value = ''; 
         if(document.getElementById('isRecurring')) document.getElementById('isRecurring').checked = false; 
         updateUI();
-        try { await fetch(`${API_BASE}/add-transaction`, { method: 'POST', headers: apiHeaders, body: JSON.stringify(newTx) }); } catch(err) {}
+        
+        try { 
+            await fetch(`${API_BASE}/add-transaction`, { 
+                method: 'POST', 
+                headers: apiHeaders, 
+                body: JSON.stringify(newTx) 
+            }); 
+        } catch(err) {}
     });
 
     function openEditModal(id) {
@@ -634,7 +917,11 @@
         } 
     }
 
-    function updateWishlistSavings(v) { monthlyWishlistSavings = parseFloat(v) || 0; localStorage.setItem('walletWishlistSavings', monthlyWishlistSavings); renderWishlist(); }
+    function updateWishlistSavings(v) { 
+        monthlyWishlistSavings = parseFloat(v) || 0; 
+        localStorage.setItem('walletWishlistSavings', monthlyWishlistSavings); 
+        renderWishlist(); 
+    }
     
     async function deleteWishlistItem(id) { 
         if(confirm("Remove tracking index from database?")) { 
@@ -645,38 +932,83 @@
     }
 
     document.getElementById('wishLink').addEventListener('change', async (e) => {
-        const url = e.target.value; const icn = document.getElementById('linkStatusIcon'); if(!url) return;
-        icn.setAttribute('data-lucide', 'loader-2'); icn.classList.add('animate-spin', 'text-blue-400'); lucide.createIcons();
+        const url = e.target.value; 
+        const icn = document.getElementById('linkStatusIcon'); 
+        if(!url) return;
+        
+        icn.setAttribute('data-lucide', 'loader-2'); 
+        icn.classList.add('animate-spin', 'text-blue-400'); 
+        lucide.createIcons();
+        
         try {
-            const res = await fetch(`${API_BASE}/scrape-price`, { method: 'POST', headers: apiHeaders, body: JSON.stringify({url}) });
+            const res = await fetch(`${API_BASE}/scrape-price`, { 
+                method: 'POST', 
+                headers: apiHeaders, 
+                body: JSON.stringify({url}) 
+            });
             const result = await res.json();
+            
             if(result.title) document.getElementById('wishName').value = result.title.split('|')[0].trim();
             if(result.price) document.getElementById('wishPrice').value = result.price;
             if(result.imageUrl) document.getElementById('wishImage').value = result.imageUrl;
-        } catch(err) {} finally { icn.setAttribute('data-lucide', 'link'); icn.classList.remove('animate-spin', 'text-blue-400'); lucide.createIcons(); }
+        } catch(err) {
+        } finally { 
+            icn.setAttribute('data-lucide', 'link'); 
+            icn.classList.remove('animate-spin', 'text-blue-400'); 
+            lucide.createIcons(); 
+        }
     });
 
     document.getElementById('wishlistForm').addEventListener('submit', async (e) => {
         e.preventDefault(); 
-        const btn = e.target.querySelector('button[type="submit"]'); const orig = btn.innerText;
-        btn.innerText = "Saving Node..."; btn.disabled = true;
+        const btn = e.target.querySelector('button[type="submit"]'); 
+        const orig = btn.innerText;
+        btn.innerText = "Saving Node..."; 
+        btn.disabled = true;
         
+        let storeLabel = 'STORE NODE';
+        try { 
+            if(document.getElementById('wishLink').value) {
+                storeLabel = new URL(document.getElementById('wishLink').value).hostname.replace('www.', '').split('.')[0].toUpperCase(); 
+            }
+        } catch(e){}
+
         const newItem = { 
             id: String(Date.now()), 
             title: document.getElementById('wishName').value, 
             price: parseFloat(document.getElementById('wishPrice').value), 
             link: document.getElementById('wishLink').value, 
             imageUrl: document.getElementById('wishImage').value,
-            category: document.getElementById('wishCategory').value,
+            category: storeLabel,
+            wishCategory: document.getElementById('wishCategory').value,
             timestamp: Date.now()
         };
-        wishlistItems.push(newItem); e.target.reset(); renderWishlist();
-        try { await fetch(`${API_BASE}/add-wishlist`, { method: 'POST', headers: apiHeaders, body: JSON.stringify(newItem) }); } catch (error) {} finally { btn.innerText = orig; btn.disabled = false; }
+        
+        wishlistItems.push(newItem); 
+        e.target.reset(); 
+        renderWishlist();
+        
+        try { 
+            await fetch(`${API_BASE}/add-wishlist`, { 
+                method: 'POST', 
+                headers: apiHeaders, 
+                body: JSON.stringify(newItem) 
+            }); 
+        } catch (error) {
+        } finally { 
+            btn.innerText = orig; 
+            btn.disabled = false; 
+        }
     });
 
     function renderWishlist() {
       const grid = document.getElementById('wishlistGrid');
-      if (!wishlistItems.length) { grid.innerHTML = `<p class="text-gray-500 text-sm py-4 font-bold uppercase tracking-widest text-center col-span-full">No trackable items stored in database frame.</p>`; return; }
+      
+      if (!wishlistItems.length) { 
+          grid.innerHTML = `<p class="text-gray-500 text-sm py-4 font-bold uppercase tracking-widest text-center col-span-full">No trackable items stored in database frame.</p>`; 
+          return; 
+      }
+      
       grid.innerHTML = [...wishlistItems].sort((a,b)=>b.timestamp-a.timestamp).map(item => {
         let actionPlanHTML = '';
         if (monthlyWishlistSavings > 0) {
@@ -689,7 +1021,12 @@
             `<div class="w-full h-44 rounded-xl mb-4 bg-gradient-to-br from-blue-900/20 to-purple-900/10 border border-white/5 flex flex-col items-center justify-center text-gray-500 shadow-inner"><i data-lucide="package" class="w-8 h-8 mb-2 text-blue-500/40"></i><span class="text-[10px] uppercase font-bold tracking-widest text-gray-400/60">No Image Asset</span></div>`;
             
         let storeLabel = 'STORE NODE';
-        try { if(item.link) storeLabel = new URL(item.link).hostname.replace('www.', '').split('.')[0]; } catch(e){}
+        try { 
+            if(item.link) {
+                storeLabel = new URL(item.link).hostname.replace('www.', '').split('.')[0]; 
+            }
+        } catch(e){}
+        
         const catTag = item.category || 'UNASSIGNED';
         const formattedDate = item.timestamp ? new Date(item.timestamp).toLocaleDateString('en-GB', {day:'numeric', month:'short'}) : 'RECENT';
 
@@ -704,43 +1041,84 @@
                 <h3 class="font-bold text-white leading-tight line-clamp-2 pt-1 text-sm">${item.title}</h3>
                 <div class="flex items-baseline justify-between pt-1 mt-auto">
                     <h4 class="text-2xl font-black text-emerald-400 drop-shadow-[0_0_8px_rgba(16,185,129,0.3)]">₹${item.price.toLocaleString()}</h4>
-                    <span class="text-[9px] font-black text-gray-400 uppercase tracking-widest flex items-center bg-white/5 px-2 py-1 rounded border border-white/5 shadow-inner"><i data-lucide="shopping-bag" class="w-3 h-3 mr-1 text-purple-400"></i> ${storeLabel}</span>
+                    <span class="text-[9px] font-black text-gray-400 uppercase tracking-widest flex items-center bg-white/5 px-2 py-1 rounded border border-white/5 shadow-inner"><i data-lucide="shopping-bag" class="w-3 h-3 mr-1 text-purple-400"></i> ${item.wishCategory || 'Other'}</span>
                 </div>
             </div>
             ${actionPlanHTML}
             ${item.link ? `<a href="${item.link}" target="_blank" class="block w-full text-center mt-4 bg-white/5 hover:bg-white/10 hover:text-blue-300 py-3 rounded-xl text-xs font-bold transition-all border border-white/10 text-white shadow-sm hover:border-blue-500/30 tracking-wide">View Online Node</a>` : ''}
         </div>`;
-      }).join(''); lucide.createIcons();
+      }).join(''); 
+      lucide.createIcons();
     }
 
-    Chart.defaults.color = '#9ca3af'; Chart.defaults.font.family = 'Outfit'; 
+    Chart.defaults.color = '#9ca3af'; 
+    Chart.defaults.font.family = 'Lora'; 
     Chart.defaults.borderColor = 'rgba(255,255,255,0.05)';
     let donutChart, lineChart, radarChart, cashflowChart, polarChart;
 
     function initCharts() {
-      donutChart = new Chart(document.getElementById('walletChart').getContext('2d'), { type: 'doughnut', data: { labels:[], datasets:[{data:[], backgroundColor:[], borderWidth:0}] }, options: { responsive: true, maintainAspectRatio: false, cutout: '80%', plugins: { legend: { display: false }, tooltip: { backgroundColor: 'rgba(15, 23, 42, 0.9)', titleFont: { size: 10 }, bodyFont: { font: 'Outfit', weight: 'bold' }, padding: 10, cornerRadius: 8, borderColor: 'rgba(255,255,255,0.1)', borderWidth: 1 } } } });
+      donutChart = new Chart(document.getElementById('walletChart').getContext('2d'), { 
+          type: 'doughnut', 
+          data: { labels:[], datasets:[{data:[], backgroundColor:[], borderWidth:0}] }, 
+          options: { 
+              responsive: true, 
+              maintainAspectRatio: false, 
+              cutout: '80%', 
+              plugins: { 
+                  legend: { display: false }, 
+                  tooltip: { backgroundColor: 'rgba(15, 23, 42, 0.9)', titleFont: { size: 10, family: 'Lora' }, bodyFont: { font: 'Lora', weight: 'bold' }, padding: 10, cornerRadius: 8, borderColor: 'rgba(255,255,255,0.1)', borderWidth: 1 } 
+              } 
+          } 
+      });
       
       lineChart = new Chart(document.getElementById('trendChart').getContext('2d'), { 
-        type: 'line', data: { labels:[], datasets:[] }, 
-        options: { responsive: true, maintainAspectRatio: false, hover: { mode: 'index', intersect: false }, elements: { line: { tension: 0.4 }, point: { radius: 0, hitRadius: 10, hoverRadius: 4 } }, plugins: { legend: { display: false }, tooltip: { mode: 'index', intersect: false, backgroundColor: 'rgba(15, 23, 42, 0.9)', titleFont: { size: 10 }, bodyFont: { font: 'Outfit', weight: 'bold' }, padding: 10, cornerRadius: 8, borderColor: 'rgba(255,255,255,0.1)', borderWidth: 1 } }, scales: { x: { grid: { display: false } }, y: { border:{display:false} } } } 
+        type: 'line', 
+        data: { labels:[], datasets:[] }, 
+        options: { 
+            responsive: true, 
+            maintainAspectRatio: false, 
+            hover: { mode: 'index', intersect: false }, 
+            elements: { line: { tension: 0.4 }, point: { radius: 0, hitRadius: 10, hoverRadius: 4 } }, 
+            plugins: { 
+                legend: { display: false }, 
+                tooltip: { mode: 'index', intersect: false, backgroundColor: 'rgba(15, 23, 42, 0.9)', titleFont: { size: 10, family: 'Lora' }, bodyFont: { font: 'Lora', weight: 'bold' }, padding: 10, cornerRadius: 8, borderColor: 'rgba(255,255,255,0.1)', borderWidth: 1 } 
+            }, 
+            scales: { x: { grid: { display: false } }, y: { border:{display:false} } } 
+        } 
       });
 
       radarChart = new Chart(document.getElementById('radarChart').getContext('2d'), {
         type: 'radar',
         data: { labels: ['Dining', 'Transport', 'Shopping', 'Utilities', 'Subs'], datasets: [{ label: 'Allocation', data: [0, 0, 0, 0, 0], backgroundColor: 'rgba(59, 130, 246, 0.2)', borderColor: '#3b82f6', pointBackgroundColor: '#60a5fa', borderWidth: 2 }] },
-        options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false }, tooltip: { backgroundColor: 'rgba(15, 23, 42, 0.9)', padding: 10, cornerRadius: 8, borderColor: 'rgba(255,255,255,0.1)', borderWidth: 1 } }, scales: { r: { angleLines: { color: 'rgba(255,255,255,0.05)' }, grid: { color: 'rgba(255,255,255,0.05)' }, pointLabels: { color: '#9ca3af', font: { family: 'Outfit', size: 10, weight: 'bold' } }, ticks: { display: false } } } }
+        options: { 
+            responsive: true, 
+            maintainAspectRatio: false, 
+            plugins: { legend: { display: false }, tooltip: { backgroundColor: 'rgba(15, 23, 42, 0.9)', padding: 10, cornerRadius: 8, borderColor: 'rgba(255,255,255,0.1)', borderWidth: 1 } }, 
+            scales: { r: { angleLines: { color: 'rgba(255,255,255,0.05)' }, grid: { color: 'rgba(255,255,255,0.05)' }, pointLabels: { color: '#9ca3af', font: { family: 'Lora', size: 10, weight: 'bold' } }, ticks: { display: false } } } 
+        }
       });
       
       cashflowChart = new Chart(document.getElementById('cashflowChart').getContext('2d'), {
         type: 'bar',
         data: { labels: [], datasets: [ { label: 'Income', data: [], backgroundColor: '#10b981', borderRadius: 4 }, { label: 'Expense', data: [], backgroundColor: '#f43f5e', borderRadius: 4 } ] },
-        options: { responsive: true, maintainAspectRatio: false, hover: { mode: 'index', intersect: false }, plugins: { legend: { position: 'top', labels: { color: '#9ca3af', font: {size: 10, weight: 'bold'}, boxWidth: 12 } }, tooltip: { mode: 'index', intersect: false, backgroundColor: 'rgba(15, 23, 42, 0.9)', titleFont: { size: 10 }, bodyFont: { font: 'Outfit', weight: 'bold' }, padding: 10, cornerRadius: 8, borderColor: 'rgba(255,255,255,0.1)', borderWidth: 1 } }, scales: { x: { grid: { display: false }, ticks: {color: '#9ca3af', font: {weight: 'bold'}} }, y: { border:{display:false}, ticks: {color: '#9ca3af', font: {weight: 'bold'}} } } }
+        options: { 
+            responsive: true, 
+            maintainAspectRatio: false, 
+            hover: { mode: 'index', intersect: false }, 
+            plugins: { legend: { position: 'top', labels: { color: '#9ca3af', font: {size: 10, weight: 'bold', family: 'Lora'}, boxWidth: 12 } }, tooltip: { mode: 'index', intersect: false, backgroundColor: 'rgba(15, 23, 42, 0.9)', titleFont: { size: 10, family: 'Lora' }, bodyFont: { font: 'Lora', weight: 'bold' }, padding: 10, cornerRadius: 8, borderColor: 'rgba(255,255,255,0.1)', borderWidth: 1 } }, 
+            scales: { x: { grid: { display: false }, ticks: {color: '#9ca3af', font: {weight: 'bold', family: 'Lora'}} }, y: { border:{display:false}, ticks: {color: '#9ca3af', font: {weight: 'bold', family: 'Lora'}} } } 
+        }
       });
 
       polarChart = new Chart(document.getElementById('polarChart').getContext('2d'), {
         type: 'polarArea',
         data: { labels: ['UPI', 'Card', 'Cash'], datasets: [{ data: [0, 0, 0], backgroundColor: ['rgba(59, 130, 246, 0.7)', 'rgba(139, 92, 246, 0.7)', 'rgba(16, 185, 129, 0.7)'], borderWidth: 0 }] },
-        options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { position: 'right', labels: { color: '#9ca3af', font: {size: 10, weight: 'bold'}, boxWidth: 10 } }, tooltip: { backgroundColor: 'rgba(15, 23, 42, 0.9)', padding: 10, cornerRadius: 8, borderColor: 'rgba(255,255,255,0.1)', borderWidth: 1 } }, scales: { r: { grid: { color: 'rgba(255,255,255,0.05)' }, ticks: { display: false } } } }
+        options: { 
+            responsive: true, 
+            maintainAspectRatio: false, 
+            plugins: { legend: { position: 'right', labels: { color: '#9ca3af', font: {size: 10, weight: 'bold', family: 'Lora'}, boxWidth: 10 } }, tooltip: { backgroundColor: 'rgba(15, 23, 42, 0.9)', padding: 10, cornerRadius: 8, borderColor: 'rgba(255,255,255,0.1)', borderWidth: 1 } }, 
+            scales: { r: { grid: { color: 'rgba(255,255,255,0.05)' }, ticks: { display: false } } } 
+        }
       });
     }
 
@@ -781,7 +1159,19 @@
                 { label: 'Income', data: incData, borderColor: '#10b981', backgroundColor: 'rgba(16, 185, 129, 0.1)', fill: true, tension: 0.4 },
                 { label: 'Expense', data: expData, borderColor: '#f43f5e', backgroundColor: 'rgba(244, 63, 94, 0.1)', fill: true, tension: 0.4 }
             ]},
-            options: { responsive: true, maintainAspectRatio: false, hover: {mode: 'index', intersect: false}, plugins: { tooltip: {mode: 'index', intersect: false, backgroundColor: 'rgba(15, 23, 42, 0.9)', titleFont: { size: 12 }, bodyFont: { font: 'Outfit', weight: 'bold' }, padding: 12, cornerRadius: 8, borderColor: 'rgba(255,255,255,0.1)', borderWidth: 1 }, legend: { labels: { color: '#9ca3af', font: {weight: 'bold'}, boxWidth: 12 } } }, scales: { x: { grid: { display: false }, ticks: {color: '#9ca3af', font: {weight: 'bold'}} }, y: { border:{display:false}, ticks: {color: '#9ca3af', font: {weight: 'bold'}} } } }
+            options: { 
+                responsive: true, 
+                maintainAspectRatio: false, 
+                hover: {mode: 'index', intersect: false}, 
+                plugins: { 
+                    tooltip: {mode: 'index', intersect: false, backgroundColor: 'rgba(15, 23, 42, 0.9)', titleFont: { size: 12, family: 'Lora' }, bodyFont: { font: 'Lora', weight: 'bold' }, padding: 12, cornerRadius: 8, borderColor: 'rgba(255,255,255,0.1)', borderWidth: 1 }, 
+                    legend: { labels: { color: '#9ca3af', font: {weight: 'bold', family: 'Lora'}, boxWidth: 12 } } 
+                }, 
+                scales: { 
+                    x: { grid: { display: false }, ticks: {color: '#9ca3af', font: {weight: 'bold', family: 'Lora'}} }, 
+                    y: { border:{display:false}, ticks: {color: '#9ca3af', font: {weight: 'bold', family: 'Lora'}} } 
+                } 
+            }
         });
     }
 
@@ -790,55 +1180,114 @@
     }
 
     function updateUI() {
-      populateMonthFilter(); let tInc = 0, tExp = 0; let bal = { UPI: 0, Card: 0, Cash: 0 };
+      populateMonthFilter(); 
+      let tInc = 0, tExp = 0; 
+      let bal = { UPI: 0, Card: 0, Cash: 0 };
+      
       const filtered = transactions.filter(t => {
-          if (selectedMonth !== 'all') { const d = new Date(t.timestamp); if (`${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}` !== selectedMonth) return false; }
-          if(searchQuery) { const q = searchQuery.toLowerCase(); return t.category.toLowerCase().includes(q) || (t.note && t.note.toLowerCase().includes(q)); }
+          if (selectedMonth !== 'all') { 
+              const d = new Date(t.timestamp); 
+              if (`${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}` !== selectedMonth) return false; 
+          }
+          if(searchQuery) { 
+              const q = searchQuery.toLowerCase(); 
+              return t.category.toLowerCase().includes(q) || (t.note && t.note.toLowerCase().includes(q)); 
+          }
           return true;
       });
 
-      transactions.forEach(t => { if (t.type === 'income') { if(bal[t.account]!==undefined) bal[t.account] += t.amount; } if (t.type === 'expense') { if(bal[t.account]!==undefined) bal[t.account] -= t.amount; } });
-      filtered.forEach(t => { if (t.type === 'income') tInc += t.amount; if (t.type === 'expense') tExp += t.amount; });
-
-      document.getElementById('totalIncome').innerText = `₹${tInc.toLocaleString()}`; document.getElementById('totalExpense').innerText = `₹${tExp.toLocaleString()}`; document.getElementById('chartCenterText').innerText = `₹${tExp.toLocaleString()}`;
-      document.getElementById('netBalance').innerText = `₹${(bal.UPI+bal.Card+bal.Cash).toLocaleString()}`; ['UPI', 'Card', 'Cash'].forEach(a => document.getElementById(`bal${a}`).innerText = `₹${bal[a].toLocaleString()}`);
+      transactions.forEach(t => { 
+          if (t.type === 'income') { if(bal[t.account]!==undefined) bal[t.account] += t.amount; } 
+          if (t.type === 'expense') { if(bal[t.account]!==undefined) bal[t.account] -= t.amount; } 
+      });
       
-      const pct = Math.min((tExp / expenseGoal) * 100, 100) || 0; document.getElementById('goalProgress').style.width = `${pct}%`; document.getElementById('goalText').innerText = `Target Threshold: ₹${expenseGoal.toLocaleString()} (${Math.round(pct)}%)`;
+      filtered.forEach(t => { 
+          if (t.type === 'income') tInc += t.amount; 
+          if (t.type === 'expense') tExp += t.amount; 
+      });
+
+      document.getElementById('totalIncome').innerText = `₹${tInc.toLocaleString()}`; 
+      document.getElementById('totalExpense').innerText = `₹${tExp.toLocaleString()}`; 
+      document.getElementById('chartCenterText').innerText = `₹${tExp.toLocaleString()}`;
+      document.getElementById('netBalance').innerText = `₹${(bal.UPI+bal.Card+bal.Cash).toLocaleString()}`; 
+      
+      ['UPI', 'Card', 'Cash'].forEach(a => document.getElementById(`bal${a}`).innerText = `₹${bal[a].toLocaleString()}`);
+      
+      const pct = Math.min((tExp / expenseGoal) * 100, 100) || 0; 
+      document.getElementById('goalProgress').style.width = `${pct}%`; 
+      document.getElementById('goalText').innerText = `Target Threshold: ₹${expenseGoal.toLocaleString()} (${Math.round(pct)}%)`;
       document.getElementById('recordCount').innerText = filtered.length;
 
       const currentDay = Math.max(1, new Date().getDate());
-      const burnRate = tExp / currentDay; document.getElementById('statBurnRate').innerText = `₹${Math.round(burnRate).toLocaleString()}`;
-      const savingsRate = tInc > 0 ? ((tInc - tExp) / tInc) * 100 : 0; document.getElementById('statSavingsRate').innerText = `${Math.max(0, savingsRate).toFixed(1)}%`;
+      const burnRate = tExp / currentDay; 
+      document.getElementById('statBurnRate').innerText = `₹${Math.round(burnRate).toLocaleString()}`;
+      
+      const savingsRate = tInc > 0 ? ((tInc - tExp) / tInc) * 100 : 0; 
+      document.getElementById('statSavingsRate').innerText = `${Math.max(0, savingsRate).toFixed(1)}%`;
 
-      let tLiabilities = 0; filtered.forEach(t => { if(t.type === 'expense' && t.isRecurring) tLiabilities += t.amount; }); document.getElementById('statLiabilities').innerText = `₹${tLiabilities.toLocaleString()}`;
-      const liquidAssets = bal.UPI + bal.Cash + bal.Card; const runway = burnRate > 0 ? liquidAssets / burnRate : 0; document.getElementById('statRunway').innerText = `${Math.round(runway)} Days`;
+      let tLiabilities = 0; 
+      filtered.forEach(t => { if(t.type === 'expense' && t.isRecurring) tLiabilities += t.amount; }); 
+      document.getElementById('statLiabilities').innerText = `₹${tLiabilities.toLocaleString()}`;
+      
+      const liquidAssets = bal.UPI + bal.Cash + bal.Card; 
+      const runway = burnRate > 0 ? liquidAssets / burnRate : 0; 
+      document.getElementById('statRunway').innerText = `${Math.round(runway)} Days`;
 
       let healthScore = 50; 
-      if (savingsRate > 20) healthScore += 20; else if (savingsRate > 5) healthScore += 10;
-      if (runway > 30) healthScore += 20; else if (runway > 15) healthScore += 10;
+      if (savingsRate > 20) healthScore += 20; 
+      else if (savingsRate > 5) healthScore += 10;
+      
+      if (runway > 30) healthScore += 20; 
+      else if (runway > 15) healthScore += 10;
+      
       if (tLiabilities < (tInc * 0.2)) healthScore += 10;
+      
       const finalHealth = Math.min(100, Math.max(10, Math.round(healthScore)));
-      const healthEl = document.getElementById('healthScore'); healthEl.innerText = `${finalHealth}/100`; healthEl.className = `text-xs font-black drop-shadow-[0_0_8px_rgba(16,185,129,0.5)] ml-1 ${finalHealth > 75 ? 'text-emerald-400' : (finalHealth > 40 ? 'text-orange-400' : 'text-rose-400')}`;
+      const healthEl = document.getElementById('healthScore'); 
+      healthEl.innerText = `${finalHealth}/100`; 
+      healthEl.className = `text-xs font-black drop-shadow-[0_0_8px_rgba(16,185,129,0.5)] ml-1 ${finalHealth > 75 ? 'text-emerald-400' : (finalHealth > 40 ? 'text-orange-400' : 'text-rose-400')}`;
 
-      const catData = {}; filtered.filter(t=>t.type==='expense').forEach(e => catData[e.category] = (catData[e.category]||0)+e.amount);
+      const catData = {}; 
+      filtered.filter(t=>t.type==='expense').forEach(e => catData[e.category] = (catData[e.category]||0)+e.amount);
       const sCats = Object.entries(catData).sort((a,b)=>b[1]-a[1]);
-      donutChart.data = { labels: sCats.map(c=>c[0]), datasets: [{ data: sCats.map(c=>c[1]), backgroundColor: sCats.map(c=>CAT_COLORS[c[0]]||'#6b7280') }] }; donutChart.update();
+      donutChart.data = { labels: sCats.map(c=>c[0]), datasets: [{ data: sCats.map(c=>c[1]), backgroundColor: sCats.map(c=>CAT_COLORS[c[0]]||'#6b7280') }] }; 
+      donutChart.update();
 
       const radarMappings = ['Food & Dining', 'Transport', 'Shopping', 'Utilities', 'Subscriptions'];
-      radarChart.data.datasets[0].data = radarMappings.map(c => catData[c] || 0); radarChart.update();
+      radarChart.data.datasets[0].data = radarMappings.map(c => catData[c] || 0); 
+      radarChart.update();
 
-      polarChart.data.datasets[0].data = [Math.max(0, bal.UPI), Math.max(0, bal.Card), Math.max(0, bal.Cash)]; polarChart.update();
+      polarChart.data.datasets[0].data = [Math.max(0, bal.UPI), Math.max(0, bal.Card), Math.max(0, bal.Cash)]; 
+      polarChart.update();
 
-      const dates = {}; const sortedFiltered = [...filtered].sort((a,b)=>a.timestamp-b.timestamp);
+      const dates = {}; 
+      const sortedFiltered = [...filtered].sort((a,b)=>a.timestamp-b.timestamp);
+      
       if(sortedFiltered.length > 0) {
-          const endNode = new Date(sortedFiltered[sortedFiltered.length-1].timestamp); endNode.setHours(0,0,0,0);
-          const startNode = new Date(endNode); startNode.setDate(startNode.getDate() - 14); 
-          for(let d = new Date(startNode); d <= endNode; d.setDate(d.getDate() + 1)) { dates[d.toLocaleDateString('en-GB',{day:'numeric',month:'short'})] = {i:0,e:0}; }
-          sortedFiltered.forEach(t => { const dStr = new Date(t.timestamp).toLocaleDateString('en-GB',{day:'numeric',month:'short'}); if(dates[dStr]) { t.type === 'income' ? dates[dStr].i += t.amount : dates[dStr].e += t.amount; } });
+          const endNode = new Date(sortedFiltered[sortedFiltered.length-1].timestamp); 
+          endNode.setHours(0,0,0,0);
+          const startNode = new Date(endNode); 
+          startNode.setDate(startNode.getDate() - 14); 
+          for(let d = new Date(startNode); d <= endNode; d.setDate(d.getDate() + 1)) { 
+              dates[d.toLocaleDateString('en-GB',{day:'numeric',month:'short'})] = {i:0,e:0}; 
+          }
+          sortedFiltered.forEach(t => { 
+              const dStr = new Date(t.timestamp).toLocaleDateString('en-GB',{day:'numeric',month:'short'}); 
+              if(dates[dStr]) { 
+                  t.type === 'income' ? dates[dStr].i += t.amount : dates[dStr].e += t.amount; 
+              } 
+          });
       }
       
       const labels = Object.keys(dates); 
-      lineChart.data = { labels, datasets: [ { data: labels.map(l=>dates[l].i), borderColor: '#10b981', backgroundColor: 'rgba(16, 185, 129, 0.1)', fill:true, pointRadius:2 }, { data: labels.map(l=>dates[l].e), borderColor: '#f43f5e', backgroundColor: 'rgba(244, 63, 94, 0.1)', fill:true, pointRadius:2 } ]}; lineChart.update();
+      lineChart.data = { 
+          labels, 
+          datasets: [ 
+              { data: labels.map(l=>dates[l].i), borderColor: '#10b981', backgroundColor: 'rgba(16, 185, 129, 0.1)', fill:true, pointRadius:2 }, 
+              { data: labels.map(l=>dates[l].e), borderColor: '#f43f5e', backgroundColor: 'rgba(244, 63, 94, 0.1)', fill:true, pointRadius:2 } 
+          ]
+      }; 
+      lineChart.update();
 
       const last7Labels = labels.slice(-7);
       cashflowChart.data.labels = last7Labels;
@@ -846,28 +1295,45 @@
       cashflowChart.data.datasets[1].data = last7Labels.map(l => dates[l].e);
       cashflowChart.update();
 
-      const insightsEl = document.getElementById('topInsights'); insightsEl.className = "mt-4 space-y-3 pt-4 border-t border-white/10 flex-grow overflow-y-auto max-h-[160px] pr-2";
-      if (sCats.length === 0) { insightsEl.innerHTML = `<p class="text-xs text-gray-500 text-center py-2 font-bold uppercase tracking-widest">No category logs processed.</p>`; } 
-      else { insightsEl.innerHTML = sCats.map(([cat, val]) => { const catPct = tExp ? Math.round((val / tExp) * 100) : 0; return `<div><div class="flex justify-between text-[10px] font-bold mb-1"><span class="text-gray-300 uppercase tracking-widest">${cat}</span><span class="text-gray-400 font-bold">₹${val.toLocaleString()} (${catPct}%)</span></div><div class="w-full bg-black/40 rounded-full h-1.5 shadow-inner border border-white/5"><div class="h-1.5 rounded-full shadow-[0_0_8px_rgba(255,255,255,0.2)]" style="width: ${catPct}%; background-color: ${CAT_COLORS[cat] || '#6b7280'}"></div></div></div>`; }).join(''); }
+      const insightsEl = document.getElementById('topInsights'); 
+      insightsEl.className = "mt-4 space-y-3 pt-4 border-t border-white/10 flex-grow overflow-y-auto max-h-[160px] pr-2";
+      if (sCats.length === 0) { 
+          insightsEl.innerHTML = `<p class="text-xs text-gray-500 text-center py-2 font-bold uppercase tracking-widest">No category logs processed.</p>`; 
+      } else { 
+          insightsEl.innerHTML = sCats.map(([cat, val]) => { 
+              const catPct = tExp ? Math.round((val / tExp) * 100) : 0; 
+              return `<div><div class="flex justify-between text-[10px] font-bold mb-1"><span class="text-gray-300 uppercase tracking-widest">${cat}</span><span class="text-gray-400 font-bold">₹${val.toLocaleString()} (${catPct}%)</span></div><div class="w-full bg-black/40 rounded-full h-1.5 shadow-inner border border-white/5"><div class="h-1.5 rounded-full shadow-[0_0_8px_rgba(255,255,255,0.2)]" style="width: ${catPct}%; background-color: ${CAT_COLORS[cat] || '#6b7280'}"></div></div></div>`; 
+          }).join(''); 
+      }
 
       const list = document.getElementById('ledgerList');
-      if(!filtered.length) list.innerHTML = `<p class="text-gray-500 text-sm py-8 text-center font-black uppercase tracking-widest">No Database Entries Found.</p>`;
-      else list.innerHTML = [...filtered].sort((a,b)=>b.timestamp-a.timestamp).map(t => {
+      if(!filtered.length) {
+          list.innerHTML = `<p class="text-gray-500 text-sm py-8 text-center font-black uppercase tracking-widest">No Database Entries Found.</p>`;
+      } else { 
+          list.innerHTML = [...filtered].sort((a,b)=>b.timestamp-a.timestamp).map(t => {
           const isI = t.type === 'income';
           let impactBadge = '';
-          if (t.amount > 10000 && !isI) impactBadge = `<span class="px-1.5 py-0.5 bg-rose-500/20 text-rose-400 border border-rose-500/30 rounded text-[8px] font-black uppercase ml-2 tracking-widest relative -top-0.5 shadow-sm">High Impact</span>`;
-          else if (t.amount < 100 && !isI) impactBadge = `<span class="px-1.5 py-0.5 bg-gray-500/20 text-gray-400 border border-gray-500/30 rounded text-[8px] font-black uppercase ml-2 tracking-widest relative -top-0.5 shadow-sm">Micro</span>`;
+          if (t.amount > 10000 && !isI) {
+              impactBadge = `<span class="px-1.5 py-0.5 bg-rose-500/20 text-rose-400 border border-rose-500/30 rounded text-[8px] font-black uppercase ml-2 tracking-widest relative -top-0.5 shadow-sm">High Impact</span>`;
+          } else if (t.amount < 100 && !isI) {
+              impactBadge = `<span class="px-1.5 py-0.5 bg-gray-500/20 text-gray-400 border border-gray-500/30 rounded text-[8px] font-black uppercase ml-2 tracking-widest relative -top-0.5 shadow-sm">Micro</span>`;
+          }
 
           return `<div class="ledger-item flex items-center justify-between p-4 rounded-2xl mb-2.5 relative overflow-hidden"><div class="absolute inset-0 bg-gradient-to-r from-transparent via-white/[0.01] to-transparent opacity-0 hover:opacity-100 transition-opacity pointer-events-none"></div><div class="flex items-center space-x-3 md:space-x-4 relative z-10"><div class="w-10 h-10 rounded-full flex items-center justify-center shadow-inner border border-white/5 ${isI ? 'bg-emerald-500/10 text-emerald-400 shadow-[0_0_15px_rgba(16,185,129,0.1)]' : 'bg-rose-500/10 text-rose-400 shadow-[0_0_15px_rgba(244,63,94,0.1)]'}"><i data-lucide="${isI ? 'arrow-down-left' : 'credit-card'}" class="w-5 h-5 drop-shadow-md"></i></div><div><p class="font-bold text-gray-200 text-sm flex items-center">${t.category} ${t.isRecurring ? '<span class="bg-blue-600/30 text-blue-400 text-[8px] px-1 ml-1 rounded border border-blue-500/20 shadow-sm">AUTO</span>' : ''} ${impactBadge}</p><p class="text-[10px] text-gray-500 uppercase mt-0.5 tracking-wider font-bold">${t.account} • ${new Date(t.timestamp).toLocaleDateString('en-GB',{day:'numeric',month:'short'})}</p></div></div><div class="flex flex-col items-end space-y-1 relative z-10"><div class="flex items-center space-x-2"><p class="font-black text-sm md:text-base ${isI ? 'text-emerald-400 drop-shadow-[0_0_5px_rgba(16,185,129,0.4)]' : 'text-rose-400 drop-shadow-[0_0_5px_rgba(244,63,94,0.4)]'}">${isI?'+':'-'}₹${t.amount.toLocaleString()}</p><button onclick="openEditModal('${t.id}')" class="action-btn text-gray-500 hover:text-blue-400 p-2 transition-colors hover:scale-110 active:scale-95"><i data-lucide="edit-2" class="w-4 h-4"></i></button><button onclick="deleteTx('${t.id}')" class="action-btn text-gray-500 hover:text-rose-500 p-2 pl-0 transition-colors hover:scale-110 active:scale-95"><i data-lucide="trash-2" class="w-4 h-4"></i></button></div>${t.note ? `<p class="text-[10px] text-gray-500 transaction-desc text-right mt-1 font-medium tracking-wide">"${t.note}"</p>`:''}</div></div>`;
-      }).join(''); lucide.createIcons();
+      }).join(''); 
+      }
+      lucide.createIcons();
     }
 
     document.addEventListener('DOMContentLoaded', () => { 
-        populateCategories(); document.getElementById('date').valueAsDate = new Date(); 
-        initCharts(); syncDataFromServer(); 
+        populateCategories(); 
+        document.getElementById('date').valueAsDate = new Date(); 
+        initCharts(); 
+        syncDataFromServer(); 
         document.getElementById('searchInput').addEventListener('input', (e) => { searchQuery = e.target.value; updateUI(); }); 
         document.getElementById('monthFilter').addEventListener('change', (e) => { selectedMonth = e.target.value; updateUI(); }); 
-        loadPendingTransactions(); setInterval(loadPendingTransactions, 8000); 
+        loadPendingTransactions(); 
+        setInterval(loadPendingTransactions, 8000); 
     });
   </script>
 </body>

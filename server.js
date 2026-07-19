@@ -169,7 +169,6 @@ app.post('/api/sms-webhook', async (req, res) => {
         if (!rawText) return res.status(400).json({ error: 'No SMS text provided' });
 
         const model = genAI.getGenerativeModel({ model: 'gemini-2.5-flash' });
-        // SMART AUTO-CATEGORIZATION PROMPT
         const prompt = `Analyze this bank SMS: "${rawText}". 
         Extract the amount, merchant, date, type (income/expense), and category.
         
@@ -281,7 +280,7 @@ app.post('/api/receipt-ocr', upload.single('receipt'), async (req, res) => {
     }
 });
 
-// ROBUST FALLBACK SCRAPER
+// RE-ENGINEERED LINK SCRAPER WITH DEEP TEXT PARSING
 app.post('/api/scrape-price', async (req, res) => {
     let browser;
     try {
@@ -335,7 +334,7 @@ app.post('/api/scrape-price', async (req, res) => {
             }
 
             if (price === 0) {
-                let match = document.body.innerText.match(/(?:₹|Rs\.?)\s*([0-9,]+(?:\.[0-9]{2})?)/i);
+                let match = document.body.innerText.match(/(?:₹|Rs\.?)\s*([0-9,]+(:\.[0-9]{2})?)/i);
                 if (match) price = parseFloat(match[1].replace(/,/g, ''));
             }
 
@@ -347,7 +346,6 @@ app.post('/api/scrape-price', async (req, res) => {
     } catch (error) {
         if (browser) await browser.close();
         
-        // Stealth Fallback: If Puppeteer crashes, use raw HTTP Fetch to at least get Title & Image!
         try {
             const fallbackRes = await fetch(req.body.url, { headers: { 'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64)' } });
             const html = await fallbackRes.text();
@@ -365,11 +363,11 @@ app.post('/api/scrape-price', async (req, res) => {
     }
 });
 
-// FAST FIREWALL BYPASS ROUTE (UPGRADED UI POPUP)
+// FAST FIREWALL BYPASS ROUTE (RICH FULL METADATA SYNC)
 app.get('/api/bookmark-auto', async (req, res) => {
     const { title, price, link, img, cat } = req.query;
     
-    if (!link || !price) return res.send("Error: Missing data parameters.");
+    if (!link || !price) return res.send("Error: Missing parameters.");
 
     let hostname = 'ONLINE';
     try { hostname = new URL(link).hostname.replace('www.', '').split('.')[0].toUpperCase(); } catch(e) {}
@@ -385,7 +383,7 @@ app.get('/api/bookmark-auto', async (req, res) => {
         link: decodeURIComponent(link), 
         imageUrl: safeImg,
         category: safeCat,
-        addedOn: new Date().toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' }),
+        wishCategory: 'Other',
         timestamp: Date.now()
     };
     
@@ -394,13 +392,13 @@ app.get('/api/bookmark-auto', async (req, res) => {
         res.send(`
             <html style="background:#050505; color:#10b981; font-family:sans-serif; padding:2rem; display:flex; justify-content:center; align-items:center; height:100vh; overflow:hidden;">
                 <div style="background:rgba(255,255,255,0.05); padding:30px; border-radius:24px; text-align:center; max-width:400px; border:1px solid rgba(255,255,255,0.1); box-shadow:0 10px 40px rgba(0,0,0,0.5);">
-                    <h2 style="margin-top:0; color:#3b82f6; font-size:24px;">🎯 Wallet Tracker</h2>
+                    <h2 style="margin-top:0; color:#3b82f6; font-size:24px;">🎯 Wishlist Added</h2>
                     ${safeImg ? `<img src="${safeImg}" style="width:100%; height:180px; object-fit:cover; border-radius:12px; margin:15px 0;">` : ''}
-                    <span style="background:rgba(59,130,246,0.15); color:#60a5fa; padding:4px 10px; border-radius:8px; font-size:11px; font-weight:bold; text-transform:uppercase;">${safeCat}</span>
+                    <div style="margin: 10px 0;"><span style="background:rgba(59,130,246,0.15); color:#60a5fa; padding:4px 10px; border-radius:8px; font-size:11px; font-weight:bold; text-transform:uppercase;">${safeCat}</span></div>
                     <p style="color:#f3f4f6; margin: 15px 0; font-size: 14px; line-height: 1.4; font-weight:bold;">${safeTitle}</p>
                     <h1 style="color:#10b981; font-size: 40px; margin: 10px 0;">₹${item.price.toLocaleString()}</h1>
                     <p style="color:#10b981; font-weight:bold;">Saved to Database Successfully!</p>
-                    <p style="color:#6b7280; font-size:12px; margin-top:20px;">Window closing automatically...</p>
+                    <p style="color:#6b7280; font-size:12px; margin-top:20px;">Closing window...</p>
                 </div>
                 <script>setTimeout(() => window.close(), 2500);</script>
             </html>
@@ -414,7 +412,6 @@ app.get('/api/bookmark', async (req, res) => {
     const targetUrl = req.query.url;
     if (!targetUrl) return res.send("No URL provided.");
     
-    // ... [Original Fallback Manual HTML Code maintained] ...
     res.send(`
         <html style="background:#050505; color:#10b981; font-family:sans-serif; text-align:center; padding:2rem;">
             <h2 style="margin-top: 20px; color:#3b82f6;">🎯 Wallet V2.0</h2>
@@ -437,7 +434,7 @@ app.get('/api/bookmark', async (req, res) => {
                     btn.innerText = "Syncing to Cloud..."; btn.style.background = "#10b981";
                     fetch('https://wallet-y7yv.onrender.com/api/add-wishlist', {
                         method: 'POST', headers: { 'Content-Type': 'application/json' },
-                        body: JSON.stringify({ id: String(Date.now()), title: nameInput, price: parseFloat(priceInput), link: '${targetUrl}', imageUrl: '', category: catInput, timestamp: Date.now() })
+                        body: JSON.stringify({ id: String(Date.now()), title: nameInput, price: parseFloat(priceInput), link: '${targetUrl}', imageUrl: '', category: 'MANUAL', wishCategory: catInput, timestamp: Date.now() })
                     }).then(() => {
                         document.getElementById('manualEntryBox').innerHTML = '<h1 style="color:#10b981; font-size: 30px; margin: 30px 0;">Saved! 🎯</h1>';
                         setTimeout(() => window.close(), 1500);
