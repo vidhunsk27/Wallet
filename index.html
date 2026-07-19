@@ -2,13 +2,13 @@
 <html lang="en" class="dark scroll-smooth">
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, maximum-scale=1.0, user-scalable=no">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
   <title>Wallet V2.0 - Premium Edition</title>
   <script src="https://cdn.tailwindcss.com"></script>
   <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
   <script src="https://unpkg.com/lucide@latest"></script>
   <style>
-    @import url('https://fonts.googleapis.com/css2?family=Lora:ital,wght@0,400;0,600;1,400&family=Playfair+Display:ital,wght@0,600;0,900;1,400;1,700&display=swap');
+    @import url('https://fonts.googleapis.com/css2?family=Lora:ital,wght@0,400;0,500;0,600;0,700;1,400;1,500;1,600;1,700&display=swap');
     
     body { 
         font-family: 'Lora', serif; 
@@ -17,10 +17,10 @@
         -webkit-overflow-scrolling: touch; 
         overflow-x: hidden; 
     }
-
-    h1, h2, .cursive-title {
-        font-family: 'Playfair Display', serif;
-        font-style: italic;
+    
+    h1, h2 { 
+        font-style: italic; 
+        letter-spacing: 0.5px; 
     }
     
     .glass-panel { 
@@ -70,36 +70,13 @@
     ::-webkit-calendar-picker-indicator:hover { opacity: 1; }
 
     .view-hidden { display: none; } 
-    .view-active { display: block; }
+    .view-active { display: block; animation: fadeSlideUp 0.5s cubic-bezier(0.16, 1, 0.3, 1) forwards; }
+    @keyframes fadeSlideUp { from { opacity: 0; transform: translateY(30px); } to { opacity: 1; transform: translateY(0); } }
     
-    .card-enter { 
-        animation: cardSlideUp 0.7s cubic-bezier(0.16, 1, 0.3, 1) both; 
-        opacity: 0; 
-        transform: translateY(30px) scale(0.98); 
-    }
-    
-    .delay-100 { animation-delay: 100ms; } 
-    .delay-200 { animation-delay: 200ms; } 
-    .delay-300 { animation-delay: 300ms; }
-    
-    @keyframes cardSlideUp { 
-        to { opacity: 1; transform: translateY(0) scale(1); } 
-    }
-    
-    .blob-anim { animation: pulseBlob 12s infinite alternate cubic-bezier(0.4, 0, 0.2, 1); }
-    @keyframes pulseBlob { 
-        0% { transform: scale(1) translate(0, 0); opacity: 0.8; } 
-        50% { transform: scale(1.1) translate(5%, 5%); opacity: 0.4; } 
-        100% { transform: scale(0.95) translate(-5%, -5%); opacity: 0.8; } 
-    }
-
-    .ai-typing { 
-        border-right: 2px solid #3b82f6; 
-        white-space: pre-wrap; 
-        overflow: hidden; 
-        animation: blink 1s step-end infinite; 
-    }
+    .ai-typing { border-right: 2px solid #3b82f6; white-space: pre-wrap; overflow: hidden; animation: blink 1s step-end infinite; }
     @keyframes blink { 50% { border-color: transparent; } }
+    
+    .transaction-desc { white-space: normal !important; word-wrap: break-word; overflow: visible; line-height: 1.4; display: block; max-width: 100%; }
     
     .info-icon { 
         display: inline-flex; 
@@ -142,73 +119,43 @@
         z-index: 100; 
         box-shadow: 0 10px 30px rgba(0,0,0,0.8); 
         font-weight: 500; 
-        font-family: 'Lora'; 
+        font-family: 'Lora', serif; 
+        font-style: normal;
         text-transform: none; 
         text-align: left; 
     }
     
-    .info-icon::before { 
-        content: ''; 
-        position: absolute; 
-        bottom: 110%; 
-        left: 50%; 
-        transform: translateX(-50%); 
-        border-width: 6px; 
-        border-style: solid; 
-        border-color: rgba(59, 130, 246, 0.3) transparent transparent transparent; 
-        opacity: 0; 
-        pointer-events: none; 
-        transition: all 0.3s ease; 
-        z-index: 101; 
-    }
-    
-    .info-icon:hover::after, .info-icon:hover::before { 
-        opacity: 1; 
-        transform: translateX(-50%) translateY(-4px); 
-    }
+    .info-icon::before { content: ''; position: absolute; bottom: 110%; left: 50%; transform: translateX(-50%); border-width: 6px; border-style: solid; border-color: rgba(59, 130, 246, 0.3) transparent transparent transparent; opacity: 0; pointer-events: none; transition: all 0.3s ease; z-index: 101; }
+    .info-icon:hover::after, .info-icon:hover::before { opacity: 1; transform: translateX(-50%) translateY(-4px); }
 
-    .modal-active { animation: modalPop 0.5s cubic-bezier(0.16, 1, 0.3, 1) forwards; }
-    @keyframes modalPop { 0% { opacity: 0; transform: scale(0.92) translateY(20px); } 100% { opacity: 1; transform: scale(1) translateY(0); } }
+    .modal-active { animation: modalPop 0.4s cubic-bezier(0.16, 1, 0.3, 1) forwards; }
+    @keyframes modalPop { 0% { opacity: 0; transform: scale(0.95) translateY(20px); } 100% { opacity: 1; transform: scale(1) translateY(0); } }
 
-    .ledger-item { 
-        transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1); 
-        border: 1px solid transparent; 
-        background: rgba(255,255,255,0.02); 
-    }
-    
-    .ledger-item:hover { 
-        transform: translateY(-3px) scale(1.01); 
-        box-shadow: 0 12px 30px rgba(0,0,0,0.5); 
-        border-color: rgba(255,255,255,0.08); 
-        background-color: rgba(255,255,255,0.05); 
-    }
-    
+    .ledger-item { transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1); border: 1px solid transparent; }
+    .ledger-item:hover { transform: translateY(-3px); box-shadow: 0 8px 25px rgba(0,0,0,0.4); border-color: rgba(255,255,255,0.1); background-color: rgba(255,255,255,0.08); }
     .ledger-item .action-btn { opacity: 1; transform: scale(1); transition: all 0.2s; }
-    @media (min-width: 768px) { 
-        .ledger-item .action-btn { opacity: 0; transform: scale(0.8); } 
-        .ledger-item:hover .action-btn { opacity: 1; transform: scale(1); } 
-    }
+    @media (min-width: 768px) { .ledger-item .action-btn { opacity: 0; transform: scale(0.8); } .ledger-item:hover .action-btn { opacity: 1; transform: scale(1); } }
   </style>
 </head>
-<body class="p-3 md:p-8 min-h-screen pb-24 relative overflow-x-hidden">
+<body class="p-3 md:p-8 min-h-screen pb-24">
 
-  <div class="fixed top-0 left-1/4 w-[40rem] h-[40rem] bg-blue-600/10 rounded-full blur-[120px] pointer-events-none -z-10 blob-anim"></div>
-  <div class="fixed bottom-0 right-1/4 w-[40rem] h-[40rem] bg-purple-600/10 rounded-full blur-[120px] pointer-events-none -z-10 blob-anim" style="animation-delay: -6s;"></div>
+  <div class="fixed top-0 left-1/4 w-72 md:w-96 h-72 md:h-96 bg-blue-600/10 rounded-full blur-[100px] pointer-events-none -z-10 transition-colors duration-1000"></div>
+  <div class="fixed bottom-0 right-1/4 w-72 md:w-96 h-72 md:h-96 bg-purple-600/5 rounded-full blur-[100px] pointer-events-none -z-10 transition-colors duration-1000"></div>
 
-  <div class="max-w-7xl mx-auto space-y-4 md:space-y-6 relative z-10">
+  <div class="max-w-7xl mx-auto space-y-4 md:space-y-6">
     
-    <header class="flex flex-col sm:flex-row justify-between items-center gap-4 glass-panel rounded-3xl p-4 px-6 card-enter">
+    <header class="flex flex-col sm:flex-row justify-between items-center gap-4 glass-panel rounded-3xl p-4 px-6">
       <div class="flex items-center space-x-4">
-        <div class="relative group cursor-pointer">
-          <div class="w-12 h-12 bg-gradient-to-br from-blue-600 to-purple-600 rounded-full flex items-center justify-center shadow-[0_0_20px_rgba(59,130,246,0.3)] text-white font-black text-xl border border-white/20 group-hover:rotate-12 group-hover:scale-110 transition-all duration-500 ease-out">V</div>
+        <div class="relative">
+          <div class="w-12 h-12 bg-gradient-to-br from-blue-600 to-purple-600 rounded-full flex items-center justify-center shadow-lg shadow-blue-500/20 text-white font-black text-xl border border-white/10 hover:rotate-12 transition-transform duration-500">V</div>
           <div class="absolute bottom-0 right-0 w-3.5 h-3.5 bg-emerald-500 border-2 border-[#050505] rounded-full animate-pulse shadow-[0_0_8px_rgba(16,185,129,0.8)]"></div>
         </div>
         <div>
-          <h1 class="text-2xl font-black tracking-tight text-white">Welcome back, <span class="text-transparent bg-clip-text bg-gradient-to-r from-blue-400 to-purple-400">Vidhun</span></h1>
+          <h1 class="text-xl font-black tracking-tight text-white">Welcome back, <span class="text-transparent bg-clip-text bg-gradient-to-r from-blue-400 to-purple-400">Vidhun</span></h1>
           <p class="text-[10px] text-gray-400 font-bold uppercase tracking-widest flex items-center mt-0.5"><i data-lucide="shield-check" class="w-3 h-3 mr-1 text-emerald-400"></i> Server Encrypted</p>
         </div>
       </div>
-      <div class="flex space-x-1 bg-black/40 p-1 rounded-2xl border border-white/5 w-full sm:w-auto shadow-inner">
+      <div class="flex space-x-1 bg-black/40 p-1 rounded-2xl border border-white/5 w-full sm:w-auto">
         <button id="navDashboard" onclick="switchMainView('dashboard')" class="flex-1 sm:flex-none px-4 md:px-5 py-2.5 rounded-xl font-bold text-sm bg-white/10 text-white shadow-sm transition-all"><i data-lucide="activity" class="inline w-4 h-4 mr-1.5"></i> Ledger</button>
         <button id="navWishlist" onclick="switchMainView('wishlist')" class="flex-1 sm:flex-none px-4 md:px-5 py-2.5 rounded-xl font-bold text-sm text-gray-400 hover:text-white hover:bg-white/5 transition-all"><i data-lucide="target" class="inline w-4 h-4 mr-1.5"></i> Wishlist</button>
       </div>
@@ -216,75 +163,75 @@
 
     <div id="viewDashboard" class="view-active space-y-4 md:space-y-6">
       
-      <div id="pendingContainer" class="hidden mb-6 card-enter">
-          <div class="bg-gray-900 border border-blue-500/30 rounded-xl p-4 md:p-6 shadow-[0_0_40px_rgba(59,130,246,0.15)] relative overflow-hidden transition-all">
+      <div id="pendingContainer" class="hidden mb-6">
+          <div class="bg-gray-900 border border-blue-500/30 rounded-xl p-4 md:p-6 shadow-[0_0_30px_rgba(59,130,246,0.15)] relative overflow-hidden transition-all">
                <div class="absolute inset-0 bg-gradient-to-r from-blue-600/10 to-purple-600/10 pointer-events-none"></div>
                <h2 class="text-sm font-bold text-blue-400 mb-4 uppercase tracking-widest flex items-center">
-                   <div class="w-2 h-2 rounded-full bg-blue-500 mr-2 animate-pulse"></div> Action Required: AI Queue
+                   <div class="w-2 h-2 rounded-full bg-blue-500 mr-2 animate-pulse"></div> Action Required: Pending SMS
                </h2>
-               <div id="pending-list" class="space-y-3 relative z-10"></div>
+               <div id="pending-list" class="space-y-3"></div>
           </div>
       </div>
 
       <div class="grid grid-cols-1 md:grid-cols-3 gap-4 md:gap-6">
-        <div class="glass-panel rounded-3xl p-6 md:p-8 relative overflow-hidden group card-enter">
+        <div class="glass-panel rounded-3xl p-6 md:p-8 relative overflow-hidden group">
           <div class="absolute inset-0 bg-gradient-to-br from-blue-500/10 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
           
-          <div class="flex justify-between items-start mb-2 relative z-10">
-              <h3 class="text-xs font-bold text-gray-400 uppercase tracking-widest flex items-center"><div class="w-2 h-2 rounded-full bg-blue-500 mr-2 animate-pulse shadow-[0_0_10px_rgba(59,130,246,1)]"></div> Total Assets</h3>
-              <div class="px-2 py-1 bg-black/40 border border-white/5 rounded-lg flex items-center shadow-inner backdrop-blur-md cursor-help">
-                  <span class="text-[9px] text-gray-500 uppercase font-bold mr-1 flex items-center">Health <span class="info-icon" data-tooltip="Score Algorithm: Base 50 + Savings Velocity Bonus (Max 20) + Liquid Runway Bonus (Max 20) + Low Debt Ratio Bonus (Max 10). A higher score means long-term fiscal stability.">i</span></span>
-                  <span id="healthScore" class="text-xs font-black text-emerald-400 ml-1 drop-shadow-[0_0_8px_rgba(16,185,129,0.5)]">0/100</span>
+          <div class="flex justify-between items-start mb-2">
+              <h3 class="text-xs font-bold text-gray-400 uppercase tracking-widest flex items-center"><div class="w-2 h-2 rounded-full bg-blue-500 mr-2 animate-pulse"></div> Total Assets</h3>
+              <div class="px-2 py-1 bg-black/40 border border-white/5 rounded-lg flex items-center shadow-sm backdrop-blur-md">
+                  <span class="text-[9px] text-gray-500 uppercase font-bold mr-1.5">Health</span>
+                  <span id="healthScore" class="text-xs font-black text-emerald-400 cursor-help" data-tooltip="Score Algorithm: Base 50 + Savings Velocity Bonus (Max 20) + Liquid Runway Bonus (Max 20) + Low Debt Ratio Bonus (Max 10). A higher score means long-term fiscal stability.">0/100</span>
               </div>
           </div>
 
-          <h1 id="netBalance" class="text-5xl font-black text-white mt-2 drop-shadow-[0_0_20px_rgba(255,255,255,0.15)] relative z-10">₹0</h1>
-          <div class="mt-6 md:mt-8 grid grid-cols-3 gap-2 md:gap-4 text-xs md:text-sm font-bold border-t border-white/10 pt-4 md:pt-6 relative z-10">
-            <div><p class="text-gray-500 text-[10px] md:text-xs mb-1 uppercase tracking-wider">UPI</p><p id="balUPI" class="text-white">₹0</p></div>
-            <div><p class="text-gray-500 text-[10px] md:text-xs mb-1 uppercase tracking-wider">Card</p><p id="balCard" class="text-white">₹0</p></div>
-            <div><p class="text-gray-500 text-[10px] md:text-xs mb-1 uppercase tracking-wider">Cash</p><p id="balCash" class="text-white">₹0</p></div>
+          <h1 id="netBalance" class="text-4xl md:text-5xl font-black text-white mt-2 drop-shadow-md">₹0</h1>
+          <div class="mt-6 md:mt-8 grid grid-cols-3 gap-2 md:gap-4 text-xs md:text-sm font-medium border-t border-white/10 pt-4 md:pt-6">
+            <div><p class="text-gray-500 text-[10px] md:text-xs mb-1">UPI</p><p id="balUPI" class="text-white font-bold">₹0</p></div>
+            <div><p class="text-gray-500 text-[10px] md:text-xs mb-1">Card</p><p id="balCard" class="text-white font-bold">₹0</p></div>
+            <div><p class="text-gray-500 text-[10px] md:text-xs mb-1">Cash</p><p id="balCash" class="text-white font-bold">₹0</p></div>
           </div>
         </div>
 
-        <div class="glass-panel rounded-3xl p-6 md:p-8 flex flex-col justify-center card-enter delay-100">
+        <div class="glass-panel rounded-3xl p-6 md:p-8 flex flex-col justify-center">
           <h3 class="text-xs font-bold text-gray-400 uppercase tracking-widest mb-1">Total Income</h3>
-          <h2 id="totalIncome" class="text-4xl font-black text-emerald-400 mt-2 drop-shadow-[0_0_15px_rgba(16,185,129,0.25)]">₹0</h2>
+          <h2 id="totalIncome" class="text-3xl md:text-4xl font-black text-emerald-400 mt-2">₹0</h2>
         </div>
 
-        <div class="glass-panel rounded-3xl p-6 md:p-8 flex flex-col justify-center card-enter delay-200">
+        <div class="glass-panel rounded-3xl p-6 md:p-8 flex flex-col justify-center">
           <div class="flex justify-between items-start">
-            <div><h3 class="text-xs font-bold text-gray-400 uppercase tracking-widest mb-1">Total Expenses</h3><h2 id="totalExpense" class="text-4xl font-black text-rose-400 mt-2 drop-shadow-[0_0_15px_rgba(244,63,94,0.25)]">₹0</h2></div>
-            <button onclick="setGoal()" class="text-white/30 hover:text-white hover:bg-white/10 rounded-lg p-2 transition-all hover:rotate-90" title="Set Budget"><i data-lucide="settings-2" class="w-5 h-5"></i></button>
+            <div><h3 class="text-xs font-bold text-gray-400 uppercase tracking-widest mb-1">Total Expenses</h3><h2 id="totalExpense" class="text-3xl md:text-4xl font-black text-rose-400 mt-2">₹0</h2></div>
+            <button onclick="setGoal()" class="text-white/30 hover:text-white transition-transform hover:rotate-90 p-1" title="Set Budget"><i data-lucide="settings-2" class="w-5 h-5"></i></button>
           </div>
-          <div class="mt-4 md:mt-6 w-full bg-black/60 rounded-full h-2.5 border border-white/5 shadow-inner overflow-hidden"><div id="goalProgress" class="bg-gradient-to-r from-rose-500 to-orange-400 h-full rounded-full transition-all duration-1000 relative"><div class="absolute inset-0 bg-white/20 w-full h-full animate-[shimmer_2s_infinite]"></div></div></div>
-          <p id="goalText" class="text-[10px] text-gray-500 mt-3 text-right uppercase tracking-widest font-bold">Budget: ₹0</p>
+          <div class="mt-4 md:mt-6 w-full bg-black/50 rounded-full h-2 border border-white/5"><div id="goalProgress" class="bg-gradient-to-r from-rose-500 to-orange-400 h-2 rounded-full transition-all duration-1000" style="width: 0%"></div></div>
+          <p id="goalText" class="text-xs text-gray-500 mt-3 text-right">Budget: ₹0</p>
         </div>
       </div>
 
-      <div class="grid grid-cols-2 md:grid-cols-4 gap-4 md:gap-6 mt-2 card-enter delay-300">
-        <div class="glass-panel rounded-2xl p-4 md:p-5 border border-blue-500/20 bg-gradient-to-br from-blue-900/30 to-blue-800/10 shadow-lg hover:-translate-y-1 transition-transform group">
-          <p class="text-[10px] uppercase text-blue-400 font-bold tracking-widest mb-1 flex items-center group-hover:text-blue-300 transition-colors">
-            <i data-lucide="flame" class="w-3 h-3 mr-1"></i> Daily Burn <span class="info-icon" data-tooltip="Average monetary depletion per day in the current tracking cycle.">i</span>
+      <div class="grid grid-cols-2 md:grid-cols-4 gap-4 md:gap-6 mt-2">
+        <div class="bg-gradient-to-r from-blue-900/20 to-blue-800/10 backdrop-blur-xl rounded-2xl p-4 md:p-5 border border-blue-500/20 shadow-lg hover:-translate-y-1 transition-transform">
+          <p class="text-[10px] uppercase text-blue-400 font-bold tracking-widest mb-1 flex items-center">
+            <i data-lucide="flame" class="w-3 h-3 mr-1"></i> Daily Burn <span class="info-icon" data-tooltip="Avg money spent per day this month">ⓘ</span>
           </p>
-          <p id="statBurnRate" class="text-2xl font-bold text-white drop-shadow-md">₹0</p>
+          <p id="statBurnRate" class="text-xl font-black text-white">₹0</p>
         </div>
-        <div class="glass-panel rounded-2xl p-4 md:p-5 border border-emerald-500/20 bg-gradient-to-br from-emerald-900/30 to-emerald-800/10 shadow-lg hover:-translate-y-1 transition-transform group">
-          <p class="text-[10px] uppercase text-emerald-400 font-bold tracking-widest mb-1 flex items-center group-hover:text-emerald-300 transition-colors">
-            <i data-lucide="trending-up" class="w-3 h-3 mr-1"></i> Savings Velocity <span class="info-icon" data-tooltip="Percentage of incoming capital preserved vs expended.">i</span>
+        <div class="bg-gradient-to-r from-emerald-900/20 to-emerald-800/10 backdrop-blur-xl rounded-2xl p-4 md:p-5 border border-emerald-500/20 shadow-lg hover:-translate-y-1 transition-transform">
+          <p class="text-[10px] uppercase text-emerald-400 font-bold tracking-widest mb-1 flex items-center">
+            <i data-lucide="trending-up" class="w-3 h-3 mr-1"></i> Savings Velocity <span class="info-icon" data-tooltip="Percentage of income saved">ⓘ</span>
           </p>
-          <p id="statSavingsRate" class="text-2xl font-bold text-white drop-shadow-md">0%</p>
+          <p id="statSavingsRate" class="text-xl font-black text-white">0%</p>
         </div>
-        <div class="glass-panel rounded-2xl p-4 md:p-5 border border-rose-500/20 bg-gradient-to-br from-rose-900/30 to-rose-800/10 shadow-lg hover:-translate-y-1 transition-transform group">
-          <p class="text-[10px] uppercase text-rose-400 font-bold tracking-widest mb-1 flex items-center group-hover:text-rose-300 transition-colors">
-            <i data-lucide="repeat" class="w-3 h-3 mr-1"></i> Recurring Debt <span class="info-icon" data-tooltip="Total monthly fixed subscription or liability weight.">i</span>
+        <div class="bg-gradient-to-r from-rose-900/20 to-rose-800/10 backdrop-blur-xl rounded-2xl p-4 md:p-5 border border-rose-500/20 shadow-lg hover:-translate-y-1 transition-transform">
+          <p class="text-[10px] uppercase text-rose-400 font-bold tracking-widest mb-1 flex items-center">
+            <i data-lucide="repeat" class="w-3 h-3 mr-1"></i> Recurring Debt <span class="info-icon" data-tooltip="Total monthly fixed subscriptions">ⓘ</span>
           </p>
-          <p id="statLiabilities" class="text-2xl font-bold text-white drop-shadow-md">₹0</p>
+          <p id="statLiabilities" class="text-xl font-black text-white">₹0</p>
         </div>
-        <div class="glass-panel rounded-2xl p-4 md:p-5 border border-purple-500/20 bg-gradient-to-br from-purple-900/30 to-purple-800/10 shadow-lg hover:-translate-y-1 transition-transform group">
-          <p class="text-[10px] uppercase text-purple-400 font-bold tracking-widest mb-1 flex items-center group-hover:text-purple-300 transition-colors">
-            <i data-lucide="clock" class="w-3 h-3 mr-1"></i> Liquid Runway <span class="info-icon" data-tooltip="Estimated days until zero balance based on current average daily burn.">i</span>
+        <div class="bg-gradient-to-r from-purple-900/20 to-purple-800/10 backdrop-blur-xl rounded-2xl p-4 md:p-5 border border-purple-500/20 shadow-lg hover:-translate-y-1 transition-transform">
+          <p class="text-[10px] uppercase text-purple-400 font-bold tracking-widest mb-1 flex items-center">
+            <i data-lucide="clock" class="w-3 h-3 mr-1"></i> Liquid Runway <span class="info-icon" data-tooltip="Days your balance will last at current burn rate">ⓘ</span>
           </p>
-          <p id="statRunway" class="text-2xl font-bold text-white drop-shadow-md">0 Days</p>
+          <p id="statRunway" class="text-xl font-black text-white">0 Days</p>
         </div>
       </div>
 
@@ -292,35 +239,35 @@
         <div class="lg:col-span-2 space-y-4 md:space-y-6">
           
           <div class="grid grid-cols-1 md:grid-cols-2 gap-4 md:gap-6">
-            <div class="glass-panel rounded-3xl p-5 md:p-6 flex flex-col card-enter delay-100">
+            <div class="glass-panel rounded-3xl p-5 md:p-6 flex flex-col">
               <div class="flex justify-between items-center mb-6">
                 <h3 class="text-sm font-bold text-gray-300 uppercase tracking-widest">Analytics</h3>
-                <button onclick="getAIInsights()" id="aiButton" class="bg-blue-600/20 text-blue-400 hover:bg-blue-600 hover:text-white px-3 py-1.5 rounded-lg text-xs font-bold transition-all border border-blue-500/30 flex items-center shadow-[0_0_15px_rgba(59,130,246,0.2)]">
+                <button onclick="getAIInsights()" id="aiButton" class="bg-blue-600/20 text-blue-400 hover:bg-blue-600 hover:text-white px-3 py-1.5 rounded-lg text-xs font-bold transition-all border border-blue-500/30 flex items-center shadow-lg shadow-blue-500/20">
                   <i data-lucide="sparkles" class="w-3 h-3 mr-1"></i> Jarvis AI
                 </button>
               </div>
-              <div id="aiTerminal" class="hidden mb-4 p-4 bg-black/60 border border-blue-500/30 rounded-xl text-xs md:text-sm text-gray-300 min-h-[80px] shadow-inner tracking-tight leading-relaxed"></div>
-              <div class="h-44 md:h-48 relative flex items-center justify-center"><canvas id="walletChart"></canvas><div class="absolute inset-0 flex flex-col items-center justify-center pointer-events-none pt-2"><span class="text-gray-400 text-[10px] font-bold mb-0.5 uppercase tracking-widest">Spent</span><span id="chartCenterText" class="text-2xl font-black text-white drop-shadow-md">₹0</span></div></div>
+              <div id="aiTerminal" class="hidden mb-4 p-4 bg-black/60 border border-blue-500/30 rounded-xl text-xs md:text-sm text-gray-300 min-h-[80px]"></div>
+              <div class="h-44 md:h-48 relative flex items-center justify-center"><canvas id="walletChart"></canvas><div class="absolute inset-0 flex flex-col items-center justify-center pointer-events-none pt-2"><span class="text-gray-400 text-[9px] font-semibold mb-0.5 uppercase tracking-widest">Spent</span><span id="chartCenterText" class="text-lg md:text-xl font-bold text-white">₹0</span></div></div>
               <div id="topInsights" class="mt-4 space-y-3 pt-4 border-t border-white/10 flex-grow overflow-y-auto max-h-[160px] pr-2"></div>
             </div>
-            <div class="glass-panel rounded-3xl p-5 md:p-6 card-enter delay-200">
+            <div class="glass-panel rounded-3xl p-5 md:p-6">
               <div class="flex justify-between items-center mb-6">
                   <h3 class="text-sm font-bold text-gray-300 uppercase tracking-widest">Cash Flow Trend</h3>
-                  <button onclick="openAllTimeChart()" class="text-xs text-blue-400 hover:text-white font-bold bg-blue-500/10 px-3 py-1.5 rounded-lg border border-blue-500/20 transition-all flex items-center shadow-inner"><i data-lucide="line-chart" class="w-3 h-3 mr-1.5"></i> All-Time Plan</button>
+                  <button onclick="openAllTimeChart()" class="text-xs text-blue-400 hover:text-white font-bold bg-blue-500/10 px-3 py-1.5 rounded-lg border border-blue-500/20 transition-all flex items-center"><i data-lucide="line-chart" class="w-3 h-3 mr-1.5"></i> All-Time</button>
               </div>
               <div class="h-60 md:h-64"><canvas id="trendChart"></canvas></div>
             </div>
           </div>
 
           <div class="grid grid-cols-1 md:grid-cols-2 gap-4 md:gap-6">
-              <div class="glass-panel rounded-3xl p-5 md:p-6 border border-white/5 bg-gradient-to-b from-transparent to-white/5 card-enter delay-300">
+              <div class="glass-panel rounded-3xl p-5 md:p-6 border border-white/5 bg-gradient-to-b from-transparent to-white/5">
                   <div class="flex justify-between items-center mb-4">
                       <h3 class="text-[11px] font-bold text-gray-300 uppercase tracking-widest">Spending Radar</h3>
                       <i data-lucide="radar" class="text-blue-500 w-4 h-4 opacity-70"></i>
                   </div>
                   <div class="h-44 md:h-52 relative flex justify-center"><canvas id="radarChart"></canvas></div>
               </div>
-              <div class="glass-panel rounded-3xl p-5 md:p-6 border border-white/5 bg-gradient-to-b from-transparent to-white/5 card-enter delay-300">
+              <div class="glass-panel rounded-3xl p-5 md:p-6 border border-white/5 bg-gradient-to-b from-transparent to-white/5">
                   <div class="flex justify-between items-center mb-4">
                       <h3 class="text-[11px] font-bold text-gray-300 uppercase tracking-widest">Account Density</h3>
                       <i data-lucide="pie-chart" class="text-purple-500 w-4 h-4 opacity-70"></i>
@@ -329,7 +276,7 @@
               </div>
           </div>
           
-          <div class="glass-panel rounded-3xl p-5 md:p-6 border border-white/5 bg-gradient-to-b from-transparent to-white/5 card-enter delay-300">
+          <div class="glass-panel rounded-3xl p-5 md:p-6 border border-white/5 bg-gradient-to-b from-transparent to-white/5">
               <div class="flex justify-between items-center mb-4">
                   <h3 class="text-sm font-bold text-gray-300 uppercase tracking-widest">7-Day Cashflow</h3>
                   <i data-lucide="bar-chart-3" class="text-emerald-500 w-5 h-5 opacity-80"></i>
@@ -337,63 +284,63 @@
               <div class="h-52 md:h-64 relative flex justify-center"><canvas id="cashflowChart"></canvas></div>
           </div>
 
-          <div class="glass-panel rounded-3xl p-4 md:p-6 card-enter delay-300">
+          <div class="glass-panel rounded-3xl p-4 md:p-6">
             <div class="flex flex-col gap-4 mb-6">
                <div class="flex justify-between items-center">
-                 <h3 class="text-sm font-bold text-gray-300 uppercase tracking-widest flex items-center">Ledger<span id="recordCount" class="ml-3 px-2.5 py-0.5 bg-black/40 border border-white/10 rounded-md text-xs font-bold text-white shadow-inner">0</span></h3>
+                 <h3 class="text-sm font-bold text-gray-300 uppercase tracking-widest flex items-center">Ledger<span id="recordCount" class="ml-3 px-2 py-0.5 bg-white/10 rounded-md text-xs text-white shadow-inner">0</span></h3>
                  <div class="flex items-center space-x-1.5">
                    <button onclick="exportData()" class="bg-white/5 hover:bg-white/10 text-gray-300 p-2 rounded-xl border border-white/5 transition-colors" title="Backup (JSON)"><i data-lucide="download" class="w-4 h-4"></i></button>
                    <label class="bg-white/5 hover:bg-white/10 text-gray-300 p-2 rounded-xl border border-white/5 cursor-pointer transition-colors" title="Restore (JSON)"><i data-lucide="upload" class="w-4 h-4"></i><input type="file" id="importFile" accept=".json" class="hidden" onchange="importData(event)"></label>
                  </div>
                </div>
                <div class="flex space-x-2">
-                 <select id="monthFilter" class="glass-input rounded-xl py-2 px-3 text-sm text-white flex-1 max-w-[130px] font-bold select-node"></select>
-                 <div class="relative flex-grow"><i data-lucide="search" class="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-gray-500"></i><input type="text" id="searchInput" placeholder="Search parameters..." class="w-full glass-input rounded-xl py-2 pl-9 pr-3 text-sm text-white focus:ring-2 focus:ring-blue-500/50 transition-all font-medium" /></div>
+                 <select id="monthFilter" class="glass-input rounded-xl py-2 px-3 text-sm text-white flex-1 max-w-[130px]"></select>
+                 <div class="relative flex-grow"><i data-lucide="search" class="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-gray-500"></i><input type="text" id="searchInput" placeholder="Search parameters..." class="w-full glass-input rounded-xl py-2 pl-9 pr-3 text-sm text-white focus:ring-2 focus:ring-blue-500/50" /></div>
                </div>
             </div>
-            <div id="ledgerList" class="space-y-3 max-h-[350px] md:max-h-[400px] overflow-y-auto pr-2 touch-pan-y relative"></div>
+            <div id="ledgerList" class="space-y-3 max-h-[350px] md:max-h-[400px] overflow-y-auto pr-2 touch-pan-y"></div>
           </div>
         </div>
 
         <div class="lg:col-span-1">
-          <div class="glass-panel rounded-3xl p-5 md:p-6 sticky top-6 card-enter">
+          <div class="glass-panel rounded-3xl p-5 md:p-6 sticky top-6">
             <h3 class="text-sm font-bold text-gray-300 mb-6 uppercase tracking-widest">Quick Entry</h3>
-            <div class="flex rounded-xl bg-black/40 p-1 mb-6 border border-white/5 shadow-inner relative z-10">
+            <div class="flex rounded-xl bg-black/40 p-1 mb-6 border border-white/5 shadow-inner">
               <button id="tabExpense" class="flex-1 py-2 text-sm font-bold rounded-lg bg-white/10 text-white transition-all shadow-md" onclick="switchTab('expense')">Expense</button>
-              <button id="tabIncome" class="flex-1 py-2 text-sm font-bold rounded-lg text-gray-500 hover:text-white hover:bg-white/5 transition-all" onclick="switchTab('income')">Income</button>
+              <button id="tabIncome" class="flex-1 py-2 text-sm font-bold rounded-lg text-gray-500 hover:text-white transition-all" onclick="switchTab('income')">Income</button>
             </div>
 
-            <form id="transactionForm" class="space-y-4 md:space-y-5 relative z-10">
+            <form id="transactionForm" class="space-y-4 md:space-y-5">
               <div>
                 <div class="relative flex items-center group">
-                  <span id="currencySymbol" class="absolute left-4 text-2xl font-black text-rose-500 transition-colors drop-shadow-md">₹</span>
-                  <input type="number" id="amount" placeholder="0.00" step="0.01" required class="w-full glass-input rounded-2xl py-5 pl-12 pr-24 text-3xl font-black text-white group-hover:border-blue-500/50 shadow-inner" />
+                  <span id="currencySymbol" class="absolute left-4 text-2xl font-bold text-rose-500 transition-colors">₹</span>
+                  <input type="number" id="amount" placeholder="0.00" step="0.01" required class="w-full glass-input rounded-2xl py-5 pl-12 pr-24 text-3xl font-black text-white group-hover:border-blue-500/50" />
                   
-                  <button type="button" onclick="handleSMSPaste()" class="absolute right-14 p-2 bg-gray-800 hover:bg-gray-700 text-gray-300 rounded-lg transition-colors shadow-md hover:text-blue-400 hover:border-blue-500/30 border border-transparent" title="Paste Transaction SMS">
+                  <button type="button" onclick="handleSMSPaste()" class="absolute right-14 p-2 bg-gray-800 hover:bg-gray-700 text-gray-300 rounded-lg transition-colors shadow-md" title="Paste Transaction SMS">
                     <i id="smsIcon" data-lucide="message-square" class="w-5 h-5"></i>
                   </button>
                   
-                  <label for="receiptUpload" class="absolute right-4 p-2 bg-gray-800 hover:bg-gray-700 text-gray-300 rounded-lg cursor-pointer transition-colors shadow-md hover:text-emerald-400 hover:border-emerald-500/30 border border-transparent" title="Scan Receipt/PDF">
+                  <label for="receiptUpload" class="absolute right-4 p-2 bg-gray-800 hover:bg-gray-700 text-gray-300 rounded-lg cursor-pointer transition-colors shadow-md" title="Scan Receipt/PDF">
                     <i id="scanIcon" data-lucide="camera" class="w-5 h-5"></i>
                   </label>
                   <input type="file" id="receiptUpload" accept="image/*" capture="camera" class="hidden" onchange="scanReceipt(event)">
                 </div>
-                <div class="flex gap-1.5 mt-3 overflow-x-auto pb-1 touch-pan-x scrollbar-hide">
-                  <button type="button" onclick="addAmount(100)" class="flex-1 min-w-[55px] bg-white/5 hover:bg-blue-500/20 hover:text-blue-400 hover:border-blue-500/30 text-gray-300 text-xs font-bold py-2 rounded-lg border border-white/5 transition-all shadow-sm">+100</button>
-                  <button type="button" onclick="addAmount(500)" class="flex-1 min-w-[55px] bg-white/5 hover:bg-blue-500/20 hover:text-blue-400 hover:border-blue-500/30 text-gray-300 text-xs font-bold py-2 rounded-lg border border-white/5 transition-all shadow-sm">+500</button>
-                  <button type="button" onclick="addAmount(1000)" class="flex-1 min-w-[55px] bg-white/5 hover:bg-blue-500/20 hover:text-blue-400 hover:border-blue-500/30 text-gray-300 text-xs font-bold py-2 rounded-lg border border-white/5 transition-all shadow-sm">+1k</button>
-                  <button type="button" onclick="addAmount(5000)" class="flex-1 min-w-[55px] bg-white/5 hover:bg-blue-500/20 hover:text-blue-400 hover:border-blue-500/30 text-gray-300 text-xs font-bold py-2 rounded-lg border border-white/5 transition-all shadow-sm">+5k</button>
+                <div class="flex gap-1.5 mt-3 overflow-x-auto pb-1 touch-pan-x">
+                  <button type="button" onclick="addAmount(100)" class="flex-1 min-w-[55px] bg-white/5 hover:bg-blue-500/20 hover:text-blue-400 hover:border-blue-500/30 text-gray-300 text-xs font-bold py-2 rounded-lg border border-white/5 transition-all">+100</button>
+                  <button type="button" onclick="addAmount(500)" class="flex-1 min-w-[55px] bg-white/5 hover:bg-blue-500/20 hover:text-blue-400 hover:border-blue-500/30 text-gray-300 text-xs font-bold py-2 rounded-lg border border-white/5 transition-all">+500</button>
+                  <button type="button" onclick="addAmount(1000)" class="flex-1 min-w-[55px] bg-white/5 hover:bg-blue-500/20 hover:text-blue-400 hover:border-blue-500/30 text-gray-300 text-xs font-bold py-2 rounded-lg border border-white/5 transition-all">+1k</button>
+                  <button type="button" onclick="addAmount(5000)" class="flex-1 min-w-[55px] bg-white/5 hover:bg-blue-500/20 hover:text-blue-400 hover:border-blue-500/30 text-gray-300 text-xs font-bold py-2 rounded-lg border border-white/5 transition-all">+5k</button>
                 </div>
               </div>
               
               <div class="grid grid-cols-2 gap-4">
                 <div>
                   <label class="block text-[10px] font-bold text-gray-500 uppercase tracking-wider mb-2 pl-1">Category</label>
-                  <select id="category" class="w-full glass-input rounded-xl p-3.5 text-sm text-white hover:border-blue-500/30 transition-colors font-medium"></select>
+                  <select id="category" class="w-full glass-input rounded-xl p-3.5 text-sm text-white hover:border-blue-500/30 transition-colors"></select>
                 </div>
                 <div>
                   <label class="block text-[10px] font-bold text-gray-500 uppercase tracking-wider mb-2 pl-1">Account</label>
-                  <select id="account" class="w-full glass-input rounded-xl p-3.5 text-sm text-white hover:border-blue-500/30 transition-colors font-medium">
+                  <select id="account" class="w-full glass-input rounded-xl p-3.5 text-sm text-white hover:border-blue-500/30 transition-colors">
                     <option value="UPI">📱 UPI</option><option value="Card">💳 Card</option><option value="Cash">💵 Cash</option>
                   </select>
                 </div>
@@ -401,23 +348,23 @@
 
               <div>
                 <label class="block text-[10px] font-bold text-gray-500 uppercase tracking-wider mb-2 pl-1">Date</label>
-                <input type="date" id="date" required class="w-full glass-input rounded-xl p-3.5 text-sm text-white hover:border-blue-500/30 transition-colors font-bold" />
+                <input type="date" id="date" required class="w-full glass-input rounded-xl p-3.5 text-sm text-white hover:border-blue-500/30 transition-colors" />
               </div>
               
               <div>
                 <label class="block text-[10px] font-bold text-gray-500 uppercase tracking-wider mb-2 pl-1">Description</label>
-                <input type="text" id="note" placeholder="Transaction context info..." class="w-full glass-input rounded-xl p-3.5 text-sm text-white hover:border-blue-500/30 transition-colors font-medium" />
+                <input type="text" id="note" placeholder="Transaction context info..." class="w-full glass-input rounded-xl p-3.5 text-sm text-white hover:border-blue-500/30 transition-colors" />
               </div>
 
               <div id="recurringToggleDiv" class="flex items-center justify-between p-4 bg-black/40 rounded-xl border border-white/5 hover:border-white/10 transition-colors shadow-inner">
-                <div class="flex items-center"><i data-lucide="repeat" class="w-4 h-4 text-blue-400 mr-2 drop-shadow-[0_0_5px_rgba(59,130,246,0.5)]"></i><span class="text-xs font-bold text-gray-300 uppercase tracking-widest">Auto-Renew Monthly</span></div>
+                <div class="flex items-center"><i data-lucide="repeat" class="w-4 h-4 text-blue-400 mr-2"></i><span class="text-xs font-bold text-gray-300 uppercase tracking-widest">Auto-Renew Monthly</span></div>
                 <label class="relative inline-flex items-center cursor-pointer">
                   <input type="checkbox" id="isRecurring" class="sr-only peer">
-                  <div class="w-9 h-5 bg-gray-700 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-4 after:w-4 after:transition-all peer-checked:bg-blue-500 shadow-[inset_0_2px_4px_rgba(0,0,0,0.3)]"></div>
+                  <div class="w-9 h-5 bg-gray-700 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-4 after:w-4 after:transition-all peer-checked:bg-blue-500 shadow-md"></div>
                 </label>
               </div>
               
-              <button id="submitBtn" type="submit" class="w-full mt-4 bg-gradient-to-r from-rose-600 to-rose-500 hover:from-rose-500 hover:to-rose-400 text-white font-black py-4 rounded-2xl transition-all shadow-[0_0_25px_rgba(244,63,94,0.35)] active:scale-[0.98] border border-white/10 tracking-wide">Add Transaction</button>
+              <button id="submitBtn" type="submit" class="w-full mt-4 bg-gradient-to-r from-rose-600 to-rose-500 hover:from-rose-500 hover:to-rose-400 text-white font-black py-4 rounded-2xl transition-all shadow-[0_0_20px_rgba(0,0,0,0.4)] active:scale-[0.98]">Add Transaction</button>
             </form>
           </div>
         </div>
@@ -426,41 +373,18 @@
 
     <!-- WISHLIST VIEW -->
     <div id="viewWishlist" class="view-hidden space-y-4 md:space-y-6">
-      <div class="glass-panel rounded-3xl p-6 md:p-8 flex flex-col md:flex-row justify-between items-center gap-4 card-enter">
-        <div><h2 class="text-3xl font-black text-white flex items-center"><i data-lucide="rocket" class="text-blue-400 mr-4 w-7 h-7 drop-shadow-[0_0_10px_rgba(59,130,246,0.5)]"></i> Target Goals</h2><p class="text-gray-400 text-sm mt-1.5 font-medium">Captured via automation hooks or items added manually below.</p></div>
-        <div class="flex items-center space-x-3 w-full md:w-auto bg-black/40 p-2 rounded-2xl border border-white/5 shadow-inner">
-          <div class="px-3 md:px-4 py-2 text-xs font-bold text-gray-400 uppercase tracking-widest border-r border-white/10">Savings Plan</div>
-          <div class="relative w-full md:w-36"><span class="absolute left-2 top-1/2 transform -translate-y-1/2 text-emerald-400 font-black text-sm drop-shadow-[0_0_5px_rgba(16,185,129,0.5)]">₹</span>
-            <input type="number" id="wishlistSavingsInput" placeholder="0" class="w-full bg-transparent py-1.5 pl-6 pr-2 text-lg font-black text-white focus:outline-none" onchange="updateWishlistSavings(this.value)" />
-          </div><span class="text-gray-500 text-xs font-bold pr-3">/ mo</span>
+      <div class="glass-panel rounded-3xl p-6 md:p-8 flex flex-col md:flex-row justify-between items-center gap-4">
+        <div><h2 class="text-2xl md:text-3xl font-black text-white flex items-center"><i data-lucide="rocket" class="text-blue-400 mr-4 w-7 h-7"></i> Target Goals</h2><p class="text-gray-400 text-xs md:text-sm mt-1.5">Captured via automation hooks or items added manually below.</p></div>
+        <div class="flex items-center space-x-3 w-full md:w-auto bg-black/40 p-2 rounded-2xl border border-white/5">
+          <div class="px-3 md:px-4 py-2 text-[10px] md:text-xs font-bold text-gray-400 uppercase tracking-widest border-r border-white/10">Savings Plan</div>
+          <div class="relative w-full md:w-36"><span class="absolute left-2 top-1/2 transform -translate-y-1/2 text-emerald-400 font-bold text-sm">₹</span>
+            <input type="number" id="wishlistSavingsInput" placeholder="0" class="w-full bg-transparent py-1.5 pl-6 pr-2 text-base md:text-lg font-bold text-white focus:outline-none" onchange="updateWishlistSavings(this.value)" />
+          </div><span class="text-gray-500 text-xs pr-3">/ mo</span>
         </div>
       </div>
       <div class="grid grid-cols-1 lg:grid-cols-3 gap-4 md:gap-6">
-        <div class="lg:col-span-1">
-          <div class="glass-panel rounded-3xl p-5 md:p-6 sticky top-6 card-enter delay-100">
-            <h3 class="text-sm font-bold text-gray-300 mb-6 uppercase tracking-widest">Auto-Fetch Item</h3>
-            <form id="wishlistForm" class="space-y-4">
-              <div class="relative">
-                <input type="url" id="wishLink" placeholder="Paste product URL link..." class="w-full glass-input rounded-xl p-4 pr-10 text-sm text-white font-medium hover:border-blue-500/30 transition-colors" />
-                <i id="linkStatusIcon" data-lucide="link" class="absolute right-4 top-1/2 transform -translate-y-1/2 w-4 h-4 text-gray-500"></i>
-              </div>
-              <input type="text" id="wishName" placeholder="Product Name Target" required class="w-full glass-input rounded-xl p-4 text-sm text-white font-medium hover:border-blue-500/30 transition-colors" />
-              <input type="number" id="wishPrice" placeholder="Price Matrix (₹)" required class="w-full glass-input rounded-xl p-4 text-sm font-bold text-white hover:border-blue-500/30 transition-colors" />
-              <div>
-                <label class="block text-[10px] font-bold text-gray-500 uppercase tracking-wider mb-1.5 pl-1">Wish Category</label>
-                <select id="wishCategory" class="w-full glass-input rounded-xl p-4 text-sm text-white font-bold hover:border-blue-500/30 transition-colors">
-                  <option value="Gadgets">💻 Gadgets</option>
-                  <option value="Apparel">👕 Apparel</option>
-                  <option value="Lifestyle">✨ Lifestyle</option>
-                  <option value="Other">📦 Other</option>
-                </select>
-              </div>
-              <input type="url" id="wishImage" placeholder="Image Resource Address" class="w-full glass-input rounded-xl p-4 text-sm text-white font-medium hover:border-blue-500/30 transition-colors" />
-              <button type="submit" class="w-full bg-gradient-to-r from-blue-600 to-blue-500 hover:to-blue-400 text-white font-black py-4 rounded-xl transition-all shadow-[0_0_20px_rgba(59,130,246,0.4)] active:scale-[0.98] border border-white/10 tracking-wide">Save to Tracker</button>
-            </form>
-          </div>
-        </div>
-        <div class="lg:col-span-2"><div id="wishlistGrid" class="grid grid-cols-1 md:grid-cols-2 gap-4 md:gap-6 card-enter delay-200"></div></div>
+        <div class="lg:col-span-1"><div class="glass-panel rounded-3xl p-5 md:p-6 sticky top-6"><h3 class="text-sm font-bold text-gray-300 mb-6 uppercase tracking-widest">Auto-Fetch Item</h3><form id="wishlistForm" class="space-y-4"><div class="relative"><input type="url" id="wishLink" placeholder="Paste product URL link..." class="w-full glass-input rounded-xl p-4 pr-10 text-sm text-white hover:border-blue-500/30 transition-colors" /><i id="linkStatusIcon" data-lucide="link" class="absolute right-4 top-1/2 transform -translate-y-1/2 w-4 h-4 text-gray-500"></i></div><input type="text" id="wishName" placeholder="Product Name Target" required class="w-full glass-input rounded-xl p-4 text-sm text-white hover:border-blue-500/30 transition-colors" /><input type="number" id="wishPrice" placeholder="Price Matrix (₹)" required class="w-full glass-input rounded-xl p-4 text-sm text-white hover:border-blue-500/30 transition-colors" /><div><label class="block text-[10px] font-bold text-gray-500 uppercase tracking-wider mb-1.5 pl-1">Wish Category</label><select id="wishCategory" class="w-full glass-input rounded-xl p-4 text-sm text-white"><option value="Gadgets">💻 Gadgets</option><option value="Apparel">👕 Apparel</option><option value="Lifestyle">✨ Lifestyle</option><option value="Other">📦 Other</option></select></div><input type="url" id="wishImage" placeholder="Image Resource Address" class="w-full glass-input rounded-xl p-4 text-sm text-white hover:border-blue-500/30 transition-colors" /><button type="submit" class="w-full bg-gradient-to-r from-blue-600 to-blue-500 hover:to-blue-400 text-white font-black py-4 rounded-xl transition-all shadow-[0_0_20px_rgba(59,130,246,0.4)] active:scale-[0.98]">Save to Tracker</button></form></div></div>
+        <div class="lg:col-span-2"><div id="wishlistGrid" class="grid grid-cols-1 md:grid-cols-2 gap-4 md:gap-6"></div></div>
       </div>
     </div>
   </div>
@@ -481,33 +405,32 @@
 
   <!-- STYLIZED EDIT MODAL -->
   <div id="editModal" class="hidden fixed inset-0 bg-black/80 backdrop-blur-md z-[100] flex items-center justify-center p-4 transition-opacity">
-      <div class="glass-panel modal-active rounded-3xl p-6 w-full max-w-sm border border-white/10 shadow-[0_0_60px_rgba(59,130,246,0.15)] relative overflow-hidden">
-          <div class="absolute inset-0 bg-gradient-to-br from-blue-500/5 to-transparent pointer-events-none"></div>
-          <div class="flex justify-between items-center mb-5 border-b border-white/5 pb-3 relative z-10">
-             <h3 class="text-white font-black uppercase tracking-widest text-sm flex items-center drop-shadow-sm"><i data-lucide="edit-2" class="w-4 h-4 mr-2 text-blue-400"></i> Edit Entry</h3>
-             <button onclick="closeEditModal()" class="text-gray-500 hover:text-white transition-colors bg-white/5 hover:bg-white/10 p-1.5 rounded-lg border border-white/5"><i data-lucide="x" class="w-4 h-4"></i></button>
+      <div class="glass-panel modal-active rounded-3xl p-6 w-full max-w-sm border border-white/10 shadow-[0_0_50px_rgba(59,130,246,0.2)]">
+          <div class="flex justify-between items-center mb-5 border-b border-white/5 pb-3">
+             <h3 class="text-white font-black uppercase tracking-widest text-sm flex items-center"><i data-lucide="edit-2" class="w-4 h-4 mr-2 text-blue-400"></i> Edit Entry</h3>
+             <button onclick="closeEditModal()" class="text-gray-500 hover:text-white transition-colors"><i data-lucide="x" class="w-5 h-5"></i></button>
           </div>
           <input type="hidden" id="editId">
-          <div class="space-y-4 relative z-10">
+          <div class="space-y-4">
               <div class="relative">
                   <label class="block text-[10px] font-bold text-gray-500 uppercase tracking-wider mb-1 pl-1">Amount (₹)</label>
-                  <input type="number" id="editAmount" class="w-full glass-input rounded-xl p-3.5 text-sm text-white font-black hover:border-blue-500/30 transition-colors shadow-inner" placeholder="Amount">
+                  <input type="number" id="editAmount" class="w-full glass-input rounded-xl p-3.5 text-sm text-white font-bold" placeholder="Amount">
               </div>
               <div>
                   <label class="block text-[10px] font-bold text-gray-500 uppercase tracking-wider mb-1 pl-1">Category</label>
-                  <select id="editCategory" class="w-full glass-input rounded-xl p-3.5 text-sm text-white font-bold hover:border-blue-500/30 transition-colors shadow-inner"></select>
+                  <select id="editCategory" class="w-full glass-input rounded-xl p-3.5 text-sm text-white"></select>
               </div>
               <div>
                   <label class="block text-[10px] font-bold text-gray-500 uppercase tracking-wider mb-1 pl-1">Account</label>
-                  <select id="editAccount" class="w-full glass-input rounded-xl p-3.5 text-sm text-white font-bold hover:border-blue-500/30 transition-colors shadow-inner">
-                      <option value="UPI">📱 UPI</option><option value="Card">💳 Card</option><option value="Cash">💵 Cash</option>
+                  <select id="editAccount" class="w-full glass-input rounded-xl p-3.5 text-sm text-white">
+                      <option value="UPI">UPI</option><option value="Card">Card</option><option value="Cash">Cash</option>
                   </select>
               </div>
               <div>
                   <label class="block text-[10px] font-bold text-gray-500 uppercase tracking-wider mb-1 pl-1">Description</label>
-                  <input type="text" id="editNote" class="w-full glass-input rounded-xl p-3.5 text-sm text-white font-medium hover:border-blue-500/30 transition-colors shadow-inner" placeholder="Description">
+                  <input type="text" id="editNote" class="w-full glass-input rounded-xl p-3.5 text-sm text-white" placeholder="Description">
               </div>
-              <button onclick="saveEditTx()" class="w-full mt-2 py-4 rounded-xl text-white bg-gradient-to-r from-blue-600 to-blue-500 hover:to-blue-400 text-sm font-black transition-all shadow-[0_0_20px_rgba(59,130,246,0.3)] active:scale-[0.98] border border-white/10 tracking-wide">Save Changes</button>
+              <button onclick="saveEditTx()" class="w-full mt-2 py-4 rounded-xl text-white bg-gradient-to-r from-blue-600 to-blue-500 hover:to-blue-400 text-sm font-black transition-all shadow-[0_0_15px_rgba(59,130,246,0.5)] active:scale-[0.98]">Save Changes</button>
           </div>
       </div>
   </div>
@@ -518,15 +441,9 @@
     const API_BASE = 'https://wallet-y7yv.onrender.com/api';
     const apiHeaders = { 'Content-Type': 'application/json' };
 
-    let currentType = 'expense'; 
-    let expenseGoal = parseFloat(localStorage.getItem('walletGoal')) || 25000; 
-    let selectedMonth = 'all'; 
-    let searchQuery = '';
-    let transactions = []; 
-    let wishlistItems = []; 
-    let monthlyWishlistSavings = parseFloat(localStorage.getItem('walletWishlistSavings')) || 0;
-    let aiTypingTimer; 
-    let allTimeChartObj = null;
+    let currentType = 'expense'; let expenseGoal = parseFloat(localStorage.getItem('walletGoal')) || 25000; let selectedMonth = 'all'; let searchQuery = '';
+    let transactions = []; let wishlistItems = []; let monthlyWishlistSavings = parseFloat(localStorage.getItem('walletWishlistSavings')) || 0;
+    let aiTypingTimer; let allTimeChartObj = null;
 
     document.getElementById('wishlistSavingsInput').value = monthlyWishlistSavings || '';
 
@@ -540,9 +457,7 @@
             if (!response.ok) return;
             const data = await response.json();
             renderPendingUI(data);
-        } catch (error) { 
-            console.warn("Pending pipeline offline."); 
-        }
+        } catch (error) { console.warn("Pending pipeline offline."); }
     }
 
     function renderPendingUI(pendingTxns) {
@@ -567,10 +482,10 @@
                             <span class="font-black text-sm md:hidden ${isI ? 'text-emerald-400' : 'text-rose-400'}">${isI ? '+' : '-'}₹${txn.amount}</span>
                         </div>
                         <p class="text-[9px] text-blue-400 uppercase tracking-widest font-bold mt-1 inline-flex items-center bg-blue-500/10 px-2 py-0.5 rounded border border-blue-500/20"><i data-lucide="sparkles" class="w-2.5 h-2.5 mr-1"></i> AI Tag: ${txn.category || 'Other'}</p>
-                        <p class="text-gray-400 text-xs mt-1 italic font-medium">"${txn.rawMessage}"</p>
+                        <p class="text-gray-500 text-xs mt-1.5 italic font-medium">"${txn.rawMessage}"</p>
                     </div>
                     <div class="flex items-center justify-between md:justify-end md:space-x-4">
-                        <span class="hidden md:inline font-black text-lg mr-2 ${isI ? 'text-emerald-400' : 'text-rose-400'}">${isI ? '+' : '-'}₹${txn.amount}</span>
+                        <span class="hidden md:inline font-black text-lg mr-2 ${isI ? 'text-emerald-400 drop-shadow-[0_0_5px_rgba(16,185,129,0.5)]' : 'text-rose-400 drop-shadow-[0_0_5px_rgba(244,63,94,0.5)]'}">${isI ? '+' : '-'}₹${txn.amount}</span>
                         <div class="flex space-x-2 w-full md:w-auto">
                             <button onclick="handleDecision('${txn.id}', 'reject')" class="flex-1 md:flex-none px-3 py-2 bg-rose-600/20 hover:bg-rose-600 text-rose-400 hover:text-white text-xs font-bold rounded-lg transition-all border border-rose-500/30 shadow-sm active:scale-95">Reject</button>
                             <button onclick="handleDecision('${txn.id}', 'approve')" class="flex-1 md:flex-none px-3 py-2 bg-emerald-600/20 hover:bg-emerald-600 text-emerald-400 hover:text-white text-xs font-bold rounded-lg transition-all border border-emerald-500/30 shadow-[0_0_10px_rgba(16,185,129,0.15)] active:scale-95">Approve</button>
@@ -583,17 +498,10 @@
 
     async function handleDecision(id, action) {
         try {
-            const res = await fetch(`${API_BASE}/${action}`, { 
-                method: 'POST', 
-                headers: apiHeaders, 
-                body: JSON.stringify({ id: id }) 
-            });
+            const res = await fetch(`${API_BASE}/${action}`, { method: 'POST', headers: apiHeaders, body: JSON.stringify({ id: id }) });
             const result = await res.json();
             if (result.success) {
-                if (action === 'approve' && result.data) { 
-                    transactions.push(result.data); 
-                    updateUI(); 
-                }
+                if (action === 'approve' && result.data) { transactions.push(result.data); updateUI(); }
                 loadPendingTransactions();
             }
         } catch (error) {}
@@ -603,63 +511,27 @@
         const smsText = prompt("Paste raw transaction SMS here:");
         if (!smsText) return;
         const icon = document.getElementById('smsIcon');
-        icon.setAttribute('data-lucide', 'loader-2'); 
-        icon.classList.add('animate-spin', 'text-blue-400'); 
-        lucide.createIcons();
+        icon.setAttribute('data-lucide', 'loader-2'); icon.classList.add('animate-spin', 'text-blue-400'); lucide.createIcons();
         try {
-            const res = await fetch(`${API_BASE}/sms-webhook`, { 
-                method: 'POST', 
-                headers: apiHeaders, 
-                body: JSON.stringify({ smsText: smsText }) 
-            });
-            if (res.ok) { 
-                alert("SMS processed! Jarvis AI is categorizing the data."); 
-                loadPendingTransactions(); 
-            } 
-        } catch (error) { 
-        } finally { 
-            icon.setAttribute('data-lucide', 'message-square'); 
-            icon.classList.remove('animate-spin', 'text-blue-400'); 
-            lucide.createIcons(); 
-        }
+            const res = await fetch(`${API_BASE}/sms-webhook`, { method: 'POST', headers: apiHeaders, body: JSON.stringify({ smsText: smsText }) });
+            if (res.ok) { alert("SMS processed! Jarvis AI is categorizing the data."); loadPendingTransactions(); } 
+        } catch (error) { } finally { icon.setAttribute('data-lucide', 'message-square'); icon.classList.remove('animate-spin', 'text-blue-400'); lucide.createIcons(); }
     }
 
     async function syncDataFromServer() {
         try {
-            const localTx = localStorage.getItem('walletTx'); 
-            const localWish = localStorage.getItem('walletWish');
-            if (localTx && localTx !== "undefined") { 
-                const parsedTx = JSON.parse(localTx); 
-                if (parsedTx.length > 0) { 
-                    await fetch(`${API_BASE}/sync-transactions`, { method: 'POST', headers: apiHeaders, body: localTx }); 
-                    localStorage.removeItem('walletTx'); 
-                } 
-            }
-            if (localWish && localWish !== "undefined") { 
-                const parsedWish = JSON.parse(localWish); 
-                if (parsedWish.length > 0) { 
-                    await fetch(`${API_BASE}/sync-wishlist`, { method: 'POST', headers: apiHeaders, body: localWish }); 
-                    localStorage.removeItem('walletWish'); 
-                } 
-            }
-            const [txRes, wRes] = await Promise.all([ 
-                fetch(`${API_BASE}/get-transactions`), 
-                fetch(`${API_BASE}/get-wishlist`) 
-            ]);
-            if (txRes.ok) transactions = await txRes.json(); 
-            if (wRes.ok) wishlistItems = await wRes.json();
-        } catch (err) {
-        } finally { 
-            updateUI(); 
-            renderWishlist(); 
-        }
+            const localTx = localStorage.getItem('walletTx'); const localWish = localStorage.getItem('walletWish');
+            if (localTx && localTx !== "undefined") { const parsedTx = JSON.parse(localTx); if (parsedTx.length > 0) { await fetch(`${API_BASE}/sync-transactions`, { method: 'POST', headers: apiHeaders, body: localTx }); localStorage.removeItem('walletTx'); } }
+            if (localWish && localWish !== "undefined") { const parsedWish = JSON.parse(localWish); if (parsedWish.length > 0) { await fetch(`${API_BASE}/sync-wishlist`, { method: 'POST', headers: apiHeaders, body: localWish }); localStorage.removeItem('walletWish'); } }
+            const [txRes, wRes] = await Promise.all([ fetch(`${API_BASE}/get-transactions`), fetch(`${API_BASE}/get-wishlist`) ]);
+            if (txRes.ok) transactions = await txRes.json(); if (wRes.ok) wishlistItems = await wRes.json();
+        } catch (err) {} finally { updateUI(); renderWishlist(); }
     }
 
     function switchMainView(view) {
       document.getElementById('viewDashboard').className = view === 'dashboard' ? 'view-active space-y-4 md:space-y-6' : 'view-hidden';
       document.getElementById('viewWishlist').className = view === 'wishlist' ? 'view-active space-y-4 md:space-y-6' : 'view-hidden';
-      const dBtn = document.getElementById('navDashboard'); 
-      const wBtn = document.getElementById('navWishlist');
+      const dBtn = document.getElementById('navDashboard'); const wBtn = document.getElementById('navWishlist');
       if (view === 'dashboard') {
           dBtn.className = 'flex-1 sm:flex-none px-4 md:px-5 py-2.5 rounded-xl font-bold text-sm bg-white/10 text-white shadow-sm transition-all border border-white/5';
           wBtn.className = 'flex-1 sm:flex-none px-4 md:px-5 py-2.5 rounded-xl font-bold text-sm text-gray-400 hover:text-white hover:bg-white/5 transition-all border border-transparent';
@@ -680,179 +552,85 @@
     }
 
     function populateCategories() {
-      const sel = document.getElementById('category'); 
-      sel.innerHTML = '';
-      (currentType === 'expense' ? EXPENSE_CATEGORIES : INCOME_CATEGORIES).forEach(c => {
-          sel.innerHTML += `<option value="${c}">${c}</option>`;
-      });
+      const sel = document.getElementById('category'); sel.innerHTML = '';
+      (currentType === 'expense' ? EXPENSE_CATEGORIES : INCOME_CATEGORIES).forEach(c => sel.innerHTML += `<option value="${c}">${c}</option>`);
     }
 
-    function setGoal() { 
-        const g = prompt("Set Hard Threshold Budget (₹):", expenseGoal); 
-        if (g && !isNaN(g)) { 
-            expenseGoal = parseFloat(g); 
-            localStorage.setItem('walletGoal', expenseGoal); 
-            updateUI(); 
-        } 
-    }
-    
-    function addAmount(val) { 
-        document.getElementById('amount').value = (parseFloat(document.getElementById('amount').value) || 0) + val; 
-    }
+    function setGoal() { const g = prompt("Set Hard Threshold Budget (₹):", expenseGoal); if (g && !isNaN(g)) { expenseGoal = parseFloat(g); localStorage.setItem('walletGoal', expenseGoal); updateUI(); } }
+    function addAmount(val) { document.getElementById('amount').value = (parseFloat(document.getElementById('amount').value) || 0) + val; }
 
     function populateMonthFilter() {
-      const filter = document.getElementById('monthFilter'); 
-      const months = new Set();
-      transactions.forEach(t => { 
-          const d = new Date(t.timestamp); 
-          months.add(`${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}`); 
-      });
-      const sortedMonths = Array.from(months).sort().reverse(); 
-      const currentVal = filter.value;
+      const filter = document.getElementById('monthFilter'); const months = new Set();
+      transactions.forEach(t => { const d = new Date(t.timestamp); months.add(`${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}`); });
+      const sortedMonths = Array.from(months).sort().reverse(); const currentVal = filter.value;
       filter.innerHTML = '<option value="all">All Time</option>';
-      sortedMonths.forEach(m => { 
-          const [y, mo] = m.split('-'); 
-          filter.innerHTML += `<option value="${m}">${new Date(y, mo - 1).toLocaleDateString('en-GB', { month: 'short', year: 'numeric' })}</option>`; 
-      });
+      sortedMonths.forEach(m => { const [y, mo] = m.split('-'); filter.innerHTML += `<option value="${m}">${new Date(y, mo - 1).toLocaleDateString('en-GB', { month: 'short', year: 'numeric' })}</option>`; });
       if (Array.from(filter.options).some(o => o.value === currentVal)) filter.value = currentVal;
     }
 
     function exportData() {
       const dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify({ transactions, wishlist: wishlistItems, goal: expenseGoal, savings: monthlyWishlistSavings }));
-      const link = document.createElement("a"); 
-      link.href = dataStr; 
-      link.download = "wallet_v2_backup.json"; 
-      document.body.appendChild(link); 
-      link.click(); 
-      link.remove();
+      const link = document.createElement("a"); link.href = dataStr; link.download = "wallet_v2_backup.json"; document.body.appendChild(link); link.click(); link.remove();
     }
 
     function importData(event) {
-      const file = event.target.files[0]; 
-      if (!file) return; 
-      const reader = new FileReader();
+      const file = event.target.files[0]; if (!file) return; const reader = new FileReader();
       reader.onload = async function(e) {
         try {
           const imported = JSON.parse(e.target.result);
           if (imported.transactions) {
             await fetch(`${API_BASE}/sync-transactions`, { method: 'POST', headers: apiHeaders, body: JSON.stringify(imported.transactions) });
             if (imported.wishlist) await fetch(`${API_BASE}/sync-wishlist`, { method: 'POST', headers: apiHeaders, body: JSON.stringify(imported.wishlist) });
-            expenseGoal = imported.goal || 25000; 
-            monthlyWishlistSavings = imported.savings || 0;
-            localStorage.setItem('walletGoal', expenseGoal); 
-            localStorage.setItem('walletWishlistSavings', monthlyWishlistSavings);
+            expenseGoal = imported.goal || 25000; monthlyWishlistSavings = imported.savings || 0;
+            localStorage.setItem('walletGoal', expenseGoal); localStorage.setItem('walletWishlistSavings', monthlyWishlistSavings);
             document.getElementById('wishlistSavingsInput').value = monthlyWishlistSavings || '';
-            alert("Secure Backup imported successfully!"); 
-            syncDataFromServer(); 
+            alert("Secure Backup imported successfully!"); syncDataFromServer(); 
           }
         } catch (err) {}
-      }; 
-      reader.readAsText(file);
+      }; reader.readAsText(file);
     }
 
     async function scanReceipt(event) {
-        const file = event.target.files[0]; 
-        if (!file) return;
-        const icon = document.getElementById('scanIcon'); 
-        icon.setAttribute('data-lucide', 'loader-2'); 
-        icon.classList.add('animate-spin', 'text-blue-400'); 
-        lucide.createIcons();
-        const formData = new FormData(); 
-        formData.append('receipt', file);
+        const file = event.target.files[0]; if (!file) return;
+        const icon = document.getElementById('scanIcon'); icon.setAttribute('data-lucide', 'loader-2'); icon.classList.add('animate-spin', 'text-blue-400'); lucide.createIcons();
+        const formData = new FormData(); formData.append('receipt', file);
         try {
             const res = await fetch(`${API_BASE}/receipt-ocr`, { method: 'POST', body: formData });
             const data = await res.json();
-            if (data.total > 0) { 
-                document.getElementById('amount').value = data.total; 
-                document.getElementById('note').value = 'Vision OCR Scan'; 
-            } 
-        } catch (error) {
-        } finally { 
-            icon.setAttribute('data-lucide', 'camera'); 
-            icon.classList.remove('animate-spin', 'text-blue-400'); 
-            lucide.createIcons(); 
-            event.target.value = ''; 
-        }
+            if (data.total > 0) { document.getElementById('amount').value = data.total; document.getElementById('note').value = 'Vision OCR Scan'; } 
+        } catch (error) {} finally { icon.setAttribute('data-lucide', 'camera'); icon.classList.remove('animate-spin', 'text-blue-400'); lucide.createIcons(); event.target.value = ''; }
     }
 
     async function getAIInsights() {
-        const term = document.getElementById('aiTerminal'); 
-        const btn = document.getElementById('aiButton');
-        btn.disabled = true; 
-        btn.classList.add('opacity-50', 'cursor-not-allowed');
-        clearTimeout(aiTypingTimer); 
-        term.classList.remove('hidden'); 
-        term.innerHTML = '<span class="text-blue-400 animate-pulse font-medium">Jarvis AI is compiling analytical budget logs...</span>';
+        const term = document.getElementById('aiTerminal'); const btn = document.getElementById('aiButton');
+        btn.disabled = true; btn.classList.add('opacity-50', 'cursor-not-allowed');
+        clearTimeout(aiTypingTimer); term.classList.remove('hidden'); term.innerHTML = '<span class="text-blue-400 animate-pulse font-medium">Jarvis AI is compiling analytical budget logs...</span>';
         try {
             let tIncTotal = 0, tExpTotal = 0;
-            transactions.forEach(t => { 
-                if(t.type === 'income') tIncTotal += t.amount; 
-                else tExpTotal += t.amount; 
-            });
+            transactions.forEach(t => { if(t.type === 'income') tIncTotal += t.amount; else tExpTotal += t.amount; });
             const aiPayloadData = { summary: `Totals: Income ₹${tIncTotal}, Expense ₹${tExpTotal}.`, rawLedger: transactions };
-            const res = await fetch(`${API_BASE}/jarvis-advice`, { 
-                method: 'POST', 
-                headers: apiHeaders, 
-                body: JSON.stringify({ transactions: aiPayloadData, monthlyBudget: expenseGoal }) 
-            });
+            const res = await fetch(`${API_BASE}/jarvis-advice`, { method: 'POST', headers: apiHeaders, body: JSON.stringify({ transactions: aiPayloadData, monthlyBudget: expenseGoal }) });
             const data = await res.json(); 
-            term.innerHTML = ''; 
-            let i = 0; 
-            const txt = data.advice; 
-            term.classList.add('ai-typing');
-            
+            term.innerHTML = ''; let i = 0; const txt = data.advice; term.classList.add('ai-typing');
             function typeWriter() { 
-                if (i < txt.length) { 
-                    term.innerHTML += txt.charAt(i); 
-                    i++; 
-                    aiTypingTimer = setTimeout(typeWriter, 15); 
-                } else { 
-                    term.classList.remove('ai-typing'); 
-                    btn.disabled = false; 
-                    btn.classList.remove('opacity-50', 'cursor-not-allowed'); 
-                } 
+                if (i < txt.length) { term.innerHTML += txt.charAt(i); i++; aiTypingTimer = setTimeout(typeWriter, 15); } 
+                else { term.classList.remove('ai-typing'); btn.disabled = false; btn.classList.remove('opacity-50', 'cursor-not-allowed'); } 
             }
             typeWriter();
-        } catch (err) { 
-            term.innerHTML = '<span class="text-red-400">Analysis stream offline.</span>'; 
-            btn.disabled = false; 
-            btn.classList.remove('opacity-50', 'cursor-not-allowed'); 
-        }
+        } catch (err) { term.innerHTML = '<span class="text-red-400">Analysis stream offline.</span>'; btn.disabled = false; btn.classList.remove('opacity-50', 'cursor-not-allowed'); }
     }
 
     document.getElementById('transactionForm').addEventListener('submit', async (e) => {
         e.preventDefault(); 
-        const amt = parseFloat(document.getElementById('amount').value); 
-        if (!amt) return;
-        
-        const dateObj = new Date(document.getElementById('date').value); 
-        const now = new Date(); 
-        dateObj.setHours(now.getHours(), now.getMinutes());
-        
-        const newTx = { 
-            id: String(Date.now()), 
-            type: currentType, 
-            amount: amt, 
-            account: document.getElementById('account').value, 
-            category: document.getElementById('category').value, 
-            note: document.getElementById('note').value, 
-            timestamp: dateObj.getTime(), 
-            isRecurring: document.getElementById('isRecurring')?.checked 
-        };
+        const amt = parseFloat(document.getElementById('amount').value); if (!amt) return;
+        const dateObj = new Date(document.getElementById('date').value); const now = new Date(); dateObj.setHours(now.getHours(), now.getMinutes());
+        const newTx = { id: String(Date.now()), type: currentType, amount: amt, account: document.getElementById('account').value, category: document.getElementById('category').value, note: document.getElementById('note').value, timestamp: dateObj.getTime(), isRecurring: document.getElementById('isRecurring')?.checked };
         
         transactions.push(newTx);
-        document.getElementById('amount').value = ''; 
-        document.getElementById('note').value = ''; 
+        document.getElementById('amount').value = ''; document.getElementById('note').value = ''; 
         if(document.getElementById('isRecurring')) document.getElementById('isRecurring').checked = false; 
         updateUI();
-        
-        try { 
-            await fetch(`${API_BASE}/add-transaction`, { 
-                method: 'POST', 
-                headers: apiHeaders, 
-                body: JSON.stringify({ ...newTx, origin: 'manual' }) 
-            }); 
-        } catch(err) {}
+        try { await fetch(`${API_BASE}/add-transaction`, { method: 'POST', headers: apiHeaders, body: JSON.stringify(newTx) }); } catch(err) {}
     });
 
     function openEditModal(id) {
@@ -918,11 +696,7 @@
         } 
     }
 
-    function updateWishlistSavings(v) { 
-        monthlyWishlistSavings = parseFloat(v) || 0; 
-        localStorage.setItem('walletWishlistSavings', monthlyWishlistSavings); 
-        renderWishlist(); 
-    }
+    function updateWishlistSavings(v) { monthlyWishlistSavings = parseFloat(v) || 0; localStorage.setItem('walletWishlistSavings', monthlyWishlistSavings); renderWishlist(); }
     
     async function deleteWishlistItem(id) { 
         if(confirm("Remove tracking index from database?")) { 
@@ -933,46 +707,24 @@
     }
 
     document.getElementById('wishLink').addEventListener('change', async (e) => {
-        const url = e.target.value; 
-        const icn = document.getElementById('linkStatusIcon'); 
-        if(!url) return;
-        
-        icn.setAttribute('data-lucide', 'loader-2'); 
-        icn.classList.add('animate-spin', 'text-blue-400'); 
-        lucide.createIcons();
-        
+        const url = e.target.value; const icn = document.getElementById('linkStatusIcon'); if(!url) return;
+        icn.setAttribute('data-lucide', 'loader-2'); icn.classList.add('animate-spin', 'text-blue-400'); lucide.createIcons();
         try {
-            const res = await fetch(`${API_BASE}/scrape-price`, { 
-                method: 'POST', 
-                headers: apiHeaders, 
-                body: JSON.stringify({url}) 
-            });
+            const res = await fetch(`${API_BASE}/scrape-price`, { method: 'POST', headers: apiHeaders, body: JSON.stringify({url}) });
             const result = await res.json();
-            
-            if(result.title) document.getElementById('wishName').value = result.title;
+            if(result.title) document.getElementById('wishName').value = result.title.split('|')[0].trim();
             if(result.price) document.getElementById('wishPrice').value = result.price;
             if(result.imageUrl) document.getElementById('wishImage').value = result.imageUrl;
-        } catch(err) {
-        } finally { 
-            icn.setAttribute('data-lucide', 'link'); 
-            icn.classList.remove('animate-spin', 'text-blue-400'); 
-            lucide.createIcons(); 
-        }
+        } catch(err) {} finally { icn.setAttribute('data-lucide', 'link'); icn.classList.remove('animate-spin', 'text-blue-400'); lucide.createIcons(); }
     });
 
     document.getElementById('wishlistForm').addEventListener('submit', async (e) => {
         e.preventDefault(); 
-        const btn = e.target.querySelector('button[type="submit"]'); 
-        const orig = btn.innerText;
-        btn.innerText = "Saving Node..."; 
-        btn.disabled = true;
+        const btn = e.target.querySelector('button[type="submit"]'); const orig = btn.innerText;
+        btn.innerText = "Saving Node..."; btn.disabled = true;
         
         let storeLabel = 'STORE NODE';
-        try { 
-            if(document.getElementById('wishLink').value) {
-                storeLabel = new URL(document.getElementById('wishLink').value).hostname.replace('www.', '').split('.')[0].toUpperCase(); 
-            }
-        } catch(e){}
+        try { if(document.getElementById('wishLink').value) storeLabel = new URL(document.getElementById('wishLink').value).hostname.replace('www.', '').split('.')[0].toUpperCase(); } catch(e){}
 
         const newItem = { 
             id: String(Date.now()), 
@@ -984,32 +736,13 @@
             wishCategory: document.getElementById('wishCategory').value,
             timestamp: Date.now()
         };
-        
-        wishlistItems.push(newItem); 
-        e.target.reset(); 
-        renderWishlist();
-        
-        try { 
-            await fetch(`${API_BASE}/add-wishlist`, { 
-                method: 'POST', 
-                headers: apiHeaders, 
-                body: JSON.stringify(newItem) 
-            }); 
-        } catch (error) {
-        } finally { 
-            btn.innerText = orig; 
-            btn.disabled = false; 
-        }
+        wishlistItems.push(newItem); e.target.reset(); renderWishlist();
+        try { await fetch(`${API_BASE}/add-wishlist`, { method: 'POST', headers: apiHeaders, body: JSON.stringify(newItem) }); } catch (error) {} finally { btn.innerText = orig; btn.disabled = false; }
     });
 
     function renderWishlist() {
       const grid = document.getElementById('wishlistGrid');
-      
-      if (!wishlistItems.length) { 
-          grid.innerHTML = `<p class="text-gray-500 text-sm py-4 font-bold uppercase tracking-widest text-center col-span-full">No trackable items stored in database frame.</p>`; 
-          return; 
-      }
-      
+      if (!wishlistItems.length) { grid.innerHTML = `<p class="text-gray-500 text-sm py-4 font-bold uppercase tracking-widest text-center col-span-full">No trackable items stored in database frame.</p>`; return; }
       grid.innerHTML = [...wishlistItems].sort((a,b)=>b.timestamp-a.timestamp).map(item => {
         let actionPlanHTML = '';
         if (monthlyWishlistSavings > 0) {
@@ -1022,12 +755,7 @@
             `<div class="w-full h-44 rounded-xl mb-4 bg-gradient-to-br from-blue-900/20 to-purple-900/10 border border-white/5 flex flex-col items-center justify-center text-gray-500 shadow-inner"><i data-lucide="package" class="w-8 h-8 mb-2 text-blue-500/40"></i><span class="text-[10px] uppercase font-bold tracking-widest text-gray-400/60">No Image Asset</span></div>`;
             
         let storeLabel = 'STORE NODE';
-        try { 
-            if(item.link) {
-                storeLabel = new URL(item.link).hostname.replace('www.', '').split('.')[0]; 
-            }
-        } catch(e){}
-        
+        try { if(item.link) storeLabel = new URL(item.link).hostname.replace('www.', '').split('.')[0]; } catch(e){}
         const catTag = item.category || 'UNASSIGNED';
         const formattedDate = item.timestamp ? new Date(item.timestamp).toLocaleDateString('en-GB', {day:'numeric', month:'short'}) : 'RECENT';
 
@@ -1041,85 +769,44 @@
                 </div>
                 <h3 class="font-bold text-white leading-tight line-clamp-2 pt-1 text-sm">${item.title}</h3>
                 <div class="flex items-baseline justify-between pt-1 mt-auto">
-                    <h4 class="text-3xl font-black text-emerald-400 drop-shadow-[0_0_8px_rgba(16,185,129,0.3)]">₹${item.price.toLocaleString()}</h4>
+                    <h4 class="text-2xl font-black text-emerald-400 drop-shadow-[0_0_8px_rgba(16,185,129,0.3)]">₹${item.price.toLocaleString()}</h4>
                     <span class="text-[9px] font-black text-gray-400 uppercase tracking-widest flex items-center bg-white/5 px-2 py-1 rounded border border-white/5 shadow-inner"><i data-lucide="shopping-bag" class="w-3 h-3 mr-1 text-purple-400"></i> ${item.wishCategory || 'Other'}</span>
                 </div>
             </div>
             ${actionPlanHTML}
             ${item.link ? `<a href="${item.link}" target="_blank" class="block w-full text-center mt-4 bg-white/5 hover:bg-white/10 hover:text-blue-300 py-3 rounded-xl text-xs font-bold transition-all border border-white/10 text-white shadow-sm hover:border-blue-500/30 tracking-wide">View Online Node</a>` : ''}
         </div>`;
-      }).join(''); 
-      lucide.createIcons();
+      }).join(''); lucide.createIcons();
     }
 
-    Chart.defaults.color = '#9ca3af'; 
-    Chart.defaults.font.family = 'Lora'; 
+    Chart.defaults.color = '#9ca3af'; Chart.defaults.font.family = 'Lora'; 
     Chart.defaults.borderColor = 'rgba(255,255,255,0.05)';
     let donutChart, lineChart, radarChart, cashflowChart, polarChart;
 
     function initCharts() {
-      donutChart = new Chart(document.getElementById('walletChart').getContext('2d'), { 
-          type: 'doughnut', 
-          data: { labels:[], datasets:[{data:[], backgroundColor:[], borderWidth:0}] }, 
-          options: { 
-              responsive: true, 
-              maintainAspectRatio: false, 
-              cutout: '80%', 
-              plugins: { 
-                  legend: { display: false }, 
-                  tooltip: { backgroundColor: 'rgba(15, 23, 42, 0.9)', titleFont: { size: 10, family: 'Lora' }, bodyFont: { font: 'Lora', weight: 'bold' }, padding: 10, cornerRadius: 8, borderColor: 'rgba(255,255,255,0.1)', borderWidth: 1 } 
-              } 
-          } 
-      });
+      donutChart = new Chart(document.getElementById('walletChart').getContext('2d'), { type: 'doughnut', data: { labels:[], datasets:[{data:[], backgroundColor:[], borderWidth:0}] }, options: { responsive: true, maintainAspectRatio: false, cutout: '80%', plugins: { legend: { display: false }, tooltip: { backgroundColor: 'rgba(15, 23, 42, 0.9)', titleFont: { size: 10, family: 'Lora' }, bodyFont: { font: 'Lora', weight: 'bold' }, padding: 10, cornerRadius: 8, borderColor: 'rgba(255,255,255,0.1)', borderWidth: 1 } } } });
       
       lineChart = new Chart(document.getElementById('trendChart').getContext('2d'), { 
-        type: 'line', 
-        data: { labels:[], datasets:[] }, 
-        options: { 
-            responsive: true, 
-            maintainAspectRatio: false, 
-            hover: { mode: 'index', intersect: false }, 
-            elements: { line: { tension: 0.4 }, point: { radius: 0, hitRadius: 10, hoverRadius: 4 } }, 
-            plugins: { 
-                legend: { display: false }, 
-                tooltip: { mode: 'index', intersect: false, backgroundColor: 'rgba(15, 23, 42, 0.9)', titleFont: { size: 10, family: 'Lora' }, bodyFont: { font: 'Lora', weight: 'bold' }, padding: 10, cornerRadius: 8, borderColor: 'rgba(255,255,255,0.1)', borderWidth: 1 } 
-            }, 
-            scales: { x: { grid: { display: false } }, y: { border:{display:false} } } 
-        } 
+        type: 'line', data: { labels:[], datasets:[] }, 
+        options: { responsive: true, maintainAspectRatio: false, hover: { mode: 'index', intersect: false }, elements: { line: { tension: 0.4 }, point: { radius: 0, hitRadius: 10, hoverRadius: 4 } }, plugins: { legend: { display: false }, tooltip: { mode: 'index', intersect: false, backgroundColor: 'rgba(15, 23, 42, 0.9)', titleFont: { size: 10, family: 'Lora' }, bodyFont: { font: 'Lora', weight: 'bold' }, padding: 10, cornerRadius: 8, borderColor: 'rgba(255,255,255,0.1)', borderWidth: 1 } }, scales: { x: { grid: { display: false } }, y: { border:{display:false} } } } 
       });
 
       radarChart = new Chart(document.getElementById('radarChart').getContext('2d'), {
         type: 'radar',
         data: { labels: ['Dining', 'Transport', 'Shopping', 'Utilities', 'Subs'], datasets: [{ label: 'Allocation', data: [0, 0, 0, 0, 0], backgroundColor: 'rgba(59, 130, 246, 0.2)', borderColor: '#3b82f6', pointBackgroundColor: '#60a5fa', borderWidth: 2 }] },
-        options: { 
-            responsive: true, 
-            maintainAspectRatio: false, 
-            plugins: { legend: { display: false }, tooltip: { backgroundColor: 'rgba(15, 23, 42, 0.9)', padding: 10, cornerRadius: 8, borderColor: 'rgba(255,255,255,0.1)', borderWidth: 1 } }, 
-            scales: { r: { angleLines: { color: 'rgba(255,255,255,0.05)' }, grid: { color: 'rgba(255,255,255,0.05)' }, pointLabels: { color: '#9ca3af', font: { family: 'Lora', size: 10, weight: 'bold' } }, ticks: { display: false } } } 
-        }
+        options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false }, tooltip: { backgroundColor: 'rgba(15, 23, 42, 0.9)', padding: 10, cornerRadius: 8, borderColor: 'rgba(255,255,255,0.1)', borderWidth: 1 } }, scales: { r: { angleLines: { color: 'rgba(255,255,255,0.05)' }, grid: { color: 'rgba(255,255,255,0.05)' }, pointLabels: { color: '#9ca3af', font: { family: 'Lora', size: 10, weight: 'bold' } }, ticks: { display: false } } } }
       });
       
       cashflowChart = new Chart(document.getElementById('cashflowChart').getContext('2d'), {
         type: 'bar',
         data: { labels: [], datasets: [ { label: 'Income', data: [], backgroundColor: '#10b981', borderRadius: 4 }, { label: 'Expense', data: [], backgroundColor: '#f43f5e', borderRadius: 4 } ] },
-        options: { 
-            responsive: true, 
-            maintainAspectRatio: false, 
-            hover: { mode: 'index', intersect: false }, 
-            plugins: { legend: { position: 'top', labels: { color: '#9ca3af', font: {size: 10, weight: 'bold', family: 'Lora'}, boxWidth: 12 } }, tooltip: { mode: 'index', intersect: false, backgroundColor: 'rgba(15, 23, 42, 0.9)', titleFont: { size: 10, family: 'Lora' }, bodyFont: { font: 'Lora', weight: 'bold' }, padding: 10, cornerRadius: 8, borderColor: 'rgba(255,255,255,0.1)', borderWidth: 1 } }, 
-            scales: { x: { grid: { display: false }, ticks: {color: '#9ca3af', font: {weight: 'bold', family: 'Lora'}} }, y: { border:{display:false}, ticks: {color: '#9ca3af', font: {weight: 'bold', family: 'Lora'}} } } 
-        }
+        options: { responsive: true, maintainAspectRatio: false, hover: { mode: 'index', intersect: false }, plugins: { legend: { position: 'top', labels: { color: '#9ca3af', font: {size: 10, weight: 'bold', family: 'Lora'}, boxWidth: 12 } }, tooltip: { mode: 'index', intersect: false, backgroundColor: 'rgba(15, 23, 42, 0.9)', titleFont: { size: 10, family: 'Lora' }, bodyFont: { font: 'Lora', weight: 'bold' }, padding: 10, cornerRadius: 8, borderColor: 'rgba(255,255,255,0.1)', borderWidth: 1 } }, scales: { x: { grid: { display: false }, ticks: {color: '#9ca3af', font: {weight: 'bold', family: 'Lora'}} }, y: { border:{display:false}, ticks: {color: '#9ca3af', font: {weight: 'bold', family: 'Lora'}} } } }
       });
 
       polarChart = new Chart(document.getElementById('polarChart').getContext('2d'), {
         type: 'polarArea',
         data: { labels: ['UPI', 'Card', 'Cash'], datasets: [{ data: [0, 0, 0], backgroundColor: ['rgba(59, 130, 246, 0.7)', 'rgba(139, 92, 246, 0.7)', 'rgba(16, 185, 129, 0.7)'], borderWidth: 0 }] },
-        options: { 
-            responsive: true, 
-            maintainAspectRatio: false, 
-            plugins: { legend: { position: 'right', labels: { color: '#9ca3af', font: {size: 10, weight: 'bold', family: 'Lora'}, boxWidth: 10 } }, tooltip: { backgroundColor: 'rgba(15, 23, 42, 0.9)', padding: 10, cornerRadius: 8, borderColor: 'rgba(255,255,255,0.1)', borderWidth: 1 } }, 
-            scales: { r: { grid: { color: 'rgba(255,255,255,0.05)' }, ticks: { display: false } } } 
-        }
+        options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { position: 'right', labels: { color: '#9ca3af', font: {size: 10, weight: 'bold', family: 'Lora'}, boxWidth: 10 } }, tooltip: { backgroundColor: 'rgba(15, 23, 42, 0.9)', padding: 10, cornerRadius: 8, borderColor: 'rgba(255,255,255,0.1)', borderWidth: 1 } }, scales: { r: { grid: { color: 'rgba(255,255,255,0.05)' }, ticks: { display: false } } } }
       });
     }
 
@@ -1160,19 +847,7 @@
                 { label: 'Income', data: incData, borderColor: '#10b981', backgroundColor: 'rgba(16, 185, 129, 0.1)', fill: true, tension: 0.4 },
                 { label: 'Expense', data: expData, borderColor: '#f43f5e', backgroundColor: 'rgba(244, 63, 94, 0.1)', fill: true, tension: 0.4 }
             ]},
-            options: { 
-                responsive: true, 
-                maintainAspectRatio: false, 
-                hover: {mode: 'index', intersect: false}, 
-                plugins: { 
-                    tooltip: {mode: 'index', intersect: false, backgroundColor: 'rgba(15, 23, 42, 0.9)', titleFont: { size: 12, family: 'Lora' }, bodyFont: { font: 'Lora', weight: 'bold' }, padding: 12, cornerRadius: 8, borderColor: 'rgba(255,255,255,0.1)', borderWidth: 1 }, 
-                    legend: { labels: { color: '#9ca3af', font: {weight: 'bold', family: 'Lora'}, boxWidth: 12 } } 
-                }, 
-                scales: { 
-                    x: { grid: { display: false }, ticks: {color: '#9ca3af', font: {weight: 'bold', family: 'Lora'}} }, 
-                    y: { border:{display:false}, ticks: {color: '#9ca3af', font: {weight: 'bold', family: 'Lora'}} } 
-                } 
-            }
+            options: { responsive: true, maintainAspectRatio: false, hover: {mode: 'index', intersect: false}, plugins: { tooltip: {mode: 'index', intersect: false, backgroundColor: 'rgba(15, 23, 42, 0.9)', titleFont: { size: 12, family: 'Lora' }, bodyFont: { font: 'Lora', weight: 'bold' }, padding: 12, cornerRadius: 8, borderColor: 'rgba(255,255,255,0.1)', borderWidth: 1 }, legend: { labels: { color: '#9ca3af', font: {weight: 'bold', family: 'Lora'}, boxWidth: 12 } } }, scales: { x: { grid: { display: false }, ticks: {color: '#9ca3af', font: {weight: 'bold', family: 'Lora'}} }, y: { border:{display:false}, ticks: {color: '#9ca3af', font: {weight: 'bold', family: 'Lora'}} } } }
         });
     }
 
@@ -1181,114 +856,55 @@
     }
 
     function updateUI() {
-      populateMonthFilter(); 
-      let tInc = 0, tExp = 0; 
-      let bal = { UPI: 0, Card: 0, Cash: 0 };
-      
+      populateMonthFilter(); let tInc = 0, tExp = 0; let bal = { UPI: 0, Card: 0, Cash: 0 };
       const filtered = transactions.filter(t => {
-          if (selectedMonth !== 'all') { 
-              const d = new Date(t.timestamp); 
-              if (`${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}` !== selectedMonth) return false; 
-          }
-          if(searchQuery) { 
-              const q = searchQuery.toLowerCase(); 
-              return t.category.toLowerCase().includes(q) || (t.note && t.note.toLowerCase().includes(q)); 
-          }
+          if (selectedMonth !== 'all') { const d = new Date(t.timestamp); if (`${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}` !== selectedMonth) return false; }
+          if(searchQuery) { const q = searchQuery.toLowerCase(); return t.category.toLowerCase().includes(q) || (t.note && t.note.toLowerCase().includes(q)); }
           return true;
       });
 
-      transactions.forEach(t => { 
-          if (t.type === 'income') { if(bal[t.account]!==undefined) bal[t.account] += t.amount; } 
-          if (t.type === 'expense') { if(bal[t.account]!==undefined) bal[t.account] -= t.amount; } 
-      });
-      
-      filtered.forEach(t => { 
-          if (t.type === 'income') tInc += t.amount; 
-          if (t.type === 'expense') tExp += t.amount; 
-      });
+      transactions.forEach(t => { if (t.type === 'income') { if(bal[t.account]!==undefined) bal[t.account] += t.amount; } if (t.type === 'expense') { if(bal[t.account]!==undefined) bal[t.account] -= t.amount; } });
+      filtered.forEach(t => { if (t.type === 'income') tInc += t.amount; if (t.type === 'expense') tExp += t.amount; });
 
-      document.getElementById('totalIncome').innerText = `₹${tInc.toLocaleString()}`; 
-      document.getElementById('totalExpense').innerText = `₹${tExp.toLocaleString()}`; 
-      document.getElementById('chartCenterText').innerText = `₹${tExp.toLocaleString()}`;
-      document.getElementById('netBalance').innerText = `₹${(bal.UPI+bal.Card+bal.Cash).toLocaleString()}`; 
+      document.getElementById('totalIncome').innerText = `₹${tInc.toLocaleString()}`; document.getElementById('totalExpense').innerText = `₹${tExp.toLocaleString()}`; document.getElementById('chartCenterText').innerText = `₹${tExp.toLocaleString()}`;
+      document.getElementById('netBalance').innerText = `₹${(bal.UPI+bal.Card+bal.Cash).toLocaleString()}`; ['UPI', 'Card', 'Cash'].forEach(a => document.getElementById(`bal${a}`).innerText = `₹${bal[a].toLocaleString()}`);
       
-      ['UPI', 'Card', 'Cash'].forEach(a => document.getElementById(`bal${a}`).innerText = `₹${bal[a].toLocaleString()}`);
-      
-      const pct = Math.min((tExp / expenseGoal) * 100, 100) || 0; 
-      document.getElementById('goalProgress').style.width = `${pct}%`; 
-      document.getElementById('goalText').innerText = `Target Threshold: ₹${expenseGoal.toLocaleString()} (${Math.round(pct)}%)`;
+      const pct = Math.min((tExp / expenseGoal) * 100, 100) || 0; document.getElementById('goalProgress').style.width = `${pct}%`; document.getElementById('goalText').innerText = `Target Threshold: ₹${expenseGoal.toLocaleString()} (${Math.round(pct)}%)`;
       document.getElementById('recordCount').innerText = filtered.length;
 
       const currentDay = Math.max(1, new Date().getDate());
-      const burnRate = tExp / currentDay; 
-      document.getElementById('statBurnRate').innerText = `₹${Math.round(burnRate).toLocaleString()}`;
-      
-      const savingsRate = tInc > 0 ? ((tInc - tExp) / tInc) * 100 : 0; 
-      document.getElementById('statSavingsRate').innerText = `${Math.max(0, savingsRate).toFixed(1)}%`;
+      const burnRate = tExp / currentDay; document.getElementById('statBurnRate').innerText = `₹${Math.round(burnRate).toLocaleString()}`;
+      const savingsRate = tInc > 0 ? ((tInc - tExp) / tInc) * 100 : 0; document.getElementById('statSavingsRate').innerText = `${Math.max(0, savingsRate).toFixed(1)}%`;
 
-      let tLiabilities = 0; 
-      filtered.forEach(t => { if(t.type === 'expense' && t.isRecurring) tLiabilities += t.amount; }); 
-      document.getElementById('statLiabilities').innerText = `₹${tLiabilities.toLocaleString()}`;
-      
-      const liquidAssets = bal.UPI + bal.Cash + bal.Card; 
-      const runway = burnRate > 0 ? liquidAssets / burnRate : 0; 
-      document.getElementById('statRunway').innerText = `${Math.round(runway)} Days`;
+      let tLiabilities = 0; filtered.forEach(t => { if(t.type === 'expense' && t.isRecurring) tLiabilities += t.amount; }); document.getElementById('statLiabilities').innerText = `₹${tLiabilities.toLocaleString()}`;
+      const liquidAssets = bal.UPI + bal.Cash + bal.Card; const runway = burnRate > 0 ? liquidAssets / burnRate : 0; document.getElementById('statRunway').innerText = `${Math.round(runway)} Days`;
 
       let healthScore = 50; 
-      if (savingsRate > 20) healthScore += 20; 
-      else if (savingsRate > 5) healthScore += 10;
-      
-      if (runway > 30) healthScore += 20; 
-      else if (runway > 15) healthScore += 10;
-      
+      if (savingsRate > 20) healthScore += 20; else if (savingsRate > 5) healthScore += 10;
+      if (runway > 30) healthScore += 20; else if (runway > 15) healthScore += 10;
       if (tLiabilities < (tInc * 0.2)) healthScore += 10;
-      
       const finalHealth = Math.min(100, Math.max(10, Math.round(healthScore)));
-      const healthEl = document.getElementById('healthScore'); 
-      healthEl.innerText = `${finalHealth}/100`; 
-      healthEl.className = `text-xs font-black drop-shadow-[0_0_8px_rgba(16,185,129,0.5)] ml-1 ${finalHealth > 75 ? 'text-emerald-400' : (finalHealth > 40 ? 'text-orange-400' : 'text-rose-400')}`;
+      const healthEl = document.getElementById('healthScore'); healthEl.innerText = `${finalHealth}/100`; healthEl.className = `text-xs font-black drop-shadow-[0_0_8px_rgba(16,185,129,0.5)] ml-1 ${finalHealth > 75 ? 'text-emerald-400' : (finalHealth > 40 ? 'text-orange-400' : 'text-rose-400')}`;
 
-      const catData = {}; 
-      filtered.filter(t=>t.type==='expense').forEach(e => catData[e.category] = (catData[e.category]||0)+e.amount);
+      const catData = {}; filtered.filter(t=>t.type==='expense').forEach(e => catData[e.category] = (catData[e.category]||0)+e.amount);
       const sCats = Object.entries(catData).sort((a,b)=>b[1]-a[1]);
-      donutChart.data = { labels: sCats.map(c=>c[0]), datasets: [{ data: sCats.map(c=>c[1]), backgroundColor: sCats.map(c=>CAT_COLORS[c[0]]||'#6b7280') }] }; 
-      donutChart.update();
+      donutChart.data = { labels: sCats.map(c=>c[0]), datasets: [{ data: sCats.map(c=>c[1]), backgroundColor: sCats.map(c=>CAT_COLORS[c[0]]||'#6b7280') }] }; donutChart.update();
 
       const radarMappings = ['Food & Dining', 'Transport', 'Shopping', 'Utilities', 'Subscriptions'];
-      radarChart.data.datasets[0].data = radarMappings.map(c => catData[c] || 0); 
-      radarChart.update();
+      radarChart.data.datasets[0].data = radarMappings.map(c => catData[c] || 0); radarChart.update();
 
-      polarChart.data.datasets[0].data = [Math.max(0, bal.UPI), Math.max(0, bal.Card), Math.max(0, bal.Cash)]; 
-      polarChart.update();
+      polarChart.data.datasets[0].data = [Math.max(0, bal.UPI), Math.max(0, bal.Card), Math.max(0, bal.Cash)]; polarChart.update();
 
-      const dates = {}; 
-      const sortedFiltered = [...filtered].sort((a,b)=>a.timestamp-b.timestamp);
-      
+      const dates = {}; const sortedFiltered = [...filtered].sort((a,b)=>a.timestamp-b.timestamp);
       if(sortedFiltered.length > 0) {
-          const endNode = new Date(sortedFiltered[sortedFiltered.length-1].timestamp); 
-          endNode.setHours(0,0,0,0);
-          const startNode = new Date(endNode); 
-          startNode.setDate(startNode.getDate() - 14); 
-          for(let d = new Date(startNode); d <= endNode; d.setDate(d.getDate() + 1)) { 
-              dates[d.toLocaleDateString('en-GB',{day:'numeric',month:'short'})] = {i:0,e:0}; 
-          }
-          sortedFiltered.forEach(t => { 
-              const dStr = new Date(t.timestamp).toLocaleDateString('en-GB',{day:'numeric',month:'short'}); 
-              if(dates[dStr]) { 
-                  t.type === 'income' ? dates[dStr].i += t.amount : dates[dStr].e += t.amount; 
-              } 
-          });
+          const endNode = new Date(sortedFiltered[sortedFiltered.length-1].timestamp); endNode.setHours(0,0,0,0);
+          const startNode = new Date(endNode); startNode.setDate(startNode.getDate() - 14); 
+          for(let d = new Date(startNode); d <= endNode; d.setDate(d.getDate() + 1)) { dates[d.toLocaleDateString('en-GB',{day:'numeric',month:'short'})] = {i:0,e:0}; }
+          sortedFiltered.forEach(t => { const dStr = new Date(t.timestamp).toLocaleDateString('en-GB',{day:'numeric',month:'short'}); if(dates[dStr]) { t.type === 'income' ? dates[dStr].i += t.amount : dates[dStr].e += t.amount; } });
       }
       
       const labels = Object.keys(dates); 
-      lineChart.data = { 
-          labels, 
-          datasets: [ 
-              { data: labels.map(l=>dates[l].i), borderColor: '#10b981', backgroundColor: 'rgba(16, 185, 129, 0.1)', fill:true, pointRadius:2 }, 
-              { data: labels.map(l=>dates[l].e), borderColor: '#f43f5e', backgroundColor: 'rgba(244, 63, 94, 0.1)', fill:true, pointRadius:2 } 
-          ]
-      }; 
-      lineChart.update();
+      lineChart.data = { labels, datasets: [ { data: labels.map(l=>dates[l].i), borderColor: '#10b981', backgroundColor: 'rgba(16, 185, 129, 0.1)', fill:true, pointRadius:2 }, { data: labels.map(l=>dates[l].e), borderColor: '#f43f5e', backgroundColor: 'rgba(244, 63, 94, 0.1)', fill:true, pointRadius:2 } ]}; lineChart.update();
 
       const last7Labels = labels.slice(-7);
       cashflowChart.data.labels = last7Labels;
@@ -1296,16 +912,9 @@
       cashflowChart.data.datasets[1].data = last7Labels.map(l => dates[l].e);
       cashflowChart.update();
 
-      const insightsEl = document.getElementById('topInsights'); 
-      insightsEl.className = "mt-4 space-y-3 pt-4 border-t border-white/10 flex-grow overflow-y-auto max-h-[160px] pr-2";
-      if (sCats.length === 0) { 
-          insightsEl.innerHTML = `<p class="text-xs text-gray-500 text-center py-2 font-bold uppercase tracking-widest">No category logs processed.</p>`; 
-      } else { 
-          insightsEl.innerHTML = sCats.map(([cat, val]) => { 
-              const catPct = tExp ? Math.round((val / tExp) * 100) : 0; 
-              return `<div><div class="flex justify-between text-[10px] font-bold mb-1"><span class="text-gray-300 uppercase tracking-widest">${cat}</span><span class="text-gray-400 font-bold">₹${val.toLocaleString()} (${catPct}%)</span></div><div class="w-full bg-black/40 rounded-full h-1.5 shadow-inner border border-white/5"><div class="h-1.5 rounded-full shadow-[0_0_8px_rgba(255,255,255,0.2)]" style="width: ${catPct}%; background-color: ${CAT_COLORS[cat] || '#6b7280'}"></div></div></div>`; 
-          }).join(''); 
-      }
+      const insightsEl = document.getElementById('topInsights'); insightsEl.className = "mt-4 space-y-3 pt-4 border-t border-white/10 flex-grow overflow-y-auto max-h-[160px] pr-2";
+      if (sCats.length === 0) { insightsEl.innerHTML = `<p class="text-xs text-gray-500 text-center py-2 font-bold uppercase tracking-widest">No category logs processed.</p>`; } 
+      else { insightsEl.innerHTML = sCats.map(([cat, val]) => { const catPct = tExp ? Math.round((val / tExp) * 100) : 0; return `<div><div class="flex justify-between text-[10px] font-bold mb-1"><span class="text-gray-300 uppercase tracking-widest">${cat}</span><span class="text-gray-400 font-bold">₹${val.toLocaleString()} (${catPct}%)</span></div><div class="w-full bg-black/40 rounded-full h-1.5 shadow-inner border border-white/5"><div class="h-1.5 rounded-full shadow-[0_0_8px_rgba(255,255,255,0.2)]" style="width: ${catPct}%; background-color: ${CAT_COLORS[cat] || '#6b7280'}"></div></div></div>`; }).join(''); }
 
       const list = document.getElementById('ledgerList');
       if(!filtered.length) {
