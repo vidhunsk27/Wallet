@@ -171,8 +171,8 @@ app.post('/api/sms-webhook', async (req, res) => {
         Extract the amount, merchant, date, type (income/expense), and category.
         
         Rules for "category":
-        - For expense, choose the most logical fit from ONLY these: 'Food & Dining', 'Groceries', 'Transport', 'Utilities', 'Shopping', 'Entertainment', 'Health', 'Subscriptions', 'Other'.
-        - Example mapping: Swiggy/Zomato/Zepto/Blinkit -> 'Food & Dining' or 'Groceries'. Uber/Ola/redBus/abhibus/IRCTC -> 'Transport'. Amazon/Flipkart -> 'Shopping'. Netflix/Spotify -> 'Subscriptions'.
+        - For expense, choose from ONLY these: 'Food & Dining', 'Groceries', 'Transport', 'Utilities', 'EB Bill', 'Rent', 'Shopping', 'Entertainment', 'Health', 'Subscriptions', 'Other'.
+        - Example mapping: Swiggy/Zomato/Zepto/Blinkit -> 'Food & Dining' or 'Groceries'. Uber/Ola/redBus/abhibus/IRCTC -> 'Transport'. Amazon/Flipkart -> 'Shopping'. Electricity/TNEB -> 'EB Bill'. Rent/House -> 'Rent'.
         - For income, choose from: 'Salary', 'Freelance', 'Investments', 'Refund', 'Other'.
         
         Return ONLY a valid JSON object matching this structure exactly: 
@@ -268,32 +268,58 @@ app.post('/api/receipt-ocr', upload.single('receipt'), async (req, res) => {
 });
 
 // =======================================================
-//   RE-ENGINEERED SCRAPER (REJECTS FALSE RATINGS < ₹10)
+//   RE-ENGINEERED FLIPKART & AMAZON SCRAPER MODULE
 // =======================================================
 app.post('/api/scrape-price', async (req, res) => {
+    const targetUrl = req.body.url;
+    if (!targetUrl) return res.status(400).json({ error: 'No URL provided' });
+
     let browser;
     try {
         browser = await puppeteer.launch({ 
-            args: ['--no-sandbox', '--disable-setuid-sandbox', '--disable-dev-shm-usage', '--disable-blink-features=AutomationControlled'] 
+            args: [
+                '--no-sandbox', 
+                '--disable-setuid-sandbox', 
+                '--disable-dev-shm-usage', 
+                '--disable-blink-features=AutomationControlled'
+            ] 
         });
         const page = await browser.newPage();
-        await page.setUserAgent('Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36');
-        
-        await page.goto(req.body.url, { waitUntil: 'networkidle2', timeout: 30000 });
-        await new Promise(r => setTimeout(r, 3000));
+        await page.setViewport({ width: 1280, height: 800 });
+        await page.setUserAgent('Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/122.0.0.0 Safari/537.36');
 
-        const data = await page.evaluate(() => {
+        await page.goto(targetUrl, { waitUntil: 'domcontentloaded', timeout: 25000 });
+        await new Promise(r => setTimeout(r, 2500));
+
+        const scrapedData = await page.evaluate(() => {
+            let title = '';
             let price = 0;
-            let cleanTitle = document.querySelector('meta[property="og:title"]')?.content || document.querySelector('h1')?.innerText || document.title;
-            cleanTitle = cleanTitle.replace(/Product summary presents key product information/gi, '').replace(/Keyboard shortcut\s*shift\s*\+\s*alt\s*\+\s*[A-Z]/gi, '').split('|')[0].split('- Buy')[0].split('- Price')[0].trim();
 
-            let pMeta = document.querySelector('meta[property="product:price:amount"]')?.content || document.querySelector('meta[property="og:price:amount"]')?.content;
+            // 1. Precise Title Extractors for Amazon, Flipkart, SouledStore
+            const titleEl = document.querySelector('#productTitle, span.B_NuCI, .VU-VGd, ._2xm_p6, h1._6ERyO0, .product-title, meta[property="og:title"]');
+            if (titleEl) {
+                title = titleEl.content || titleEl.innerText || '';
+            }
+
+            if (!title || title.includes('Online Shopping for Men') || title.includes('Buy Products Online')) {
+                title = document.querySelector('h1')?.innerText || document.title || '';
+            }
+
+            // Cleanup generic marketplace string clutter
+            title = title.replace(/Product summary presents key product information/gi, '')
+                         .replace(/Keyboard shortcut\s*shift\s*\+\s*alt\s*\+\s*[A-Z]/gi, '')
+                         .split('|')[0].split('- Buy')[0].split('- Price')[0].split(': Amazon')[0].trim();
+
+            // 2. OpenGraph Checkout Meta Price
+            let pMeta = document.querySelector('meta[property="product:price:amount"]')?.content || 
+                        document.querySelector('meta[property="og:price:amount"]')?.content;
             if (pMeta) {
                 let parsedMeta = parseFloat(pMeta.replace(/[^\d.]/g, ''));
                 if (parsedMeta > 10) price = parsedMeta;
             }
 
-            if (price === 0 || isNaN(price) || price < 10) {
+            // 3. Structured Data (JSON-LD)
+            if (price === 0 || isNaN(price)) {
                 const ldScripts = Array.from(document.querySelectorAll('script[type="application/ld+json"]'));
                 for (const script of ldScripts) {
                     try {
@@ -311,7 +337,7 @@ app.post('/api/scrape-price', async (req, res) => {
                                     else if (offer.lowPrice) price = parseFloat(String(offer.lowPrice).replace(/[^\d.]/g, ''));
                                     if (price > 10) break;
                                 }
-                                if (target.name) cleanTitle = target.name.split('|')[0].split('- Buy')[0].trim();
+                                if (target.name && (!title || title.length < 5)) title = target.name.split('|')[0].split('- Buy')[0].trim();
                             }
                         }
                         if (price > 10) break;
@@ -319,8 +345,13 @@ app.post('/api/scrape-price', async (req, res) => {
                 }
             }
 
+            // 4. Targeted Price Selector Array
             if (price === 0 || isNaN(price) || price < 10) {
-                const priceSelectors = ['.a-price-whole', '._30jeq3', '.Nx9bqj', '.Nx9bqj.CrvsUK', '._1V76Xq', '._25b18c', '[data-qa="product-price"]', '.price', '.product-price', '.final-price', '.pdp-price', '.discounted-price', '.sell-price', '.fbold'];
+                const priceSelectors = [
+                    '.a-price-whole', '.a-offscreen', 
+                    '._30jeq3._16JThd', '.Nx9bqj.CrvsUK', '._30jeq3', '.Nx9bqj', '._1V76Xq', '._25b18c', 
+                    '[data-qa="product-price"]', '.price', '.product-price', '.final-price', '.pdp-price', '.discounted-price', '.fbold'
+                ];
                 for (const sel of priceSelectors) {
                     const el = document.querySelector(sel);
                     if (el && el.innerText) {
@@ -330,36 +361,62 @@ app.post('/api/scrape-price', async (req, res) => {
                 }
             }
 
+            // 5. Deep Regex Search Fallback
             if (price === 0 || isNaN(price) || price < 10) {
                 let match = document.body.innerText.match(/(?:₹|Rs\.?|INR)\s*([0-9,]{2,}(?:\.[0-9]{2})?)/i);
                 if (match) price = parseFloat(match[1].replace(/,/g, ''));
             }
 
-            const imgEl = document.querySelector('meta[property="og:image"]')?.content || document.querySelector('meta[name="twitter:image"]')?.content || document.querySelector('#landingImage, #imgTagWrapperId img, .a-dynamic-image, img[class*="v25dir"], ._396cs4, .product-main-image img')?.src;
-            return { title: cleanTitle, price: price, imageUrl: imgEl || '' };
+            // Image Extractor
+            const imgEl = document.querySelector('meta[property="og:image"]')?.content || 
+                          document.querySelector('#landingImage, #imgTagWrapperId img, .a-dynamic-image, img._396cs4, ._2r_T1I, img[class*="v25dir"]')?.src;
+
+            return { title, price: price || 0, imageUrl: imgEl || '' };
         });
+
         await browser.close();
-        res.status(200).json(data);
+
+        // Fallback title generation from URL path if scraping is partially blocked
+        if (!scrapedData.title || scrapedData.title.length < 3 || scrapedData.title.includes('Online Shopping')) {
+            try {
+                const pathParts = new URL(targetUrl).pathname.split('/').filter(p => p.length > 2);
+                if (pathParts.length > 0) {
+                    scrapedData.title = pathParts[0].replace(/[-_]/g, ' ').replace(/\b\w/g, l => l.toUpperCase());
+                }
+            } catch(e) {}
+        }
+
+        res.status(200).json(scrapedData);
     } catch (error) {
         if (browser) await browser.close();
+
+        // Stealth Fetch Fallback
         try {
-            const fallbackRes = await fetch(req.body.url, { headers: { 'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64)' } });
-            const html = await fallbackRes.text();
-            let tMatch = html.match(/<title[^>]*>([^<]+)<\/title>/i);
-            let iMatch = html.match(/<meta[^>]*property="og:image"[^>]*content="([^"]+)"[^>]*>/i) || html.match(/<meta[^>]*content="([^"]+)"[^>]*property="og:image"[^>]*>/i);
+            const response = await fetch(targetUrl, { headers: { 'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64)' } });
+            const html = await response.text();
             
+            let titleMatch = html.match(/<title[^>]*>([^<]+)<\/title>/i);
+            let imgMatch = html.match(/<meta[^>]*property="og:image"[^>]*content="([^"]+)"[^>]*>/i);
+            let priceMatch = html.match(/(?:₹|Rs\.?|INR)\s*([0-9,]{2,})/i);
+
+            let cleanTitle = titleMatch ? titleMatch[1].split('|')[0].split('- Buy')[0].trim() : 'Saved Item';
+            if (cleanTitle.includes('Online Shopping')) {
+                const urlPath = new URL(targetUrl).pathname.split('/')[1] || 'Saved Item';
+                cleanTitle = urlPath.replace(/[-_]/g, ' ');
+            }
+
             res.status(200).json({ 
-                title: tMatch ? tMatch[1].split('|')[0].trim() : 'Scraped Product', 
-                price: 0, 
-                imageUrl: iMatch ? iMatch[1] : '' 
+                title: cleanTitle, 
+                price: priceMatch ? parseFloat(priceMatch[1].replace(/,/g, '')) : 0, 
+                imageUrl: imgMatch ? imgMatch[1] : '' 
             });
         } catch (fallbackErr) {
-            res.status(500).json({ error: 'Scraping blocked permanently' });
+            res.status(500).json({ error: 'Scraping failed completely' });
         }
     }
 });
 
-// FAST FIREWALL BYPASS ROUTE (RICH FULL METADATA SYNC)
+// FAST FIREWALL BYPASS ROUTE (BOOKMARKLET AUTOMATION)
 app.get('/api/bookmark-auto', async (req, res) => {
     const { title, price, link, img, cat } = req.query;
     if (!link || !price) return res.send("Error: Missing parameters.");

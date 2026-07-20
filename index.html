@@ -537,9 +537,10 @@
 
     document.getElementById('wishlistSavingsInput').value = monthlyWishlistSavings || '';
 
-    const EXPENSE_CATEGORIES = ['Food & Dining', 'Groceries', 'Transport', 'Utilities', 'Shopping', 'Entertainment', 'Health', 'Subscriptions', 'Other'];
+    // NEW CATEGORIES ADDED: EB Bill and Rent
+    const EXPENSE_CATEGORIES = ['Food & Dining', 'Groceries', 'Transport', 'Utilities', 'EB Bill', 'Rent', 'Shopping', 'Entertainment', 'Health', 'Subscriptions', 'Other'];
     const INCOME_CATEGORIES = ['Salary', 'Freelance', 'Investments', 'Refund', 'Other'];
-    const CAT_COLORS = { 'Food & Dining': '#ef4444', 'Groceries': '#f97316', 'Subscriptions': '#8b5cf6', 'Transport': '#3b82f6', 'Utilities': '#eab308', 'Shopping': '#a855f7', 'Salary': '#10b981', 'Other': '#6b7280', 'Entertainment': '#ec4899', 'Health': '#14b8a6' };
+    const CAT_COLORS = { 'Food & Dining': '#ef4444', 'Groceries': '#f97316', 'Subscriptions': '#8b5cf6', 'Transport': '#3b82f6', 'Utilities': '#eab308', 'EB Bill': '#f59e0b', 'Rent': '#6366f1', 'Shopping': '#a855f7', 'Salary': '#10b981', 'Other': '#6b7280', 'Entertainment': '#ec4899', 'Health': '#14b8a6' };
 
     function applyFilter(f) {
         currentFilter = f;
@@ -944,32 +945,38 @@
         } 
     }
 
-    document.getElementById('wishLink').addEventListener('change', async (e) => {
-        const url = e.target.value; 
-        const icn = document.getElementById('linkStatusIcon'); 
-        if(!url) return;
-        
-        icn.setAttribute('data-lucide', 'loader-2'); 
-        icn.classList.add('animate-spin', 'text-blue-400'); 
-        lucide.createIcons();
-        
-        try {
-            const res = await fetch(`${API_BASE}/scrape-price`, { 
-                method: 'POST', 
-                headers: apiHeaders, 
-                body: JSON.stringify({url}) 
-            });
-            const result = await res.json();
-            
-            if(result.title) document.getElementById('wishName').value = result.title;
-            if(result.price) document.getElementById('wishPrice').value = result.price;
-            if(result.imageUrl) document.getElementById('wishImage').value = result.imageUrl;
-        } catch(err) {
-        } finally { 
-            icn.setAttribute('data-lucide', 'link'); 
-            icn.classList.remove('animate-spin', 'text-blue-400'); 
-            lucide.createIcons(); 
-        }
+    // MULTI-EVENT AUTO-FETCH LISTENER (INPUT, PASTE, CHANGE)
+    const wishLinkInput = document.getElementById('wishLink');
+    ['input', 'paste', 'change'].forEach(eventType => {
+        wishLinkInput.addEventListener(eventType, async (e) => {
+            setTimeout(async () => {
+                const url = wishLinkInput.value.trim();
+                const icn = document.getElementById('linkStatusIcon'); 
+                if(!url || !url.startsWith('http')) return;
+                
+                icn.setAttribute('data-lucide', 'loader-2'); 
+                icn.classList.add('animate-spin', 'text-blue-400'); 
+                lucide.createIcons();
+                
+                try {
+                    const res = await fetch(`${API_BASE}/scrape-price`, { 
+                        method: 'POST', 
+                        headers: apiHeaders, 
+                        body: JSON.stringify({url}) 
+                    });
+                    const result = await res.json();
+                    
+                    if(result.title) document.getElementById('wishName').value = result.title;
+                    if(result.price && result.price > 0) document.getElementById('wishPrice').value = result.price;
+                    if(result.imageUrl) document.getElementById('wishImage').value = result.imageUrl;
+                } catch(err) {
+                } finally { 
+                    icn.setAttribute('data-lucide', 'link'); 
+                    icn.classList.remove('animate-spin', 'text-blue-400'); 
+                    lucide.createIcons(); 
+                }
+            }, 100);
+        });
     });
 
     document.getElementById('wishlistForm').addEventListener('submit', async (e) => {
@@ -977,7 +984,7 @@
         const btn = e.target.querySelector('button[type="submit"]'); 
         const orig = btn.innerText;
         btn.innerText = "Saving Node..."; 
-        btn.disabled = true;
+        btn.disabled = true; 
         
         let storeLabel = 'STORE NODE';
         try { 
@@ -989,7 +996,7 @@
         const newItem = { 
             id: String(Date.now()), 
             title: document.getElementById('wishName').value, 
-            price: parseFloat(document.getElementById('wishPrice').value), 
+            price: parseFloat(document.getElementById('wishPrice').value) || 0, 
             link: document.getElementById('wishLink').value, 
             imageUrl: document.getElementById('wishImage').value,
             category: storeLabel,
@@ -1026,39 +1033,39 @@
         let actionPlanHTML = '';
         if (monthlyWishlistSavings > 0) {
           const daysNeeded = Math.ceil((item.price / monthlyWishlistSavings) * 30);
-          actionPlanHTML = `<div class="mt-4 bg-black/40 rounded-xl p-3 border border-white/5 flex items-center shadow-inner"><i data-lucide="calendar-clock" class="text-blue-400 w-4 h-4 mr-2.5 drop-shadow-[0_0_5px_rgba(59,130,246,0.5)]"></i><div><p class="text-[9px] uppercase tracking-widest text-gray-500 font-bold" style="font-family:sans-serif;">Velocity Strategy Plan</p><p class="text-[11px] text-gray-300 font-medium"><span class="font-bold text-blue-400">${daysNeeded} days</span> remaining until lock acquisition.</p></div></div>`;
+          actionPlanHTML = `<div class="mt-4 bg-black/40 rounded-xl p-3 border border-white/5 flex items-center shadow-inner"><i data-lucide="calendar-clock" class="text-blue-400 w-4 h-4 mr-2.5 drop-shadow-[0_0_5px_rgba(59,130,246,0.5)]"></i><div><p class="text-[9px] uppercase tracking-widest text-gray-500 font-bold">Velocity Strategy Plan</p><p class="text-[11px] text-gray-300 font-medium"><span class="font-bold text-blue-400">${daysNeeded} days</span> remaining until lock acquisition.</p></div></div>`;
         }
         
         const img = item.imageUrl ? 
             `<img src="${item.imageUrl}" class="w-full h-44 object-cover rounded-xl mb-4 bg-black/50 border border-white/5 shadow-inner">` : 
-            `<div class="w-full h-44 rounded-xl mb-4 bg-gradient-to-br from-blue-900/20 to-purple-900/10 border border-white/5 flex flex-col items-center justify-center text-gray-500 shadow-inner"><i data-lucide="package" class="w-8 h-8 mb-2 text-blue-500/40"></i><span class="text-[10px] uppercase font-bold tracking-widest text-gray-400/60" style="font-family:sans-serif;">No Image Asset</span></div>`;
+            `<div class="w-full h-44 rounded-xl mb-4 bg-gradient-to-br from-blue-900/20 to-purple-900/10 border border-white/5 flex flex-col items-center justify-center text-gray-500 shadow-inner"><i data-lucide="package" class="w-8 h-8 mb-2 text-blue-500/40"></i><span class="text-[10px] uppercase font-bold tracking-widest text-gray-400/60">No Image Asset</span></div>`;
             
         let storeLabel = 'STORE NODE';
         try { 
             if(item.link) {
-                storeLabel = new URL(item.link).hostname.replace('www.', '').split('.')[0]; 
+                storeLabel = new URL(item.link).hostname.replace('www.', '').split('.')[0].toUpperCase(); 
             }
         } catch(e){}
         
-        const catTag = item.category || 'UNASSIGNED';
+        const catTag = item.category || storeLabel;
         const formattedDate = item.timestamp ? new Date(item.timestamp).toLocaleDateString('en-GB', {day:'numeric', month:'short'}) : 'RECENT';
 
         return `<div class="glass-panel rounded-3xl p-5 relative group border border-white/5 flex flex-col justify-between hover:-translate-y-1.5 transition-transform shadow-[0_8px_30px_rgba(0,0,0,0.4)]">
             <button onclick="deleteWishlistItem('${item.id}')" class="absolute top-3 right-3 bg-red-500/20 text-red-500 p-2 rounded-full opacity-100 md:opacity-0 group-hover:opacity-100 transition-all backdrop-blur-md z-10 hover:bg-red-500 hover:text-white"><i data-lucide="x" class="w-4 h-4"></i></button>
             ${img}
             <div class="flex-grow space-y-2">
-                <div class="flex items-center justify-between gap-2" style="font-family:sans-serif;">
+                <div class="flex items-center justify-between gap-2">
                     <span class="px-2 py-0.5 bg-blue-500/10 text-blue-400 border border-blue-500/20 rounded text-[9px] font-black uppercase tracking-wider shadow-sm">${catTag}</span>
                     <span class="text-[9px] text-gray-500 font-bold uppercase tracking-widest">${formattedDate}</span>
                 </div>
                 <h3 class="font-bold text-white leading-tight line-clamp-2 pt-1 text-sm">${item.title}</h3>
                 <div class="flex items-baseline justify-between pt-1 mt-auto">
                     <h4 class="text-3xl font-black text-emerald-400 drop-shadow-[0_0_8px_rgba(16,185,129,0.3)]">₹${item.price.toLocaleString()}</h4>
-                    <span class="text-[9px] font-black text-gray-400 uppercase tracking-widest flex items-center bg-white/5 px-2 py-1 rounded border border-white/5 shadow-inner" style="font-family:sans-serif;"><i data-lucide="shopping-bag" class="w-3 h-3 mr-1 text-purple-400"></i> ${item.wishCategory || 'Other'}</span>
+                    <span class="text-[9px] font-black text-gray-400 uppercase tracking-widest flex items-center bg-white/5 px-2 py-1 rounded border border-white/5 shadow-inner"><i data-lucide="shopping-bag" class="w-3 h-3 mr-1 text-purple-400"></i> ${item.wishCategory || 'Other'}</span>
                 </div>
             </div>
             ${actionPlanHTML}
-            ${item.link ? `<a href="${item.link}" target="_blank" class="block w-full text-center mt-4 bg-white/5 hover:bg-white/10 hover:text-blue-300 py-3 rounded-xl text-xs font-bold transition-all border border-white/10 text-white shadow-sm hover:border-blue-500/30 tracking-wide" style="font-family:sans-serif; text-transform:uppercase;">View Online Node</a>` : ''}
+            ${item.link ? `<a href="${item.link}" target="_blank" class="block w-full text-center mt-4 bg-white/5 hover:bg-white/10 hover:text-blue-300 py-3 rounded-xl text-xs font-bold transition-all border border-white/10 text-white shadow-sm hover:border-blue-500/30 tracking-wide">View Online Node</a>` : ''}
         </div>`;
       }).join(''); 
       lucide.createIcons();
@@ -1323,28 +1330,28 @@
       const insightsEl = document.getElementById('topInsights'); 
       insightsEl.className = "mt-4 space-y-3 pt-4 border-t border-white/10 flex-grow overflow-y-auto max-h-[160px] pr-2";
       if (sCats.length === 0) { 
-          insightsEl.innerHTML = `<p class="text-xs text-gray-500 text-center py-2 font-bold uppercase tracking-widest" style="font-family:sans-serif;">No category logs processed.</p>`; 
+          insightsEl.innerHTML = `<p class="text-xs text-gray-500 text-center py-2 font-bold uppercase tracking-widest">No category logs processed.</p>`; 
       } else { 
           insightsEl.innerHTML = sCats.map(([cat, val]) => { 
               const catPct = tExp ? Math.round((val / tExp) * 100) : 0; 
-              return `<div><div class="flex justify-between text-[10px] font-bold mb-1" style="font-family:sans-serif;"><span class="text-gray-300 uppercase tracking-widest">${cat}</span><span class="text-gray-400 font-bold">₹${val.toLocaleString()} (${catPct}%)</span></div><div class="w-full bg-black/40 rounded-full h-1.5 shadow-inner border border-white/5"><div class="h-1.5 rounded-full shadow-[0_0_8px_rgba(255,255,255,0.2)]" style="width: ${catPct}%; background-color: ${CAT_COLORS[cat] || '#6b7280'}"></div></div></div>`; 
+              return `<div><div class="flex justify-between text-[10px] font-bold mb-1"><span class="text-gray-300 uppercase tracking-widest">${cat}</span><span class="text-gray-400 font-bold">₹${val.toLocaleString()} (${catPct}%)</span></div><div class="w-full bg-black/40 rounded-full h-1.5 shadow-inner border border-white/5"><div class="h-1.5 rounded-full shadow-[0_0_8px_rgba(255,255,255,0.2)]" style="width: ${catPct}%; background-color: ${CAT_COLORS[cat] || '#6b7280'}"></div></div></div>`; 
           }).join(''); 
       }
 
       const list = document.getElementById('ledgerList');
       if(!filtered.length) {
-          list.innerHTML = `<p class="text-gray-500 text-sm py-8 text-center font-black uppercase tracking-widest" style="font-family:sans-serif;">No Database Entries Found.</p>`;
+          list.innerHTML = `<p class="text-gray-500 text-sm py-8 text-center font-black uppercase tracking-widest">No Database Entries Found.</p>`;
       } else { 
           list.innerHTML = [...filtered].sort((a,b)=>b.timestamp-a.timestamp).map(t => {
           const isI = t.type === 'income';
           let impactBadge = '';
           if (t.amount > 10000 && !isI) {
-              impactBadge = `<span class="px-1.5 py-0.5 bg-rose-500/20 text-rose-400 border border-rose-500/30 rounded text-[8px] font-black uppercase ml-2 tracking-widest relative -top-0.5 shadow-sm" style="font-family:sans-serif;">High Impact</span>`;
+              impactBadge = `<span class="px-1.5 py-0.5 bg-rose-500/20 text-rose-400 border border-rose-500/30 rounded text-[8px] font-black uppercase ml-2 tracking-widest relative -top-0.5 shadow-sm">High Impact</span>`;
           } else if (t.amount < 100 && !isI) {
-              impactBadge = `<span class="px-1.5 py-0.5 bg-gray-500/20 text-gray-400 border border-gray-500/30 rounded text-[8px] font-black uppercase ml-2 tracking-widest relative -top-0.5 shadow-sm" style="font-family:sans-serif;">Micro</span>`;
+              impactBadge = `<span class="px-1.5 py-0.5 bg-gray-500/20 text-gray-400 border border-gray-500/30 rounded text-[8px] font-black uppercase ml-2 tracking-widest relative -top-0.5 shadow-sm">Micro</span>`;
           }
 
-          return `<div class="ledger-item flex items-center justify-between p-4 rounded-2xl mb-2.5 relative overflow-hidden"><div class="absolute inset-0 bg-gradient-to-r from-transparent via-white/[0.01] to-transparent opacity-0 hover:opacity-100 transition-opacity pointer-events-none"></div><div class="flex items-center space-x-3 md:space-x-4 relative z-10"><div class="w-10 h-10 rounded-full flex items-center justify-center shadow-inner border border-white/5 ${isI ? 'bg-emerald-500/10 text-emerald-400 shadow-[0_0_15px_rgba(16,185,129,0.1)]' : 'bg-rose-500/10 text-rose-400 shadow-[0_0_15px_rgba(244,63,94,0.1)]'}"><i data-lucide="${isI ? 'arrow-down-left' : 'credit-card'}" class="w-5 h-5 drop-shadow-md"></i></div><div><p class="font-bold text-gray-200 text-sm flex items-center" style="font-family:sans-serif;">${t.category} ${t.isRecurring ? '<span class="bg-blue-600/30 text-blue-400 text-[8px] px-1 ml-1 rounded border border-blue-500/20 shadow-sm">AUTO</span>' : ''} ${impactBadge}</p><p class="text-[10px] text-gray-500 uppercase mt-0.5 tracking-wider font-bold" style="font-family:sans-serif;">${t.account} • ${new Date(t.timestamp).toLocaleDateString('en-GB',{day:'numeric',month:'short'})}</p></div></div><div class="flex flex-col items-end space-y-1 relative z-10"><div class="flex items-center space-x-2"><p class="font-black text-sm md:text-base ${isI ? 'text-emerald-400 drop-shadow-[0_0_5px_rgba(16,185,129,0.4)]' : 'text-rose-400 drop-shadow-[0_0_5px_rgba(244,63,94,0.4)]'}" style="font-family:sans-serif;">${isI?'+':'-'}₹${t.amount.toLocaleString()}</p><button onclick="openEditModal('${t.id}')" class="action-btn text-gray-500 hover:text-blue-400 p-2 transition-colors hover:scale-110 active:scale-95"><i data-lucide="edit-2" class="w-4 h-4"></i></button><button onclick="deleteTx('${t.id}')" class="action-btn text-gray-500 hover:text-rose-500 p-2 pl-0 transition-colors hover:scale-110 active:scale-95"><i data-lucide="trash-2" class="w-4 h-4"></i></button></div>${t.note ? `<p class="text-[10px] text-gray-500 transaction-desc text-right mt-1 font-medium tracking-wide">"${t.note}"</p>`:''}</div></div>`;
+          return `<div class="ledger-item flex items-center justify-between p-4 rounded-2xl mb-2.5 relative overflow-hidden"><div class="absolute inset-0 bg-gradient-to-r from-transparent via-white/[0.01] to-transparent opacity-0 hover:opacity-100 transition-opacity pointer-events-none"></div><div class="flex items-center space-x-3 md:space-x-4 relative z-10"><div class="w-10 h-10 rounded-full flex items-center justify-center shadow-inner border border-white/5 ${isI ? 'bg-emerald-500/10 text-emerald-400 shadow-[0_0_15px_rgba(16,185,129,0.1)]' : 'bg-rose-500/10 text-rose-400 shadow-[0_0_15px_rgba(244,63,94,0.1)]'}"><i data-lucide="${isI ? 'arrow-down-left' : 'credit-card'}" class="w-5 h-5 drop-shadow-md"></i></div><div><p class="font-bold text-gray-200 text-sm flex items-center">${t.category} ${t.isRecurring ? '<span class="bg-blue-600/30 text-blue-400 text-[8px] px-1 ml-1 rounded border border-blue-500/20 shadow-sm">AUTO</span>' : ''} ${impactBadge}</p><p class="text-[10px] text-gray-500 uppercase mt-0.5 tracking-wider font-bold">${t.account} • ${new Date(t.timestamp).toLocaleDateString('en-GB',{day:'numeric',month:'short'})}</p></div></div><div class="flex flex-col items-end space-y-1 relative z-10"><div class="flex items-center space-x-2"><p class="font-black text-sm md:text-base ${isI ? 'text-emerald-400 drop-shadow-[0_0_5px_rgba(16,185,129,0.4)]' : 'text-rose-400 drop-shadow-[0_0_5px_rgba(244,63,94,0.4)]'}">${isI?'+':'-'}₹${t.amount.toLocaleString()}</p><button onclick="openEditModal('${t.id}')" class="action-btn text-gray-500 hover:text-blue-400 p-2 transition-colors hover:scale-110 active:scale-95"><i data-lucide="edit-2" class="w-4 h-4"></i></button><button onclick="deleteTx('${t.id}')" class="action-btn text-gray-500 hover:text-rose-500 p-2 pl-0 transition-colors hover:scale-110 active:scale-95"><i data-lucide="trash-2" class="w-4 h-4"></i></button></div>${t.note ? `<p class="text-[10px] text-gray-500 transaction-desc text-right mt-1 font-medium tracking-wide">"${t.note}"</p>`:''}</div></div>`;
       }).join(''); 
       }
       lucide.createIcons();
