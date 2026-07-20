@@ -268,7 +268,7 @@ app.post('/api/receipt-ocr', upload.single('receipt'), async (req, res) => {
 });
 
 // =======================================================
-//   RE-ENGINEERED SCRAPER (REJECTS FALSE SMALL RATINGS)
+//   RE-ENGINEERED SCRAPER (REJECTS FALSE RATINGS < ₹10)
 // =======================================================
 app.post('/api/scrape-price', async (req, res) => {
     let browser;
@@ -293,7 +293,7 @@ app.post('/api/scrape-price', async (req, res) => {
                 if (parsedMeta > 10) price = parsedMeta;
             }
 
-            if (price === 0 || isNaN(price)) {
+            if (price === 0 || isNaN(price) || price < 10) {
                 const ldScripts = Array.from(document.querySelectorAll('script[type="application/ld+json"]'));
                 for (const script of ldScripts) {
                     try {
@@ -331,7 +331,7 @@ app.post('/api/scrape-price', async (req, res) => {
             }
 
             if (price === 0 || isNaN(price) || price < 10) {
-                let match = document.body.innerText.match(/(?:₹|Rs\.?)\s*([0-9,]+(?:\.[0-9]{2})?)/i);
+                let match = document.body.innerText.match(/(?:₹|Rs\.?|INR)\s*([0-9,]{2,}(?:\.[0-9]{2})?)/i);
                 if (match) price = parseFloat(match[1].replace(/,/g, ''));
             }
 
@@ -342,7 +342,6 @@ app.post('/api/scrape-price', async (req, res) => {
         res.status(200).json(data);
     } catch (error) {
         if (browser) await browser.close();
-        
         try {
             const fallbackRes = await fetch(req.body.url, { headers: { 'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64)' } });
             const html = await fallbackRes.text();
