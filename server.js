@@ -44,13 +44,7 @@ try {
 
 const db = getFirestore();
 
-// ==========================================
-//      UPTIME MONITOR (KEEPS SERVER AWAKE)
-// ==========================================
-
-app.get('/api/ping', (req, res) => {
-    res.status(200).send('OK');
-});
+app.get('/api/ping', (req, res) => res.status(200).send('OK'));
 
 // ==========================================
 //          CORE DATABASE ROUTES
@@ -80,8 +74,7 @@ app.delete('/api/delete-transaction/:id', async (req, res) => {
 app.put('/api/edit-transaction/:id', async (req, res) => {
     try {
         const { id } = req.params;
-        const updatedData = req.body;
-        await db.collection('transactions').doc(id).update(updatedData);
+        await db.collection('transactions').doc(id).update(req.body);
         res.status(200).json({ message: 'Updated successfully' });
     } catch (error) { res.status(500).json({ error: 'Failed to update transaction' }); }
 });
@@ -90,10 +83,7 @@ app.post('/api/sync-transactions', async (req, res) => {
     try {
         const transactions = req.body;
         const batch = db.batch();
-        transactions.forEach(tx => {
-            const docRef = db.collection('transactions').doc(tx.id);
-            batch.set(docRef, tx);
-        });
+        transactions.forEach(tx => { batch.set(db.collection('transactions').doc(tx.id), tx); });
         await batch.commit();
         res.status(200).json({ message: 'Sync complete' });
     } catch (error) { res.status(500).json({ error: 'Failed to sync' }); }
@@ -124,10 +114,7 @@ app.post('/api/sync-wishlist', async (req, res) => {
     try {
         const items = req.body;
         const batch = db.batch();
-        items.forEach(item => {
-            const docRef = db.collection('wishlist').doc(item.id);
-            batch.set(docRef, item);
-        });
+        items.forEach(item => { batch.set(db.collection('wishlist').doc(item.id), item); });
         await batch.commit();
         res.status(200).json({ message: 'Wishlist sync complete' });
     } catch (error) { res.status(500).json({ error: 'Failed to sync wishlist' }); }
@@ -141,18 +128,11 @@ app.post('/api/jarvis-advice', async (req, res) => {
     try {
         const { transactions, monthlyBudget } = req.body;
         const model = genAI.getGenerativeModel({ model: 'gemini-2.5-flash' });
-        
         const prompt = `You are a sharp, highly intelligent personal financial assistant. 
         Analyze these transactions (with pre-calculated totals): ${JSON.stringify(transactions)}. 
         The user's monthly budget is ₹${monthlyBudget}. 
-        
         Provide a quick, conversational financial summary, followed by ONE highly actionable piece of advice. 
-        
-        STRICT RULES:
-        1. Speak directly to the user in a cool, helpful tone.
-        2. DO NOT use any markdown formatting.
-        3. Keep it to 3-4 short sentences total.
-        4. Use normal line breaks to separate the summary from the advice.`;
+        STRICT RULES: 1. Speak directly to the user in a cool, helpful tone. 2. DO NOT use any markdown formatting. 3. Keep it to 3-4 short sentences total. 4. Use normal line breaks to separate the summary from the advice.`;
 
         const result = await model.generateContent(prompt);
         res.status(200).json({ advice: result.response.text() });
@@ -167,15 +147,12 @@ app.post('/api/sms-webhook', async (req, res) => {
         if (!rawText) return res.status(400).json({ error: 'No SMS text provided' });
 
         const model = genAI.getGenerativeModel({ model: 'gemini-2.5-flash' });
-        // SMART AUTO-CATEGORIZATION PROMPT
         const prompt = `Analyze this bank SMS: "${rawText}". 
         Extract the amount, merchant, date, type (income/expense), and category.
-        
         Rules for "category":
         - For expense, choose from ONLY these: 'Food & Dining', 'Groceries', 'Transport', 'Utilities', 'Electricity Bill', 'Rent', 'Education', 'Travel', 'Shopping', 'Entertainment', 'Health', 'Subscriptions', 'Other'.
         - Example mapping: Swiggy/Zomato -> 'Food & Dining'. Uber/Ola/redBus/IRCTC -> 'Transport'. Amazon/Flipkart -> 'Shopping'. Electricity/TNEB -> 'Electricity Bill'. School/College -> 'Education'.
         - For income, choose from: 'Salary', 'Freelance', 'Investments', 'Refund', 'Other'.
-        
         Return ONLY a valid JSON object matching this structure exactly: 
         {"amount": number, "merchant": string, "date": "YYYY-MM-DD", "type": "income" | "expense", "category": string}. 
         If you cannot process it, return {"error":"invalid"}`;
@@ -188,25 +165,12 @@ app.post('/api/sms-webhook', async (req, res) => {
 
         const txId = String(Date.now());
         const txData = { 
-            id: txId, 
-            type: parsedData.type || 'expense', 
-            amount: parsedData.amount || 0, 
-            merchant: parsedData.merchant || 'Unknown Vendor', 
-            account: 'UPI', 
-            category: parsedData.category || 'Other', 
-            note: (parsedData.merchant || 'Transaction') + " (SMS)", 
-            timestamp: Date.now(), 
-            isRecurring: false,
-            rawMessage: rawText,
-            sender: sender
+            id: txId, type: parsedData.type || 'expense', amount: parsedData.amount || 0, merchant: parsedData.merchant || 'Unknown Vendor', account: 'UPI', category: parsedData.category || 'Other', note: (parsedData.merchant || 'Transaction') + " (SMS)", timestamp: Date.now(), isRecurring: false, rawMessage: rawText, sender: sender
         };
         
         await db.collection('pending').doc(txId).set(txData);
         res.status(201).json({ message: 'Saved to pending firestore queue', data: txData });
-    } catch (error) { 
-        console.error("SMS Parsing Error: ", error);
-        res.status(500).json({ error: 'Webhook processing exception occurred.' }); 
-    }
+    } catch (error) { res.status(500).json({ error: 'Webhook processing exception occurred.' }); }
 });
 
 app.get('/api/pending', async (req, res) => {
@@ -221,20 +185,9 @@ app.post('/api/approve', async (req, res) => {
         const { id } = req.body;
         const docRef = db.collection('pending').doc(id);
         const doc = await docRef.get();
-        
         if (doc.exists) {
             const approvedTxn = doc.data();
-            const finalTx = {
-                id: approvedTxn.id,
-                type: approvedTxn.type || 'expense',
-                amount: approvedTxn.amount,
-                account: approvedTxn.account || 'UPI',
-                category: approvedTxn.category || 'Other',
-                note: approvedTxn.note || approvedTxn.merchant,
-                timestamp: approvedTxn.timestamp,
-                isRecurring: false
-            };
-            
+            const finalTx = { id: approvedTxn.id, type: approvedTxn.type || 'expense', amount: approvedTxn.amount, account: approvedTxn.account || 'UPI', category: approvedTxn.category || 'Other', note: approvedTxn.note || approvedTxn.merchant, timestamp: approvedTxn.timestamp, isRecurring: false };
             await db.collection('transactions').doc(finalTx.id).set(finalTx);
             await docRef.delete();
             res.json({ success: true, message: "Approved successfully", data: finalTx });
@@ -262,10 +215,7 @@ app.post('/api/receipt-ocr', upload.single('receipt'), async (req, res) => {
         const result = await model.generateContent([prompt, receiptImageBufferPart]);
         let cleanText = result.response.text().replace(/```json/gi, '').replace(/```/g, '').trim();
         res.status(200).json(JSON.parse(cleanText));
-    } catch (error) { 
-        console.error("Vision Processing Module Crash Exception: ", error);
-        res.status(500).json({ error: 'AI Vision decoding exception occurred.' }); 
-    }
+    } catch (error) { res.status(500).json({ error: 'AI Vision decoding exception occurred.' }); }
 });
 
 // =======================================================
@@ -290,9 +240,8 @@ app.post('/api/scrape-price', async (req, res) => {
         });
 
         await page.setUserAgent('Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/122.0.0.0 Safari/537.36');
-        
         await page.goto(targetUrl, { waitUntil: 'domcontentloaded', timeout: 15000 });
-        await new Promise(r => setTimeout(r, 1000)); // Lowered wait time because page is lighter
+        await new Promise(r => setTimeout(r, 1000)); // Lowered wait time
 
         const scrapedData = await page.evaluate(() => {
             let title = '';

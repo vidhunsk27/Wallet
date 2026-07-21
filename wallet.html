@@ -4,40 +4,47 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
   <title>Wallet V2.0 - Premium Edition</title>
+  
+  <!-- UI & Data Libraries -->
   <script src="https://cdn.tailwindcss.com"></script>
   <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-  <!-- Added Chart.js DataLabels Plugin to push pie chart labels outside -->
-  <script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-datalabels@2.2.0"></script>
   <script src="https://unpkg.com/lucide@latest"></script>
+  
+  <!-- Export Libraries -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.28/jspdf.plugin.autotable.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+
   <style>
-    @import url('https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800;900&display=swap');
+    @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap');
     
     body { 
-        font-family: 'Outfit', sans-serif; 
-        background-color: #050505; 
+        font-family: 'Inter', sans-serif; 
+        background-color: #08080a; 
         color: #f3f4f6; 
         -webkit-overflow-scrolling: touch; 
         overflow-x: hidden; 
     }
     
-    /* Practical Fintech Moving Grid Background */
-    .tech-grid {
-        position: fixed; inset: 0; z-index: -20;
-        background-size: 50px 50px;
-        background-image: linear-gradient(to right, rgba(59, 130, 246, 0.05) 1px, transparent 1px),
-                          linear-gradient(to bottom, rgba(59, 130, 246, 0.05) 1px, transparent 1px);
-        -webkit-mask-image: radial-gradient(circle at center, black 20%, transparent 80%);
-        mask-image: radial-gradient(circle at center, black 20%, transparent 80%);
-        animation: gridMove 20s linear infinite;
+    /* COMPLETE DESTRUCTION OF NATIVE INPUT SPINNERS TO FIX OVERLAP */
+    input[type=number]::-webkit-inner-spin-button, 
+    input[type=number]::-webkit-outer-spin-button { 
+        -webkit-appearance: none !important; 
+        appearance: none !important; 
+        margin: 0 !important; 
+        display: none !important;
     }
-    @keyframes gridMove { 0% { transform: translateY(0); } 100% { transform: translateY(50px); } }
-    
+    input[type=number] {
+        -moz-appearance: textfield !important;
+        appearance: textfield !important;
+    }
+
     .glass-panel { 
-        background: rgba(255, 255, 255, 0.02); 
+        background: rgba(255, 255, 255, 0.03); 
         backdrop-filter: blur(24px); 
         border: 1px solid rgba(255, 255, 255, 0.05); 
-        box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.5); 
-        transition: transform 0.4s cubic-bezier(0.16, 1, 0.3, 1), box-shadow 0.4s ease; 
+        box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.3); 
+        transition: transform 0.3s cubic-bezier(0.16, 1, 0.3, 1), box-shadow 0.3s ease; 
         position: relative; 
     }
     
@@ -48,10 +55,10 @@
         -webkit-mask-composite: xor; pointer-events: none; 
     }
     
-    .glass-panel:hover { box-shadow: 0 12px 48px rgba(59, 130, 246, 0.15); transform: translateY(-2px); }
+    .glass-panel:hover { box-shadow: 0 12px 48px rgba(59, 130, 246, 0.1); transform: translateY(-2px); }
     
     .glass-input { background: rgba(0, 0, 0, 0.4); border: 1px solid rgba(255, 255, 255, 0.1); transition: all 0.3s ease; -webkit-appearance: none; }
-    .glass-input:focus { border-color: #3b82f6; box-shadow: 0 0 20px rgba(59, 130, 246, 0.25); outline: none; background: rgba(0, 0, 0, 0.6); }
+    .glass-input:focus { border-color: #3b82f6; box-shadow: 0 0 20px rgba(59, 130, 246, 0.2); outline: none; background: rgba(0, 0, 0, 0.6); }
     
     ::-webkit-scrollbar { width: 4px; height: 4px; } 
     ::-webkit-scrollbar-track { background: transparent; } 
@@ -60,43 +67,42 @@
     ::-webkit-calendar-picker-indicator:hover { opacity: 1; }
 
     .view-hidden { display: none; } 
-    .view-active { display: block; animation: fadeSlideUp 0.5s cubic-bezier(0.16, 1, 0.3, 1) forwards; }
-    @keyframes fadeSlideUp { from { opacity: 0; transform: translateY(30px); } to { opacity: 1; transform: translateY(0); } }
+    .view-active { display: block; animation: fadeSlideUp 0.4s cubic-bezier(0.16, 1, 0.3, 1) forwards; }
+    @keyframes fadeSlideUp { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
     
     .ai-typing { border-right: 2px solid #3b82f6; white-space: pre-wrap; overflow: hidden; animation: blink 1s step-end infinite; }
     @keyframes blink { 50% { border-color: transparent; } }
     
     .info-icon { display: inline-flex; align-items: center; justify-content: center; margin-left: 6px; color: #60a5fa; cursor: help; position: relative; width: 14px; height: 14px; background: rgba(59, 130, 246, 0.15); border-radius: 50%; text-align: center; line-height: 1; font-size: 9px; font-weight: 900; }
-    .info-icon::after { content: attr(data-tooltip); position: absolute; bottom: 150%; left: 50%; transform: translateX(-50%); background: rgba(15, 23, 42, 0.95); backdrop-filter: blur(8px); border: 1px solid rgba(59, 130, 246, 0.3); color: #e2e8f0; padding: 10px 14px; border-radius: 8px; width: max-content; max-width: 260px; white-space: normal; line-height: 1.4; opacity: 0; pointer-events: none; transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1); font-size: 0.8rem; z-index: 100; box-shadow: 0 10px 30px rgba(0,0,0,0.8); font-weight: 500; font-family: 'Outfit', sans-serif; text-transform: none; text-align: left; }
+    .info-icon::after { content: attr(data-tooltip); position: absolute; bottom: 150%; left: 50%; transform: translateX(-50%); background: rgba(15, 23, 42, 0.95); backdrop-filter: blur(8px); border: 1px solid rgba(59, 130, 246, 0.3); color: #e2e8f0; padding: 10px 14px; border-radius: 8px; width: max-content; max-width: 260px; white-space: normal; line-height: 1.4; opacity: 0; pointer-events: none; transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1); font-size: 0.8rem; z-index: 100; box-shadow: 0 10px 30px rgba(0,0,0,0.8); font-weight: 500; font-family: 'Inter', sans-serif; text-transform: none; text-align: left; }
     .info-icon::before { content: ''; position: absolute; bottom: 110%; left: 50%; transform: translateX(-50%); border-width: 6px; border-style: solid; border-color: rgba(59, 130, 246, 0.3) transparent transparent transparent; opacity: 0; pointer-events: none; transition: all 0.3s ease; z-index: 101; }
     .info-icon:hover::after, .info-icon:hover::before { opacity: 1; transform: translateX(-50%) translateY(-4px); }
 
-    .modal-active { animation: modalPop 0.5s cubic-bezier(0.16, 1, 0.3, 1) forwards; }
-    @keyframes modalPop { 0% { opacity: 0; transform: scale(0.92) translateY(20px); } 100% { opacity: 1; transform: scale(1) translateY(0); } }
+    .modal-active { animation: modalPop 0.4s cubic-bezier(0.16, 1, 0.3, 1) forwards; }
+    @keyframes modalPop { 0% { opacity: 0; transform: scale(0.95) translateY(20px); } 100% { opacity: 1; transform: scale(1) translateY(0); } }
 
-    .ledger-item { transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1); border: 1px solid transparent; background: rgba(255,255,255,0.02); }
-    .ledger-item:hover { transform: translateY(-3px) scale(1.01); box-shadow: 0 12px 30px rgba(0,0,0,0.5); border-color: rgba(255,255,255,0.08); background-color: rgba(255,255,255,0.05); }
+    .ledger-item { transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1); border: 1px solid transparent; background: rgba(255,255,255,0.01); }
+    .ledger-item:hover { transform: translateY(-2px); box-shadow: 0 10px 25px rgba(0,0,0,0.3); border-color: rgba(255,255,255,0.05); background-color: rgba(255,255,255,0.03); }
     .ledger-item .action-btn { opacity: 1; transform: scale(1); transition: all 0.2s; }
     @media (min-width: 768px) { .ledger-item .action-btn { opacity: 0; transform: scale(0.8); } .ledger-item:hover .action-btn { opacity: 1; transform: scale(1); } }
   </style>
 </head>
 <body class="p-3 md:p-8 min-h-screen pb-24 relative overflow-x-hidden">
 
-  <!-- Practical Grid Background -->
-  <div class="tech-grid"></div>
-  <div class="fixed top-0 left-1/4 w-[40rem] h-[40rem] bg-blue-600/10 rounded-full blur-[120px] pointer-events-none -z-10"></div>
-  <div class="fixed bottom-0 right-1/4 w-[40rem] h-[40rem] bg-purple-600/10 rounded-full blur-[120px] pointer-events-none -z-10"></div>
+  <!-- Minimal Dark Background Blobs -->
+  <div class="fixed top-0 left-1/4 w-[40rem] h-[40rem] bg-blue-600/5 rounded-full blur-[140px] pointer-events-none -z-10"></div>
+  <div class="fixed bottom-0 right-1/4 w-[40rem] h-[40rem] bg-purple-600/5 rounded-full blur-[140px] pointer-events-none -z-10"></div>
 
   <div class="max-w-7xl mx-auto space-y-4 md:space-y-6 relative z-10">
     
     <header class="flex flex-col sm:flex-row justify-between items-center gap-4 glass-panel rounded-3xl p-4 px-6">
       <div class="flex items-center space-x-4">
         <div class="relative group cursor-pointer">
-          <div class="w-12 h-12 bg-gradient-to-br from-blue-600 to-purple-600 rounded-full flex items-center justify-center shadow-[0_0_20px_rgba(59,130,246,0.3)] text-white font-black text-xl border border-white/20 group-hover:rotate-12 group-hover:scale-110 transition-all duration-500 ease-out">V</div>
-          <div class="absolute bottom-0 right-0 w-3.5 h-3.5 bg-emerald-500 border-2 border-[#050505] rounded-full animate-pulse shadow-[0_0_8px_rgba(16,185,129,0.8)]"></div>
+          <div class="w-12 h-12 bg-gradient-to-br from-blue-600 to-purple-600 rounded-full flex items-center justify-center shadow-[0_0_20px_rgba(59,130,246,0.3)] text-white font-black text-xl border border-white/20 transition-all duration-500 ease-out">V</div>
+          <div class="absolute bottom-0 right-0 w-3.5 h-3.5 bg-emerald-500 border-2 border-[#050505] rounded-full shadow-[0_0_8px_rgba(16,185,129,0.8)]"></div>
         </div>
         <div>
-          <h1 class="text-3xl font-black tracking-tight text-white">Welcome back, <span class="text-transparent bg-clip-text bg-gradient-to-r from-blue-400 to-purple-400">Vidhun</span></h1>
+          <h1 class="text-2xl font-black tracking-tight text-white">Welcome back, <span class="text-transparent bg-clip-text bg-gradient-to-r from-blue-400 to-purple-400">Vidhun</span></h1>
           <p class="text-[10px] text-gray-400 font-bold uppercase tracking-widest flex items-center mt-0.5"><i data-lucide="shield-check" class="w-3 h-3 mr-1 text-emerald-400"></i> Server Encrypted</p>
         </div>
       </div>
@@ -118,25 +124,49 @@
           </div>
       </div>
 
-      <div class="grid grid-cols-1 md:grid-cols-3 gap-4 md:gap-6">
-        <div class="glass-panel rounded-3xl p-6 md:p-8 relative overflow-hidden group">
-          <div class="absolute inset-0 bg-gradient-to-br from-blue-500/10 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
-          
+      <!-- NEW: 4-Column Layout with the Current Month summary block -->
+      <div class="grid grid-cols-1 md:grid-cols-4 gap-4 md:gap-6">
+        
+        <div class="glass-panel rounded-3xl p-6 md:p-8 relative overflow-hidden group md:col-span-1">
+          <div class="absolute inset-0 bg-gradient-to-br from-blue-500/5 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
           <div class="flex justify-between items-start mb-2 relative z-10">
-              <h3 class="text-xs font-bold text-gray-400 uppercase tracking-widest flex items-center"><div class="w-2 h-2 rounded-full bg-blue-500 mr-2 animate-pulse shadow-[0_0_10px_rgba(59,130,246,1)]"></div> Total Assets</h3>
-              
-              <!-- NEW: Financial Weather Feature -->
+              <h3 class="text-xs font-bold text-gray-400 uppercase tracking-widest flex items-center"><div class="w-2 h-2 rounded-full bg-blue-500 mr-2 shadow-[0_0_10px_rgba(59,130,246,1)]"></div> Total Assets</h3>
+          </div>
+          <h1 id="netBalance" class="text-4xl md:text-5xl font-black text-white mt-2 drop-shadow-[0_0_20px_rgba(255,255,255,0.1)] relative z-10">₹0</h1>
+          
+          <!-- NEW: Asset Distribution Stacked Bar -->
+          <div class="w-full h-1.5 flex rounded-full overflow-hidden mt-6 bg-gray-800 border border-white/5 relative z-10">
+              <div id="barUPI" class="h-full bg-blue-500 transition-all duration-1000" style="width: 33.3%"></div>
+              <div id="barCard" class="h-full bg-purple-500 transition-all duration-1000" style="width: 33.3%"></div>
+              <div id="barCash" class="h-full bg-emerald-500 transition-all duration-1000" style="width: 33.3%"></div>
+          </div>
+
+          <div class="mt-3 grid grid-cols-3 gap-2 text-xs font-bold relative z-10">
+            <div><p class="text-gray-500 text-[9px] mb-1 uppercase tracking-wider flex items-center"><span class="w-1.5 h-1.5 rounded-full bg-blue-500 mr-1.5"></span>UPI</p><p id="balUPI" class="text-white truncate">₹0</p></div>
+            <div><p class="text-gray-500 text-[9px] mb-1 uppercase tracking-wider flex items-center"><span class="w-1.5 h-1.5 rounded-full bg-purple-500 mr-1.5"></span>Card</p><p id="balCard" class="text-white truncate">₹0</p></div>
+            <div><p class="text-gray-500 text-[9px] mb-1 uppercase tracking-wider flex items-center"><span class="w-1.5 h-1.5 rounded-full bg-emerald-500 mr-1.5"></span>Cash</p><p id="balCash" class="text-white truncate">₹0</p></div>
+          </div>
+        </div>
+
+        <!-- NEW: Current Month Card -->
+        <div class="glass-panel rounded-3xl p-6 md:p-8 flex flex-col justify-center relative overflow-hidden group">
+          <div class="absolute inset-0 bg-gradient-to-br from-indigo-500/5 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
+          <h3 class="text-xs font-bold text-gray-400 uppercase tracking-widest mb-4 relative z-10 flex items-center justify-between">
+              This Month
               <div class="px-2 py-1 bg-black/40 border border-white/5 rounded-lg flex items-center shadow-inner backdrop-blur-md">
                   <span id="weatherIcon"><i data-lucide="sun" class="w-3 h-3 text-yellow-400 mr-1.5"></i></span>
                   <span id="weatherText" class="text-[9px] text-gray-300 uppercase font-bold tracking-widest">Stable</span>
               </div>
-          </div>
-
-          <h1 id="netBalance" class="text-5xl md:text-6xl font-black text-white mt-2 drop-shadow-[0_0_20px_rgba(255,255,255,0.15)] relative z-10">₹0</h1>
-          <div class="mt-6 md:mt-8 grid grid-cols-3 gap-2 md:gap-4 text-xs md:text-sm font-bold border-t border-white/10 pt-4 md:pt-6 relative z-10">
-            <div><p class="text-gray-500 text-[10px] md:text-xs mb-1 uppercase tracking-wider">UPI</p><p id="balUPI" class="text-white">₹0</p></div>
-            <div><p class="text-gray-500 text-[10px] md:text-xs mb-1 uppercase tracking-wider">Card</p><p id="balCard" class="text-white">₹0</p></div>
-            <div><p class="text-gray-500 text-[10px] md:text-xs mb-1 uppercase tracking-wider">Cash</p><p id="balCash" class="text-white">₹0</p></div>
+          </h3>
+          <div class="space-y-4 relative z-10">
+             <div>
+                <p class="text-[10px] text-gray-500 uppercase font-bold mb-0.5">Income</p>
+                <h3 id="currMonthIncome" class="text-3xl font-black text-emerald-400 drop-shadow-[0_0_10px_rgba(16,185,129,0.2)]">₹0</h3>
+             </div>
+             <div>
+                <p class="text-[10px] text-gray-500 uppercase font-bold mb-0.5">Expense</p>
+                <h3 id="currMonthExpense" class="text-3xl font-black text-rose-400 drop-shadow-[0_0_10px_rgba(244,63,94,0.2)]">₹0</h3>
+             </div>
           </div>
         </div>
 
@@ -148,7 +178,7 @@
         <div class="glass-panel rounded-3xl p-6 md:p-8 flex flex-col justify-center">
           <div class="flex justify-between items-start">
             <div><h3 class="text-xs font-bold text-gray-400 uppercase tracking-widest mb-1">Total Expenses</h3><h2 id="totalExpense" class="text-4xl md:text-5xl font-black text-rose-400 mt-2 drop-shadow-[0_0_15px_rgba(244,63,94,0.25)]">₹0</h2></div>
-            <button onclick="setGoal()" class="text-white/30 hover:text-white hover:bg-white/10 rounded-lg p-2 transition-all hover:rotate-90" title="Set Budget"><i data-lucide="settings-2" class="w-5 h-5"></i></button>
+            <button onclick="setGoal()" class="text-white/30 hover:text-white transition-transform hover:rotate-90 p-1" title="Set Budget"><i data-lucide="settings-2" class="w-5 h-5"></i></button>
           </div>
           <div class="mt-4 md:mt-6 w-full bg-black/60 rounded-full h-2.5 border border-white/5 shadow-inner overflow-hidden"><div id="goalProgress" class="bg-gradient-to-r from-rose-500 to-orange-400 h-full rounded-full transition-all duration-1000 relative"><div class="absolute inset-0 bg-white/20 w-full h-full animate-[shimmer_2s_infinite]"></div></div></div>
           <p id="goalText" class="text-[10px] text-gray-500 mt-3 text-right uppercase tracking-widest font-bold">Budget: ₹0</p>
@@ -201,7 +231,15 @@
                 </button>
               </div>
               <div id="aiTerminal" class="hidden mb-4 p-4 bg-black/60 border border-blue-500/30 rounded-xl text-xs md:text-sm text-gray-300 min-h-[80px] shadow-inner tracking-tight leading-relaxed"></div>
-              <div class="h-44 md:h-48 relative flex items-center justify-center"><canvas id="walletChart"></canvas><div class="absolute inset-0 flex flex-col items-center justify-center pointer-events-none pt-2"><span class="text-gray-400 text-[10px] font-bold mb-0.5 uppercase tracking-widest">Spent</span><h2 id="chartCenterText" class="text-2xl md:text-3xl font-black text-white drop-shadow-md m-0">₹0</h2></div></div>
+              
+              <!-- Redesigned Pie Chart Container (Tooltip pointing down) -->
+              <div class="h-48 md:h-52 relative flex items-center justify-center">
+                  <canvas id="walletChart"></canvas>
+                  <div class="absolute inset-0 flex flex-col items-center justify-center pointer-events-none pt-1">
+                      <span class="text-gray-400 text-[10px] font-bold uppercase tracking-widest">Spent</span>
+                      <h2 id="chartCenterText" class="text-2xl font-black text-white drop-shadow-md m-0">₹0</h2>
+                  </div>
+              </div>
               <div id="topInsights" class="mt-4 space-y-3 pt-4 border-t border-white/10 flex-grow overflow-y-auto max-h-[160px] pr-2"></div>
             </div>
             
@@ -243,18 +281,20 @@
             <div class="flex flex-col gap-4 mb-2">
                <div class="flex justify-between items-center">
                  <h3 class="text-sm font-bold text-gray-300 uppercase tracking-widest flex items-center">Ledger<span id="recordCount" class="ml-3 px-2.5 py-0.5 bg-black/40 border border-white/10 rounded-md text-xs font-bold text-white shadow-inner">0</span></h3>
+                 
+                 <!-- NEW: PDF and Excel Export Buttons -->
                  <div class="flex items-center space-x-1.5">
-                   <button onclick="exportData()" class="bg-white/5 hover:bg-white/10 text-gray-300 p-2 rounded-xl border border-white/5 transition-colors" title="Backup (JSON)"><i data-lucide="download" class="w-4 h-4"></i></button>
+                   <button onclick="exportPDF()" class="bg-red-500/10 hover:bg-red-500/20 text-red-400 p-2 rounded-xl border border-red-500/20 transition-colors" title="Export PDF"><i data-lucide="file-text" class="w-4 h-4"></i></button>
+                   <button onclick="exportExcel()" class="bg-emerald-500/10 hover:bg-emerald-500/20 text-emerald-400 p-2 rounded-xl border border-emerald-500/20 transition-colors" title="Export Excel"><i data-lucide="file-spreadsheet" class="w-4 h-4"></i></button>
                    <label class="bg-white/5 hover:bg-white/10 text-gray-300 p-2 rounded-xl border border-white/5 cursor-pointer transition-colors" title="Restore (JSON)"><i data-lucide="upload" class="w-4 h-4"></i><input type="file" id="importFile" accept=".json" class="hidden" onchange="importData(event)"></label>
                  </div>
                </div>
                <div class="flex space-x-2">
-                 <select id="monthFilter" class="glass-input rounded-xl py-2 px-3 text-sm text-white flex-1 max-w-[130px] font-bold select-node"></select>
+                 <select id="monthFilter" class="glass-input rounded-xl py-2 px-3 text-sm text-white flex-1 max-w-[130px] font-bold"></select>
                  <div class="relative flex-grow"><i data-lucide="search" class="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-gray-500"></i><input type="text" id="searchInput" placeholder="Search parameters..." class="w-full glass-input rounded-xl py-2 pl-9 pr-3 text-sm text-white focus:ring-2 focus:ring-blue-500/50 transition-all font-medium" /></div>
                </div>
             </div>
             
-            <!-- NEW: Quick Filter Pills -->
             <div class="flex space-x-2 mb-4 overflow-x-auto pb-2 scrollbar-hide">
                  <button onclick="applyFilter('all')" class="px-4 py-1.5 rounded-full text-xs font-bold bg-white/10 text-white whitespace-nowrap transition-colors hover:bg-white/20">All</button>
                  <button onclick="applyFilter('income')" class="px-4 py-1.5 rounded-full text-xs font-bold bg-emerald-500/10 text-emerald-400 whitespace-nowrap transition-colors hover:bg-emerald-500/20">Income Only</button>
@@ -276,42 +316,32 @@
 
             <form id="transactionForm" class="space-y-4 md:space-y-5 relative z-10">
               <div>
-                <div class="relative flex items-center group">
-                  <span id="currencySymbol" class="absolute left-4 text-2xl font-black text-rose-500 transition-colors drop-shadow-md">₹</span>
-                  <input type="number" id="amount" placeholder="0.00" step="0.01" required class="w-full glass-input rounded-2xl py-5 pl-12 pr-24 text-3xl font-black text-white group-hover:border-blue-500/50 shadow-inner" />
-                  
-                  <button type="button" onclick="handleSMSPaste()" class="absolute right-14 p-2 bg-gray-800 hover:bg-gray-700 text-gray-300 rounded-lg transition-colors shadow-md hover:text-blue-400 hover:border-blue-500/30 border border-transparent" title="Paste Transaction SMS">
-                    <i id="smsIcon" data-lucide="message-square" class="w-5 h-5"></i>
-                  </button>
-                  
-                  <label for="receiptUpload" class="absolute right-4 p-2 bg-gray-800 hover:bg-gray-700 text-gray-300 rounded-lg cursor-pointer transition-colors shadow-md hover:text-emerald-400 hover:border-emerald-500/30 border border-transparent" title="Scan Receipt/PDF">
-                    <i id="scanIcon" data-lucide="camera" class="w-5 h-5"></i>
-                  </label>
-                  <input type="file" id="receiptUpload" accept="image/*" capture="camera" class="hidden" onchange="scanReceipt(event)">
+                <!-- NEW: Clean Increment Row Above Input -->
+                <div class="flex justify-between items-center mb-2 px-1">
+                    <label class="block text-[10px] font-bold text-gray-500 uppercase tracking-wider">Quick Adjust</label>
+                    <div class="flex space-x-1">
+                        <button type="button" onclick="addAmount(-500)" class="px-2.5 py-1 bg-rose-500/10 hover:bg-rose-500/20 text-rose-400 rounded-md text-xs font-bold transition-colors border border-rose-500/20">-500</button>
+                        <button type="button" onclick="addAmount(-100)" class="px-2.5 py-1 bg-rose-500/10 hover:bg-rose-500/20 text-rose-400 rounded-md text-xs font-bold transition-colors border border-rose-500/20">-100</button>
+                        <button type="button" onclick="addAmount(100)" class="px-2.5 py-1 bg-emerald-500/10 hover:bg-emerald-500/20 text-emerald-400 rounded-md text-xs font-bold transition-colors border border-emerald-500/20">+100</button>
+                        <button type="button" onclick="addAmount(500)" class="px-2.5 py-1 bg-emerald-500/10 hover:bg-emerald-500/20 text-emerald-400 rounded-md text-xs font-bold transition-colors border border-emerald-500/20">+500</button>
+                    </div>
                 </div>
-                
-                <!-- NEW: Sleek Interactive Number Increment Chips -->
-                <div class="grid grid-cols-4 gap-2 mt-4">
-                    <button type="button" onclick="addAmount(100)" class="group relative flex flex-col items-center justify-center bg-gradient-to-b from-white/10 to-white/5 hover:from-blue-600/40 hover:to-blue-600/20 text-blue-100 py-3 rounded-2xl border border-white/10 transition-all shadow-lg hover:shadow-[0_0_20px_rgba(59,130,246,0.4)] overflow-hidden">
-                        <i data-lucide="plus" class="w-3 h-3 mb-1 text-blue-400 group-hover:scale-125 transition-transform"></i>
-                        <span class="text-xs font-black tracking-wider">100</span>
-                        <div class="absolute bottom-0 left-0 w-full h-0.5 bg-blue-500 transform scale-x-0 group-hover:scale-x-100 transition-transform origin-left"></div>
-                    </button>
-                    <button type="button" onclick="addAmount(500)" class="group relative flex flex-col items-center justify-center bg-gradient-to-b from-white/10 to-white/5 hover:from-blue-600/40 hover:to-blue-600/20 text-blue-100 py-3 rounded-2xl border border-white/10 transition-all shadow-lg hover:shadow-[0_0_20px_rgba(59,130,246,0.4)] overflow-hidden">
-                        <i data-lucide="plus" class="w-3 h-3 mb-1 text-blue-400 group-hover:scale-125 transition-transform"></i>
-                        <span class="text-xs font-black tracking-wider">500</span>
-                        <div class="absolute bottom-0 left-0 w-full h-0.5 bg-blue-500 transform scale-x-0 group-hover:scale-x-100 transition-transform origin-left"></div>
-                    </button>
-                    <button type="button" onclick="addAmount(1000)" class="group relative flex flex-col items-center justify-center bg-gradient-to-b from-white/10 to-white/5 hover:from-blue-600/40 hover:to-blue-600/20 text-blue-100 py-3 rounded-2xl border border-white/10 transition-all shadow-lg hover:shadow-[0_0_20px_rgba(59,130,246,0.4)] overflow-hidden">
-                        <i data-lucide="plus" class="w-3 h-3 mb-1 text-blue-400 group-hover:scale-125 transition-transform"></i>
-                        <span class="text-xs font-black tracking-wider">1k</span>
-                        <div class="absolute bottom-0 left-0 w-full h-0.5 bg-blue-500 transform scale-x-0 group-hover:scale-x-100 transition-transform origin-left"></div>
-                    </button>
-                    <button type="button" onclick="addAmount(5000)" class="group relative flex flex-col items-center justify-center bg-gradient-to-b from-white/10 to-white/5 hover:from-blue-600/40 hover:to-blue-600/20 text-blue-100 py-3 rounded-2xl border border-white/10 transition-all shadow-lg hover:shadow-[0_0_20px_rgba(59,130,246,0.4)] overflow-hidden">
-                        <i data-lucide="plus" class="w-3 h-3 mb-1 text-blue-400 group-hover:scale-125 transition-transform"></i>
-                        <span class="text-xs font-black tracking-wider">5k</span>
-                        <div class="absolute bottom-0 left-0 w-full h-0.5 bg-blue-500 transform scale-x-0 group-hover:scale-x-100 transition-transform origin-left"></div>
-                    </button>
+
+                <div class="relative flex items-center group bg-black/50 rounded-2xl border border-white/10 p-2 focus-within:border-blue-500 transition-colors shadow-inner">
+                  <span id="currencySymbol" class="pl-3 text-2xl font-black text-rose-500 transition-colors drop-shadow-md">₹</span>
+                  
+                  <!-- OVERFLOW FIX: Removed spinners completely, added pr-24 -->
+                  <input type="number" id="amount" placeholder="0.00" step="0.01" required class="w-full bg-transparent py-3 pl-3 pr-24 text-3xl font-black text-white focus:outline-none" />
+                  
+                  <div class="absolute right-1 flex items-center space-x-1 pr-1">
+                      <button type="button" onclick="handleSMSPaste()" class="p-2.5 bg-white/5 hover:bg-blue-600/20 text-gray-300 hover:text-blue-400 rounded-xl transition-colors border border-white/5" title="Paste Transaction SMS">
+                        <i id="smsIcon" data-lucide="message-square" class="w-4 h-4"></i>
+                      </button>
+                      <label for="receiptUpload" class="p-2.5 bg-white/5 hover:bg-emerald-600/20 text-gray-300 hover:text-emerald-400 rounded-xl cursor-pointer transition-colors border border-white/5" title="Scan Receipt/PDF">
+                        <i id="scanIcon" data-lucide="camera" class="w-4 h-4"></i>
+                      </label>
+                      <input type="file" id="receiptUpload" accept="image/*" capture="camera" class="hidden" onchange="scanReceipt(event)">
+                  </div>
                 </div>
               </div>
               
@@ -443,16 +473,14 @@
 
   <script>
     lucide.createIcons();
-    // Register the DataLabels plugin globally but disable it by default
-    Chart.register(ChartDataLabels);
-    Chart.defaults.plugins.datalabels.display = false;
+    Chart.defaults.plugins.datalabels = { display: false };
     
     const API_BASE = 'https://wallet-y7yv.onrender.com/api';
     const apiHeaders = { 'Content-Type': 'application/json' };
 
     let currentType = 'expense'; 
     let expenseGoal = parseFloat(localStorage.getItem('walletGoal')) || 25000; 
-    let selectedMonth = 'all'; 
+    let selectedMonth = `${new Date().getFullYear()}-${String(new Date().getMonth() + 1).padStart(2, '0')}`; 
     let searchQuery = '';
     let currentFilter = 'all';
     let transactions = []; 
@@ -478,9 +506,7 @@
             if (!response.ok) return;
             const data = await response.json();
             renderPendingUI(data);
-        } catch (error) { 
-            console.warn("Pending pipeline offline."); 
-        }
+        } catch (error) { }
     }
 
     function renderPendingUI(pendingTxns) {
@@ -584,7 +610,7 @@
       document.getElementById('recurringToggleDiv').style.display = type === 'expense' ? 'flex' : 'none';
       document.getElementById('tabExpense').className = `flex-1 py-2 text-sm font-bold rounded-lg transition-all ${type === 'expense' ? 'bg-white/10 text-white shadow-md border border-white/5' : 'text-gray-500 hover:text-white border border-transparent'}`;
       document.getElementById('tabIncome').className = `flex-1 py-2 text-sm font-bold rounded-lg transition-all ${type === 'income' ? 'bg-white/10 text-white shadow-md border border-white/5' : 'text-gray-500 hover:text-white border border-transparent'}`;
-      document.getElementById('currencySymbol').className = `absolute left-4 text-2xl font-black transition-colors drop-shadow-md ${type === 'expense' ? 'text-rose-500' : 'text-emerald-500'}`;
+      document.getElementById('currencySymbol').className = `pl-3 text-2xl font-black transition-colors drop-shadow-md ${type === 'expense' ? 'text-rose-500' : 'text-emerald-500'}`;
       document.getElementById('submitBtn').className = `w-full mt-4 text-white font-black py-4 rounded-2xl transition-all shadow-[0_0_20px_rgba(0,0,0,0.4)] active:scale-[0.98] border border-white/10 tracking-wide ${type === 'expense' ? 'bg-gradient-to-r from-rose-600 to-rose-500 shadow-[0_0_20px_rgba(244,63,94,0.3)]' : 'bg-gradient-to-r from-emerald-600 to-emerald-500 shadow-[0_0_20px_rgba(16,185,129,0.3)]'}`;
       populateCategories();
     }
@@ -599,7 +625,12 @@
         if (g && !isNaN(g)) { expenseGoal = parseFloat(g); localStorage.setItem('walletGoal', expenseGoal); updateUI(); } 
     }
     
-    function addAmount(val) { document.getElementById('amount').value = (parseFloat(document.getElementById('amount').value) || 0) + val; }
+    function addAmount(val) { 
+        const el = document.getElementById('amount');
+        const current = parseFloat(el.value) || 0;
+        const result = current + val;
+        el.value = result > 0 ? result : ''; 
+    }
 
     function populateMonthFilter() {
       const filter = document.getElementById('monthFilter'); 
@@ -608,6 +639,10 @@
           const d = new Date(t.timestamp); 
           months.add(`${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}`); 
       });
+      
+      const nowStr = `${new Date().getFullYear()}-${String(new Date().getMonth() + 1).padStart(2, '0')}`;
+      months.add(nowStr); // ensure current month is always an option
+
       const sortedMonths = Array.from(months).sort().reverse(); 
       const currentVal = filter.value;
       filter.innerHTML = '<option value="all">All Time</option>';
@@ -615,7 +650,13 @@
           const [y, mo] = m.split('-'); 
           filter.innerHTML += `<option value="${m}">${new Date(y, mo - 1).toLocaleDateString('en-GB', { month: 'short', year: 'numeric' })}</option>`; 
       });
-      if (Array.from(filter.options).some(o => o.value === currentVal)) filter.value = currentVal;
+
+      if (Array.from(filter.options).some(o => o.value === selectedMonth)) {
+          filter.value = selectedMonth;
+      } else {
+          filter.value = nowStr;
+          selectedMonth = nowStr;
+      }
     }
 
     function exportData() {
@@ -641,6 +682,74 @@
         } catch (err) {}
       }; 
       reader.readAsText(file);
+    }
+    
+    // PDF Export Logic
+    function exportPDF() {
+        const { jsPDF } = window.jspdf;
+        const doc = new jsPDF();
+        
+        doc.setFontSize(18);
+        doc.text("Financial Ledger Report", 14, 20);
+        doc.setFontSize(10);
+        doc.text(`Generated on: ${new Date().toLocaleDateString()}`, 14, 28);
+        
+        // Add Chart image if available
+        let startY = 35;
+        try {
+            const canvas = document.getElementById('walletChart');
+            const imgData = canvas.toDataURL('image/png');
+            doc.addImage(imgData, 'PNG', 14, startY, 60, 60);
+            startY = 105;
+        } catch(e) {}
+
+        const tableData = transactions.filter(t => {
+            if (selectedMonth !== 'all') { 
+                const d = new Date(t.timestamp); 
+                if (`${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}` !== selectedMonth) return false; 
+            }
+            return true;
+        }).sort((a,b)=>b.timestamp-a.timestamp).map(t => [
+            new Date(t.timestamp).toLocaleDateString('en-GB'),
+            t.type.toUpperCase(),
+            t.category,
+            t.account,
+            `Rs ${t.amount.toLocaleString()}`,
+            t.note || '-'
+        ]);
+
+        doc.autoTable({
+            head: [['Date', 'Type', 'Category', 'Account', 'Amount', 'Description']],
+            body: tableData,
+            startY: startY,
+            theme: 'grid',
+            headStyles: { fillColor: [59, 130, 246] }
+        });
+        
+        doc.save('Wallet_Report.pdf');
+    }
+
+    // Excel Export Logic
+    function exportExcel() {
+        const exportTx = transactions.filter(t => {
+            if (selectedMonth !== 'all') { 
+                const d = new Date(t.timestamp); 
+                if (`${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}` !== selectedMonth) return false; 
+            }
+            return true;
+        }).sort((a,b)=>b.timestamp-a.timestamp).map(t => ({
+            Date: new Date(t.timestamp).toLocaleDateString('en-GB'),
+            Type: t.type.toUpperCase(),
+            Category: t.category,
+            Account: t.account,
+            Amount: t.amount,
+            Description: t.note || ''
+        }));
+        
+        const ws = XLSX.utils.json_to_sheet(exportTx);
+        const wb = XLSX.utils.book_new();
+        XLSX.utils.book_append_sheet(wb, ws, "Ledger");
+        XLSX.writeFile(wb, "Wallet_Data.xlsx");
     }
 
     async function scanReceipt(event) {
@@ -834,29 +943,23 @@
     }
 
     Chart.defaults.color = '#9ca3af'; 
-    Chart.defaults.font.family = 'Outfit'; 
+    Chart.defaults.font.family = 'Inter'; 
     Chart.defaults.borderColor = 'rgba(255,255,255,0.05)';
     let donutChart, lineChart, radarChart, cashflowChart, weeklyRhythmChart;
 
     function initCharts() {
       donutChart = new Chart(document.getElementById('walletChart').getContext('2d'), { 
           type: 'doughnut', 
-          data: { labels:[], datasets:[{data:[], backgroundColor:[], borderWidth:0}] }, 
+          data: { labels:[], datasets:[{data:[], backgroundColor:[], borderWidth:0, hoverOffset: 20}] }, 
           options: { 
               responsive: true, maintainAspectRatio: false, cutout: '75%', 
               layout: { padding: 15 },
               plugins: { 
                   legend: { display: false }, 
-                  datalabels: {
-                      display: true,
-                      color: '#e5e7eb',
-                      anchor: 'end',
-                      align: 'end',
-                      offset: 0,
-                      font: { size: 10, family: 'Outfit', weight: 'bold' },
-                      formatter: (value, ctx) => ctx.chart.data.labels[ctx.dataIndex]
-                  },
-                  tooltip: { backgroundColor: 'rgba(15, 23, 42, 0.9)', titleFont: { size: 10, family: 'Outfit' }, bodyFont: { font: 'Outfit', weight: 'bold' }, padding: 10, cornerRadius: 8, borderColor: 'rgba(255,255,255,0.1)', borderWidth: 1 } 
+                  tooltip: { 
+                      yAlign: 'bottom', // Forces tooltip outside pie
+                      backgroundColor: 'rgba(15, 23, 42, 0.98)', titleFont: { size: 11, family: 'Inter' }, bodyFont: { font: 'Inter', weight: 'bold', size: 12 }, padding: 12, cornerRadius: 8, borderColor: 'rgba(59,130,246,0.3)', borderWidth: 1 
+                  } 
               } 
           } 
       });
@@ -865,7 +968,7 @@
         type: 'line', data: { labels:[], datasets:[] }, 
         options: { 
             responsive: true, maintainAspectRatio: false, hover: { mode: 'index', intersect: false }, elements: { line: { tension: 0.4 }, point: { radius: 0, hitRadius: 10, hoverRadius: 4 } }, 
-            plugins: { datalabels: { display: false }, legend: { display: false }, tooltip: { mode: 'index', intersect: false, backgroundColor: 'rgba(15, 23, 42, 0.9)', titleFont: { size: 10, family: 'Outfit' }, bodyFont: { font: 'Outfit', weight: 'bold' }, padding: 10, cornerRadius: 8, borderColor: 'rgba(255,255,255,0.1)', borderWidth: 1 } }, 
+            plugins: { legend: { display: false }, tooltip: { mode: 'index', intersect: false, backgroundColor: 'rgba(15, 23, 42, 0.98)', titleFont: { size: 10, family: 'Inter' }, bodyFont: { font: 'Inter', weight: 'bold' }, padding: 10, cornerRadius: 8, borderColor: 'rgba(255,255,255,0.1)', borderWidth: 1 } }, 
             scales: { x: { grid: { display: false } }, y: { border:{display:false} } } 
         } 
       });
@@ -875,8 +978,8 @@
         data: { labels: ['Dining', 'Transport', 'Shopping', 'Utilities', 'Subs'], datasets: [{ label: 'Allocation', data: [0, 0, 0, 0, 0], backgroundColor: 'rgba(59, 130, 246, 0.2)', borderColor: '#3b82f6', pointBackgroundColor: '#60a5fa', borderWidth: 2 }] },
         options: { 
             responsive: true, maintainAspectRatio: false, 
-            plugins: { datalabels: { display: false }, legend: { display: false }, tooltip: { backgroundColor: 'rgba(15, 23, 42, 0.9)', padding: 10, cornerRadius: 8, borderColor: 'rgba(255,255,255,0.1)', borderWidth: 1 } }, 
-            scales: { r: { angleLines: { color: 'rgba(255,255,255,0.05)' }, grid: { color: 'rgba(255,255,255,0.05)' }, pointLabels: { color: '#9ca3af', font: { family: 'Outfit', size: 10, weight: 'bold' } }, ticks: { display: false } } } 
+            plugins: { legend: { display: false }, tooltip: { backgroundColor: 'rgba(15, 23, 42, 0.98)', padding: 10, cornerRadius: 8, borderColor: 'rgba(255,255,255,0.1)', borderWidth: 1 } }, 
+            scales: { r: { angleLines: { color: 'rgba(255,255,255,0.05)' }, grid: { color: 'rgba(255,255,255,0.05)' }, pointLabels: { color: '#9ca3af', font: { family: 'Inter', size: 10, weight: 'bold' } }, ticks: { display: false } } } 
         }
       });
       
@@ -885,8 +988,8 @@
         data: { labels: [], datasets: [ { label: 'Income', data: [], backgroundColor: '#10b981', borderRadius: 4 }, { label: 'Expense', data: [], backgroundColor: '#f43f5e', borderRadius: 4 } ] },
         options: { 
             responsive: true, maintainAspectRatio: false, hover: { mode: 'index', intersect: false }, 
-            plugins: { datalabels: { display: false }, legend: { position: 'top', labels: { color: '#9ca3af', font: {size: 10, weight: 'bold', family: 'Outfit'}, boxWidth: 12 } }, tooltip: { mode: 'index', intersect: false, backgroundColor: 'rgba(15, 23, 42, 0.9)', titleFont: { size: 10, family: 'Outfit' }, bodyFont: { font: 'Outfit', weight: 'bold' }, padding: 10, cornerRadius: 8, borderColor: 'rgba(255,255,255,0.1)', borderWidth: 1 } }, 
-            scales: { x: { grid: { display: false }, ticks: {color: '#9ca3af', font: {weight: 'bold', family: 'Outfit'}} }, y: { border:{display:false}, ticks: {color: '#9ca3af', font: {weight: 'bold', family: 'Outfit'}} } } 
+            plugins: { legend: { position: 'top', labels: { color: '#9ca3af', font: {size: 10, weight: 'bold', family: 'Inter'}, boxWidth: 12 } }, tooltip: { mode: 'index', intersect: false, backgroundColor: 'rgba(15, 23, 42, 0.98)', titleFont: { size: 10, family: 'Inter' }, bodyFont: { font: 'Inter', weight: 'bold' }, padding: 10, cornerRadius: 8, borderColor: 'rgba(255,255,255,0.1)', borderWidth: 1 } }, 
+            scales: { x: { grid: { display: false }, ticks: {color: '#9ca3af', font: {weight: 'bold', family: 'Inter'}} }, y: { border:{display:false}, ticks: {color: '#9ca3af', font: {weight: 'bold', family: 'Inter'}} } } 
         }
       });
 
@@ -895,8 +998,8 @@
         data: { labels: ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'], datasets: [{ label: 'Avg Spend', data: [0,0,0,0,0,0,0], backgroundColor: 'rgba(168, 85, 247, 0.7)', borderRadius: 6 }] },
         options: { 
             responsive: true, maintainAspectRatio: false, 
-            plugins: { datalabels: { display: false }, legend: { display: false }, tooltip: { backgroundColor: 'rgba(15, 23, 42, 0.9)', padding: 10, cornerRadius: 8, borderColor: 'rgba(255,255,255,0.1)', borderWidth: 1 } }, 
-            scales: { x: { grid: { display: false }, ticks: { color: '#9ca3af', font: { family: 'Outfit', weight: 'bold' } } }, y: { border: { display: false }, ticks: { display: false } } } 
+            plugins: { legend: { display: false }, tooltip: { backgroundColor: 'rgba(15, 23, 42, 0.98)', padding: 10, cornerRadius: 8, borderColor: 'rgba(255,255,255,0.1)', borderWidth: 1 } }, 
+            scales: { x: { grid: { display: false }, ticks: { color: '#9ca3af', font: { family: 'Inter', weight: 'bold' } } }, y: { border: { display: false }, ticks: { display: false } } } 
         }
       });
     }
@@ -943,13 +1046,12 @@
             options: { 
                 responsive: true, maintainAspectRatio: false, hover: {mode: 'index', intersect: false}, 
                 plugins: { 
-                    datalabels: { display: false },
-                    tooltip: {mode: 'index', intersect: false, backgroundColor: 'rgba(15, 23, 42, 0.9)', titleFont: { size: 12, family: 'Outfit' }, bodyFont: { font: 'Outfit', weight: 'bold' }, padding: 12, cornerRadius: 8, borderColor: 'rgba(255,255,255,0.1)', borderWidth: 1 }, 
-                    legend: { labels: { color: '#9ca3af', font: {weight: 'bold', family: 'Outfit'}, boxWidth: 12 } } 
+                    tooltip: {mode: 'index', intersect: false, backgroundColor: 'rgba(15, 23, 42, 0.98)', titleFont: { size: 12, family: 'Inter' }, bodyFont: { font: 'Inter', weight: 'bold' }, padding: 12, cornerRadius: 8, borderColor: 'rgba(255,255,255,0.1)', borderWidth: 1 }, 
+                    legend: { labels: { color: '#9ca3af', font: {weight: 'bold', family: 'Inter'}, boxWidth: 12 } } 
                 }, 
                 scales: { 
-                    x: { grid: { display: false }, ticks: {color: '#9ca3af', font: {weight: 'bold', family: 'Outfit'}} }, 
-                    y: { border:{display:false}, ticks: {color: '#9ca3af', font: {weight: 'bold', family: 'Outfit'}} } 
+                    x: { grid: { display: false }, ticks: {color: '#9ca3af', font: {weight: 'bold', family: 'Inter'}} }, 
+                    y: { border:{display:false}, ticks: {color: '#9ca3af', font: {weight: 'bold', family: 'Inter'}} } 
                 } 
             }
         });
@@ -985,6 +1087,20 @@
           if (t.type === 'expense') { if(bal[t.account]!==undefined) bal[t.account] -= t.amount; } 
       });
       
+      // Compute completely separate Current Month Data
+      let currMonthInc = 0, currMonthExp = 0;
+      const now = new Date();
+      const currMonthStr = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}`;
+      transactions.forEach(t => {
+          const d = new Date(t.timestamp);
+          if (`${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}` === currMonthStr) {
+              if (t.type === 'income') currMonthInc += t.amount;
+              if (t.type === 'expense') currMonthExp += t.amount;
+          }
+      });
+      document.getElementById('currMonthIncome').innerText = `₹${currMonthInc.toLocaleString()}`;
+      document.getElementById('currMonthExpense').innerText = `₹${currMonthExp.toLocaleString()}`;
+
       filtered.forEach(t => { 
           if (t.type === 'income') tInc += t.amount; 
           if (t.type === 'expense') tExp += t.amount; 
@@ -1001,6 +1117,18 @@
       document.getElementById('goalProgress').style.width = `${pct}%`; 
       document.getElementById('goalText').innerText = `Target Threshold: ₹${expenseGoal.toLocaleString()} (${Math.round(pct)}%)`;
       document.getElementById('recordCount').innerText = filtered.length;
+
+      // Update Asset Distribution Stacked Bar Line
+      const liquidTotal = bal.UPI + bal.Card + bal.Cash;
+      if(liquidTotal > 0) {
+          document.getElementById('barUPI').style.width = `${(bal.UPI/liquidTotal)*100}%`;
+          document.getElementById('barCard').style.width = `${(bal.Card/liquidTotal)*100}%`;
+          document.getElementById('barCash').style.width = `${(bal.Cash/liquidTotal)*100}%`;
+      } else {
+          document.getElementById('barUPI').style.width = `33.3%`;
+          document.getElementById('barCard').style.width = `33.3%`;
+          document.getElementById('barCash').style.width = `33.3%`;
+      }
 
       const currentDay = Math.max(1, new Date().getDate());
       const burnRate = tExp / currentDay; 
@@ -1047,7 +1175,11 @@
       const catData = {}; 
       filtered.filter(t=>t.type==='expense').forEach(e => catData[e.category] = (catData[e.category]||0)+e.amount);
       const sCats = Object.entries(catData).sort((a,b)=>b[1]-a[1]);
-      donutChart.data = { labels: sCats.map(c=>c[0]), datasets: [{ data: sCats.map(c=>c[1]), backgroundColor: sCats.map(c=>CAT_COLORS[c[0]]||'#6b7280') }] }; 
+      
+      donutChart.data = { 
+          labels: sCats.map(c=>c[0]), 
+          datasets: [{ data: sCats.map(c=>c[1]), backgroundColor: sCats.map(c=>CAT_COLORS[c[0]]||'#6b7280') }] 
+      }; 
       donutChart.update();
 
       const radarMappings = ['Food & Dining', 'Transport', 'Shopping', 'Utilities', 'Subscriptions'];
