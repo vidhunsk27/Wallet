@@ -8,8 +8,6 @@
   <!-- UI & Data Libraries -->
   <script src="https://cdn.tailwindcss.com"></script>
   <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-  <!-- Chart.js DataLabels Plugin -->
-  <script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-datalabels@2.2.0"></script>
   <script src="https://unpkg.com/lucide@latest"></script>
   
   <!-- Export Libraries -->
@@ -35,8 +33,6 @@
     @keyframes float1 { 0% { transform: translate(0, 0); } 100% { transform: translate(5%, 10%); } }
     @keyframes float2 { 0% { transform: translate(0, 0); } 100% { transform: translate(-5%, -10%); } }
 
-    /* NATIVE INPUT SPINNERS RESTORED AS REQUESTED */
-    
     .glass-panel { 
         background: rgba(20, 20, 25, 0.6); 
         backdrop-filter: blur(24px); 
@@ -124,8 +120,8 @@
           <div class="flex justify-between items-start mb-2">
               <h3 class="text-xs font-bold text-gray-400 uppercase tracking-widest flex items-center"><div class="w-2 h-2 rounded-full bg-blue-500 mr-2"></div> Total Assets</h3>
           </div>
-          <!-- Removed truncate, added break-words so huge numbers never get cut off -->
-          <h1 id="netBalance" class="text-4xl lg:text-5xl font-black text-white mt-2 drop-shadow-sm break-words">₹0</h1>
+          <!-- Properly rescaled and truncated without breaking lines -->
+          <h1 id="netBalance" class="text-3xl lg:text-4xl xl:text-5xl font-black text-white mt-2 drop-shadow-sm truncate whitespace-nowrap">₹0</h1>
           
           <div class="w-full h-1.5 flex rounded-full overflow-hidden mt-5 bg-gray-800 border border-white/5">
               <div id="barUPI" class="h-full bg-blue-500 transition-all duration-1000" style="width: 33.3%"></div>
@@ -133,11 +129,10 @@
               <div id="barCash" class="h-full bg-emerald-500 transition-all duration-1000" style="width: 33.3%"></div>
           </div>
 
-          <!-- Removed truncate from individual balances -->
-          <div class="mt-3 grid grid-cols-3 gap-2 text-xs font-bold">
-            <div><p class="text-gray-500 text-[9px] mb-1 uppercase tracking-wider flex items-center"><span class="w-1.5 h-1.5 rounded-full bg-blue-500 mr-1.5"></span>UPI</p><p id="balUPI" class="text-white break-all">₹0</p></div>
-            <div><p class="text-gray-500 text-[9px] mb-1 uppercase tracking-wider flex items-center"><span class="w-1.5 h-1.5 rounded-full bg-purple-500 mr-1.5"></span>Card</p><p id="balCard" class="text-white break-all">₹0</p></div>
-            <div><p class="text-gray-500 text-[9px] mb-1 uppercase tracking-wider flex items-center"><span class="w-1.5 h-1.5 rounded-full bg-emerald-500 mr-1.5"></span>Cash</p><p id="balCash" class="text-white break-all">₹0</p></div>
+          <div class="mt-3 grid grid-cols-3 gap-1 text-xs font-bold">
+            <div class="min-w-0"><p class="text-gray-500 text-[9px] mb-1 uppercase tracking-wider flex items-center"><span class="w-1.5 h-1.5 rounded-full bg-blue-500 mr-1.5 flex-shrink-0"></span>UPI</p><p id="balUPI" class="text-white truncate">₹0</p></div>
+            <div class="min-w-0"><p class="text-gray-500 text-[9px] mb-1 uppercase tracking-wider flex items-center"><span class="w-1.5 h-1.5 rounded-full bg-purple-500 mr-1.5 flex-shrink-0"></span>Card</p><p id="balCard" class="text-white truncate">₹0</p></div>
+            <div class="min-w-0"><p class="text-gray-500 text-[9px] mb-1 uppercase tracking-wider flex items-center"><span class="w-1.5 h-1.5 rounded-full bg-emerald-500 mr-1.5 flex-shrink-0"></span>Cash</p><p id="balCash" class="text-white truncate">₹0</p></div>
           </div>
         </div>
 
@@ -161,36 +156,34 @@
           <div class="grid grid-cols-2 gap-4">
              <div class="min-w-0">
                 <p class="text-[10px] text-gray-500 uppercase font-bold mb-0.5">Income</p>
-                <h3 id="currMonthIncome" class="text-2xl font-black text-emerald-400 break-words">₹0</h3>
+                <h3 id="currMonthIncome" class="text-xl md:text-2xl font-black text-emerald-400 truncate whitespace-nowrap">₹0</h3>
              </div>
              <div class="min-w-0">
                 <p class="text-[10px] text-gray-500 uppercase font-bold mb-0.5">Expense</p>
-                <h3 id="currMonthExpense" class="text-2xl font-black text-rose-400 break-words">₹0</h3>
+                <h3 id="currMonthExpense" class="text-xl md:text-2xl font-black text-rose-400 truncate whitespace-nowrap">₹0</h3>
              </div>
           </div>
-          <p id="currMonthNet" class="text-[10px] font-bold mt-4 uppercase tracking-wider text-gray-400 border-t border-white/10 pt-3">Net Balance: ₹0</p>
-          <!-- NEW: Projected Savings line -->
-          <p id="projectedSavings" class="text-[9px] font-bold mt-1 uppercase tracking-wider text-blue-400">Projected EOM: ₹0</p>
+          <p id="currMonthNet" class="text-[10px] font-bold mt-4 uppercase tracking-wider text-gray-400 border-t border-white/10 pt-3 truncate whitespace-nowrap">Net Balance: ₹0</p>
+          <p id="projectedSavings" class="text-[9px] font-bold mt-1 uppercase tracking-wider text-blue-400 truncate whitespace-nowrap">Projected EOM: ₹0</p>
         </div>
 
         <!-- All-Time Income -->
         <div class="glass-panel rounded-3xl p-6 md:p-8 flex flex-col justify-center min-w-0">
-          <h3 class="text-xs font-bold text-gray-400 uppercase tracking-widest mb-1">Total Income (All-Time)</h3>
-          <h2 id="allTimeIncome" class="text-4xl lg:text-5xl font-black text-emerald-400 mt-2 break-words">₹0</h2>
+          <h3 class="text-xs font-bold text-gray-400 uppercase tracking-widest mb-1 truncate whitespace-nowrap">Total Income (All-Time)</h3>
+          <h2 id="allTimeIncome" class="text-3xl lg:text-4xl xl:text-5xl font-black text-emerald-400 mt-2 truncate whitespace-nowrap">₹0</h2>
         </div>
 
         <!-- All-Time Expenses & Budget -->
         <div class="glass-panel rounded-3xl p-6 md:p-8 flex flex-col justify-center min-w-0">
-          <div class="flex justify-between items-start gap-2">
-            <!-- Ensure Settings button doesn't get pushed out -->
-            <div class="flex-1 min-w-0">
-                <h3 class="text-xs font-bold text-gray-400 uppercase tracking-widest mb-1">Total Expenses</h3>
-                <h2 id="allTimeExpense" class="text-4xl lg:text-5xl font-black text-rose-400 mt-2 break-words">₹0</h2>
+          <div class="flex justify-between items-start">
+            <div class="min-w-0 flex-1 pr-2">
+                <h3 class="text-xs font-bold text-gray-400 uppercase tracking-widest mb-1 truncate whitespace-nowrap">Total Expenses (All-Time)</h3>
+                <h2 id="allTimeExpense" class="text-3xl lg:text-4xl xl:text-5xl font-black text-rose-400 mt-2 truncate whitespace-nowrap">₹0</h2>
             </div>
             <button onclick="setGoal()" class="text-gray-400 hover:text-white transition-all hover:scale-110 p-2 flex-shrink-0 bg-white/5 rounded-xl border border-white/10 mt-1" title="Set Budget"><i data-lucide="settings-2" class="w-4 h-4"></i></button>
           </div>
-          <div class="mt-4 md:mt-6 w-full bg-black/60 rounded-full h-2.5 border border-white/5 overflow-hidden"><div id="goalProgress" class="bg-gradient-to-r from-rose-500 to-orange-400 h-full rounded-full transition-all duration-1000"></div></div>
-          <p id="goalText" class="text-[10px] text-gray-500 mt-3 text-right uppercase tracking-widest font-bold">Budget: ₹0</p>
+          <div class="mt-4 md:mt-6 w-full bg-black/60 rounded-full h-2.5 border border-white/5 overflow-hidden flex-shrink-0"><div id="goalProgress" class="bg-gradient-to-r from-rose-500 to-orange-400 h-full rounded-full transition-all duration-1000"></div></div>
+          <p id="goalText" class="text-[10px] text-gray-500 mt-3 text-right uppercase tracking-widest font-bold truncate whitespace-nowrap">Budget: ₹0</p>
         </div>
       </div>
 
@@ -200,32 +193,32 @@
           <p class="text-[10px] uppercase text-gray-400 font-bold tracking-widest mb-1 flex items-center justify-center">
             <i data-lucide="activity" class="w-3 h-3 mr-1"></i> Health <span class="info-icon" data-tooltip="Score Algorithm: Base 50 + Savings Velocity Bonus + Liquid Runway Bonus + Low Debt Ratio Bonus.">i</span>
           </p>
-          <p id="healthScore" class="text-2xl font-black text-emerald-400 drop-shadow-sm">0/100</p>
+          <p id="healthScore" class="text-lg md:text-xl font-black text-emerald-400 drop-shadow-sm truncate whitespace-nowrap w-full">0/100</p>
         </div>
         
         <div class="glass-panel rounded-2xl p-4 md:p-5 flex flex-col items-center justify-center text-center">
           <p class="text-[10px] uppercase text-blue-400 font-bold tracking-widest mb-1 flex items-center justify-center">
             <i data-lucide="flame" class="w-3 h-3 mr-1"></i> Daily Burn <span class="info-icon" data-tooltip="Avg money spent per day in selected period">i</span>
           </p>
-          <p id="statBurnRate" class="text-xl font-black text-white break-words w-full">₹0</p>
+          <p id="statBurnRate" class="text-lg md:text-xl font-black text-white truncate whitespace-nowrap w-full">₹0</p>
         </div>
         <div class="glass-panel rounded-2xl p-4 md:p-5 flex flex-col items-center justify-center text-center">
           <p class="text-[10px] uppercase text-emerald-400 font-bold tracking-widest mb-1 flex items-center justify-center">
             <i data-lucide="trending-up" class="w-3 h-3 mr-1"></i> Velocity <span class="info-icon" data-tooltip="Percentage of income saved in selected period">i</span>
           </p>
-          <p id="statSavingsRate" class="text-xl font-black text-white">0%</p>
+          <p id="statSavingsRate" class="text-lg md:text-xl font-black text-white truncate whitespace-nowrap w-full">0%</p>
         </div>
         <div class="glass-panel rounded-2xl p-4 md:p-5 flex flex-col items-center justify-center text-center">
           <p class="text-[10px] uppercase text-rose-400 font-bold tracking-widest mb-1 flex items-center justify-center">
             <i data-lucide="repeat" class="w-3 h-3 mr-1"></i> Liabilities <span class="info-icon" data-tooltip="Total fixed subscriptions in selected period">i</span>
           </p>
-          <p id="statLiabilities" class="text-xl font-black text-white break-words w-full">₹0</p>
+          <p id="statLiabilities" class="text-lg md:text-xl font-black text-white truncate whitespace-nowrap w-full">₹0</p>
         </div>
         <div class="glass-panel rounded-2xl p-4 md:p-5 flex flex-col items-center justify-center text-center">
           <p class="text-[10px] uppercase text-purple-400 font-bold tracking-widest mb-1 flex items-center justify-center">
             <i data-lucide="clock" class="w-3 h-3 mr-1"></i> Runway <span class="info-icon" data-tooltip="Days your balance will last at current burn rate">i</span>
           </p>
-          <p id="statRunway" class="text-xl font-black text-white">0 Days</p>
+          <p id="statRunway" class="text-lg md:text-xl font-black text-white truncate whitespace-nowrap w-full">0 Days</p>
         </div>
       </div>
 
@@ -243,20 +236,17 @@
               </div>
               <div id="aiTerminal" class="hidden mb-4 p-4 bg-black/60 border border-blue-500/30 rounded-xl text-xs md:text-sm text-gray-300 min-h-[80px] shadow-inner tracking-tight leading-relaxed"></div>
               
-              <!-- Redesigned Gorgeous Gap Pie Chart & Clean HTML Legend -->
-              <div class="flex flex-col xl:flex-row items-center justify-center gap-4 my-auto h-full w-full">
-                  <div class="w-44 h-44 relative flex items-center justify-center flex-shrink-0">
-                      <canvas id="walletChart"></canvas>
-                      <div class="absolute inset-0 flex flex-col items-center justify-center pointer-events-none pt-1">
-                          <span class="text-gray-400 text-[8px] font-bold uppercase tracking-widest">Spent</span>
-                          <h4 id="chartCenterText" class="text-sm font-black text-white m-0 break-all px-2 text-center">₹0</h4>
-                      </div>
+              <!-- Redesigned Gorgeous Pie Chart (Normally displayed above Top Insights) -->
+              <div class="h-48 md:h-52 relative flex items-center justify-center w-full">
+                  <canvas id="walletChart"></canvas>
+                  <div class="absolute inset-0 flex flex-col items-center justify-center pointer-events-none pt-1">
+                      <span class="text-gray-400 text-[10px] font-bold uppercase tracking-widest">Spent</span>
+                      <h2 id="chartCenterText" class="text-2xl font-black text-white drop-shadow-md m-0 truncate px-2 text-center">₹0</h2>
                   </div>
-                  <!-- Vertical Clean Side Legend -->
-                  <div id="donutLegendCustom" class="w-full xl:w-1/2 flex flex-col space-y-2 text-xs overflow-y-auto max-h-[160px] pr-1 capitalize"></div>
               </div>
 
-              <div id="topInsights" class="mt-4 space-y-3 pt-4 border-t border-white/10 flex-grow overflow-y-auto max-h-[160px] pr-2 capitalize hidden"></div>
+              <!-- Top Insights restored to bottom list -->
+              <div id="topInsights" class="mt-4 space-y-3 pt-4 border-t border-white/10 flex-grow overflow-y-auto max-h-[160px] pr-2 capitalize"></div>
             </div>
             
             <div class="glass-panel rounded-3xl p-5 md:p-6 border border-white/5 bg-gradient-to-b from-transparent to-white/5">
@@ -285,7 +275,6 @@
               </div>
           </div>
           
-          <!-- NEW: Split Bottom Row (7-Day + 6-Month) -->
           <div class="grid grid-cols-1 md:grid-cols-2 gap-4 md:gap-6">
               <div class="glass-panel rounded-3xl p-5 md:p-6 border border-white/5 bg-gradient-to-b from-transparent to-white/5">
                   <div class="flex justify-between items-center mb-4">
@@ -295,7 +284,7 @@
                   <div class="h-52 md:h-64 relative flex justify-center"><canvas id="cashflowChart"></canvas></div>
               </div>
 
-              <!-- NEW FEATURE: 6-Month History Chart -->
+              <!-- 6-Month History Chart -->
               <div class="glass-panel rounded-3xl p-5 md:p-6 border border-white/5 bg-gradient-to-b from-transparent to-white/5">
                   <div class="flex justify-between items-center mb-4">
                       <h3 class="text-sm font-bold text-gray-300 uppercase tracking-widest">6-Month History</h3>
@@ -310,7 +299,6 @@
                <div class="flex justify-between items-center">
                  <h3 class="text-sm font-bold text-gray-300 uppercase tracking-widest flex items-center">Ledger<span id="recordCount" class="ml-3 px-2.5 py-0.5 bg-black/40 border border-white/10 rounded-md text-xs font-bold text-white shadow-inner">0</span></h3>
                  
-                 <!-- PDF and Excel Export Buttons -->
                  <div class="flex items-center space-x-1.5">
                    <button onclick="exportPDF()" class="bg-red-500/10 hover:bg-red-500/20 text-red-400 p-2 rounded-xl border border-red-500/20 transition-colors" title="Export PDF"><i data-lucide="file-text" class="w-4 h-4"></i></button>
                    <button onclick="exportExcel()" class="bg-emerald-500/10 hover:bg-emerald-500/20 text-emerald-400 p-2 rounded-xl border border-emerald-500/20 transition-colors" title="Export Excel"><i data-lucide="file-spreadsheet" class="w-4 h-4"></i></button>
@@ -345,7 +333,7 @@
             <form id="transactionForm" class="space-y-4 md:space-y-5 relative z-10">
               <div>
                   
-                <!-- FIXED: Reverted Chips Restored EXACTLY to original text (+100, +500) -->
+                <!-- REVERTED: Original Request Increment Chips -->
                 <div class="flex gap-2 mb-3 overflow-x-auto scrollbar-hide touch-pan-x">
                   <button type="button" onclick="addAmount(100)" class="flex-1 min-w-[60px] bg-white/5 hover:bg-blue-500/20 hover:border-blue-500/50 text-gray-300 text-xs font-bold py-2 rounded-xl transition-all border border-white/10">+100</button>
                   <button type="button" onclick="addAmount(500)" class="flex-1 min-w-[60px] bg-white/5 hover:bg-emerald-500/20 hover:border-emerald-500/50 text-gray-300 text-xs font-bold py-2 rounded-xl transition-all border border-white/10">+500</button>
@@ -353,10 +341,10 @@
                   <button type="button" onclick="addAmount(5000)" class="flex-1 min-w-[60px] bg-white/5 hover:bg-rose-500/20 hover:border-rose-500/50 text-gray-300 text-xs font-bold py-2 rounded-xl transition-all border border-white/10">+5000</button>
                 </div>
 
-                <!-- Input box with restored spinners & safe padding to avoid overlapping icons -->
                 <div class="relative flex items-center bg-black/50 rounded-2xl border border-white/10 focus-within:border-blue-500 transition-colors shadow-inner overflow-hidden">
                   <span id="currencySymbol" class="pl-4 text-2xl font-black text-rose-500 transition-colors drop-shadow-md">₹</span>
                   
+                  <!-- RESTORED Native Input without hidden spinners -->
                   <input type="number" id="amount" placeholder="0.00" step="0.01" required class="w-full bg-transparent py-4 pl-3 pr-24 text-3xl font-black text-white focus:outline-none" />
                   
                   <div class="absolute right-0 flex items-center space-x-1 pr-2 bg-black/40 h-full pl-2 border-l border-white/10 backdrop-blur-md">
@@ -499,7 +487,7 @@
 
   <script>
     lucide.createIcons();
-    // Enable DataLabels only for the Pie Chart later
+    // Native Chart.js Datalabels explicitly disabled. We are using custom HTML lists below the chart.
     Chart.register(ChartDataLabels);
     Chart.defaults.plugins.datalabels.display = false;
     
@@ -981,30 +969,16 @@
     let donutChart, lineChart, radarChart, cashflowChart, weeklyRhythmChart, sixMonthChart;
 
     function initCharts() {
-      // PREMIUM PIE CHART WITH BORDERS & OUTSIDE DATA LABELS
+      // NEW PIE CHART: Beautiful border gaps and slice pops. Custom Top-Insights list below instead of legend.
       donutChart = new Chart(document.getElementById('walletChart').getContext('2d'), { 
           type: 'doughnut', 
-          data: { labels:[], datasets:[{data:[], backgroundColor:[], borderWidth: 3, borderColor: '#111115', borderRadius: 5, hoverOffset: 10 }] }, 
+          data: { labels:[], datasets:[{data:[], backgroundColor:[], borderWidth: 2, borderColor: '#08080a', borderRadius: 4, hoverOffset: 12 }] }, 
           options: { 
-              responsive: true, maintainAspectRatio: false, cutout: '65%', 
-              layout: { padding: 40 }, 
+              responsive: true, maintainAspectRatio: false, cutout: '70%', 
+              layout: { padding: 15 }, 
               plugins: { 
                   legend: { display: false }, 
-                  datalabels: { 
-                      display: true,
-                      color: '#e5e7eb',
-                      anchor: 'end',
-                      align: 'end',
-                      formatter: (value, ctx) => {
-                          let sum = 0;
-                          let dataArr = ctx.chart.data.datasets[0].data;
-                          dataArr.map(data => { sum += data; });
-                          let percentage = (value*100 / sum).toFixed(0)+"%";
-                          return ctx.chart.data.labels[ctx.dataIndex] + '\n' + percentage;
-                      },
-                      font: { family: 'Fredoka', size: 10, weight: 'bold' },
-                      textAlign: 'center'
-                  },
+                  datalabels: { display: false }, // Explicitly hidden to prevent congestion
                   tooltip: { 
                       backgroundColor: 'rgba(15, 23, 42, 0.98)', titleFont: { size: 11, family: 'Fredoka' }, bodyFont: { font: 'Fredoka', weight: 'bold', size: 12 }, padding: 12, cornerRadius: 8, borderColor: 'rgba(59,130,246,0.3)', borderWidth: 1 
                   } 
@@ -1041,7 +1015,7 @@
         }
       });
 
-      // NEW 6-MONTH CHART
+      // 6-MONTH CHART
       sixMonthChart = new Chart(document.getElementById('sixMonthChart').getContext('2d'), {
         type: 'bar',
         data: { labels: [], datasets: [ { label: 'Income', data: [], backgroundColor: '#10b981', borderRadius: 4 }, { label: 'Expense', data: [], backgroundColor: '#f43f5e', borderRadius: 4 } ] },
@@ -1179,9 +1153,9 @@
       
       let periodNet = periodInc - periodExp;
       document.getElementById('currMonthNet').innerText = periodNet >= 0 ? `Net: + ₹${periodNet.toLocaleString()} Saved` : `Net: - ₹${Math.abs(periodNet).toLocaleString()} Deficit`;
-      document.getElementById('currMonthNet').className = periodNet >= 0 ? 'text-[10px] text-emerald-400 font-bold mt-4 uppercase tracking-wider border-t border-white/10 pt-3 truncate' : 'text-[10px] text-rose-400 font-bold mt-4 uppercase tracking-wider border-t border-white/10 pt-3 truncate';
+      document.getElementById('currMonthNet').className = periodNet >= 0 ? 'text-[10px] text-emerald-400 font-bold mt-4 uppercase tracking-wider border-t border-white/10 pt-3 truncate whitespace-nowrap' : 'text-[10px] text-rose-400 font-bold mt-4 uppercase tracking-wider border-t border-white/10 pt-3 truncate whitespace-nowrap';
 
-      // NEW: Projected Savings Logic
+      // Projected Savings Logic
       const currentDay = (selectedMonth === 'all' || selectedMonth !== `${new Date().getFullYear()}-${String(new Date().getMonth()+1).padStart(2,'0')}`) ? 30 : Math.max(1, new Date().getDate());
       const burnRate = periodExp / currentDay; 
       const projectedExp = burnRate * 30;
@@ -1219,8 +1193,9 @@
       const finalHealth = Math.min(100, Math.max(10, Math.round(healthScore)));
       const healthEl = document.getElementById('healthScore'); 
       healthEl.innerText = `${finalHealth}/100`; 
-      healthEl.className = `text-2xl font-black drop-shadow-sm ${finalHealth > 75 ? 'text-emerald-400' : (finalHealth > 40 ? 'text-orange-400' : 'text-rose-400')}`;
+      healthEl.className = `text-lg md:text-xl font-black drop-shadow-sm truncate whitespace-nowrap w-full ${finalHealth > 75 ? 'text-emerald-400' : (finalHealth > 40 ? 'text-orange-400' : 'text-rose-400')}`;
 
+      // Update Financial Weather Indicator
       const weatherIcon = document.getElementById('weatherIcon');
       const weatherText = document.getElementById('weatherText');
       if(finalHealth > 75) {
@@ -1245,7 +1220,7 @@
 
       donutChart.data = { 
           labels: sCats.map(c=>c[0]), 
-          datasets: [{ data: sCats.map(c=>c[1]), backgroundColor: sCats.map(c=>CAT_COLORS[c[0]]||'#6b7280'), borderWidth: 3, borderColor: 'transparent', borderRadius: 5, hoverOffset: 15 }] 
+          datasets: [{ data: sCats.map(c=>c[1]), backgroundColor: sCats.map(c=>CAT_COLORS[c[0]]||'#6b7280'), borderWidth: 2, borderColor: '#08080a', borderRadius: 4, hoverOffset: 8 }] 
       }; 
       donutChart.update();
 
@@ -1326,8 +1301,17 @@
       sixMonthChart.data.datasets[1].data = sixMonthData.e;
       sixMonthChart.update();
 
+      // CLEAN TOP INSIGHTS (RESTORED BELOW CHART)
       const insightsEl = document.getElementById('topInsights'); 
-      insightsEl.className = "mt-4 space-y-3 pt-4 border-t border-white/10 flex-grow overflow-y-auto max-h-[160px] pr-2 capitalize hidden";
+      insightsEl.className = "mt-4 space-y-3 pt-4 border-t border-white/10 flex-grow overflow-y-auto max-h-[160px] pr-2 capitalize";
+      if (sCats.length === 0) { 
+          insightsEl.innerHTML = `<p class="text-xs text-gray-500 text-center py-2 font-bold uppercase tracking-widest">No category logs processed.</p>`; 
+      } else { 
+          insightsEl.innerHTML = sCats.map(([cat, val]) => { 
+              const catPct = periodExp ? Math.round((val / periodExp) * 100) : 0; 
+              return `<div><div class="flex justify-between text-[10px] font-bold mb-1"><span class="text-gray-300 uppercase tracking-widest">${cat}</span><span class="text-gray-400 font-bold">₹${val.toLocaleString()} (${catPct}%)</span></div><div class="w-full bg-black/40 rounded-full h-1.5 shadow-inner border border-white/5"><div class="h-1.5 rounded-full shadow-[0_0_8px_rgba(255,255,255,0.2)]" style="width: ${catPct}%; background-color: ${CAT_COLORS[cat] || '#6b7280'}"></div></div></div>`; 
+          }).join(''); 
+      }
 
       const list = document.getElementById('ledgerList');
       if(!filtered.length) {
