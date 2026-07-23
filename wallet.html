@@ -76,7 +76,7 @@
     @media (min-width: 768px) { .ledger-item .action-btn { opacity: 0; transform: scale(0.8); } .ledger-item:hover .action-btn { opacity: 1; transform: scale(1); } }
   </style>
 </head>
-<body class="p-3 md:p-8 relative overflow-x-hidden">
+<body class="p-3 md:p-8 pb-24 relative overflow-x-hidden">
 
   <div class="bg-orb-1"></div>
   <div class="bg-orb-2"></div>
@@ -114,7 +114,7 @@
           </div>
       </div>
 
-      <!-- ROW 1: 2-ROW / 2-COLUMN TOP LAYOUT AS REQUESTED -->
+      <!-- ROW 1: 2-ROW / 2-COLUMN TOP LAYOUT -->
       <div class="grid grid-cols-1 lg:grid-cols-2 gap-4 md:gap-6">
         
         <!-- Net Assets Card -->
@@ -124,7 +124,8 @@
           </div>
           <h1 id="netBalance" class="text-3xl lg:text-4xl xl:text-5xl font-black text-white mt-2 drop-shadow-sm truncate whitespace-nowrap">₹0</h1>
           
-          <div class="w-full h-1.5 flex rounded-full overflow-hidden mt-auto pt-5 bg-gray-800 border border-white/5">
+          <!-- FIXED THE OVERFLOWING BAR -->
+          <div class="w-full h-1.5 flex rounded-full overflow-hidden mt-5 mb-2 bg-gray-800 border border-white/5">
               <div id="barUPI" class="h-full bg-blue-500 transition-all duration-1000" style="width: 33.3%"></div>
               <div id="barCard" class="h-full bg-purple-500 transition-all duration-1000" style="width: 33.3%"></div>
               <div id="barCash" class="h-full bg-emerald-500 transition-all duration-1000" style="width: 33.3%"></div>
@@ -167,8 +168,17 @@
                 <h3 id="currMonthExpense" class="text-2xl md:text-3xl font-black text-rose-400 truncate whitespace-nowrap">₹0</h3>
              </div>
           </div>
-          <p id="currMonthNet" class="text-xs md:text-sm font-bold mt-auto pt-3 uppercase tracking-wider text-gray-400 border-t border-white/10 truncate whitespace-nowrap">NET BALANCE: ₹0</p>
-          <p id="projectedSavings" class="text-xs md:text-sm font-bold mt-1 uppercase tracking-wider text-blue-400 truncate whitespace-nowrap">PROJECTED EOM: ₹0</p>
+
+          <div class="mt-auto pt-3 border-t border-white/10 flex flex-col gap-1">
+              <div class="flex items-center">
+                  <p id="currMonthNet" class="text-xs md:text-sm font-bold uppercase tracking-wider text-gray-400 truncate whitespace-nowrap">NET: ₹0</p>
+                  <span class="info-icon ml-2" data-tooltip="Total Income minus Total Expenses for this selected period.">i</span>
+              </div>
+              <div id="projectedSavingsContainer" class="flex items-center">
+                  <p id="projectedSavings" class="text-xs md:text-sm font-bold uppercase tracking-wider text-blue-400 truncate whitespace-nowrap">PROJECTED EOM: ₹0</p>
+                  <span class="info-icon ml-2" data-tooltip="Projected End Of Month (EOM) Net Balance based on your current daily burn rate.">i</span>
+              </div>
+          </div>
         </div>
 
         <!-- All-Time Income -->
@@ -187,7 +197,8 @@
             <button onclick="setGoal()" class="text-gray-400 hover:text-white transition-all hover:scale-110 p-2 flex-shrink-0 bg-white/5 rounded-xl border border-white/10 mt-1" title="Set Budget"><i data-lucide="settings-2" class="w-4 h-4"></i></button>
           </div>
           <div class="mt-auto pt-4 md:pt-6 w-full bg-black/60 rounded-full h-2.5 border border-white/5 overflow-hidden flex-shrink-0"><div id="goalProgress" class="bg-gradient-to-r from-rose-500 to-orange-400 h-full rounded-full transition-all duration-1000"></div></div>
-          <p id="goalText" class="text-[10px] text-gray-500 mt-3 text-right font-bold truncate whitespace-nowrap">Budget: ₹0</p>
+          <!-- Increased Font Size as Requested -->
+          <p id="goalText" class="text-xs md:text-sm text-gray-300 mt-3 text-right font-bold truncate whitespace-nowrap">Target Threshold: ₹0</p>
         </div>
       </div>
 
@@ -233,7 +244,7 @@
             <i data-lucide="pie-chart" class="w-3 h-3 mr-1"></i> Top Expense <span class="info-icon" data-tooltip="Highest spending category in selected period">i</span>
           </p>
           <div class="flex flex-col items-center justify-center w-full mt-1">
-            <p id="statTopExpenseName" class="text-sm md:text-base font-black text-white truncate whitespace-nowrap w-full tracking-wider uppercase">-</p>
+            <p id="statTopExpenseName" class="text-sm md:text-base font-black text-white truncate whitespace-nowrap w-full tracking-wider uppercase">OTHER</p>
             <p id="statTopExpenseAmount" class="text-xs font-bold text-rose-400 truncate whitespace-nowrap w-full mt-0.5 uppercase">₹0</p>
           </div>
         </div>
@@ -253,15 +264,16 @@
               </div>
               <div id="aiTerminal" class="hidden mb-4 p-4 bg-black/60 border border-blue-500/30 rounded-xl text-xs md:text-sm text-gray-300 min-h-[80px] shadow-inner tracking-tight leading-relaxed"></div>
               
-              <!-- Pie Chart: Text labels returned inside, larger hole size to fit text -->
+              <!-- Pie Chart: Text labels removed inside, tooltip positioned outside safely -->
               <div class="flex flex-col items-center justify-center gap-4 h-full w-full">
-                  <div class="w-full max-w-[320px] h-64 md:h-72 relative flex items-center justify-center">
+                  <div class="w-full max-w-[280px] h-64 md:h-72 relative flex items-center justify-center">
                       <canvas id="walletChart"></canvas>
                       <div class="absolute inset-0 flex flex-col items-center justify-center pointer-events-none">
                           <span class="text-gray-400 text-[10px] font-bold uppercase tracking-widest">Spent</span>
-                          <h2 id="chartCenterText" class="text-xl md:text-2xl font-black text-white drop-shadow-md m-0 truncate px-2 text-center">₹0</h2>
+                          <h2 id="chartCenterText" class="text-xl md:text-2xl font-black text-white drop-shadow-md m-0 truncate px-4 w-full text-center">₹0</h2>
                       </div>
                   </div>
+                  <!-- Insights list strictly beneath chart -->
                   <div id="topInsights" class="w-full space-y-3 pt-4 border-t border-white/10 flex-grow overflow-y-auto max-h-[160px] pr-2 tracking-wider"></div>
               </div>
             </div>
@@ -348,6 +360,7 @@
 
             <form id="transactionForm" class="space-y-4 md:space-y-5 relative z-10">
               <div>
+                  
                 <div class="flex gap-2 mb-3 overflow-x-auto scrollbar-hide touch-pan-x">
                   <button type="button" onclick="addAmount(100)" class="flex-1 min-w-[60px] bg-white/5 hover:bg-blue-500/20 hover:border-blue-500/50 text-gray-300 text-xs font-bold py-2 rounded-xl transition-all border border-white/10">+100</button>
                   <button type="button" onclick="addAmount(500)" class="flex-1 min-w-[60px] bg-white/5 hover:bg-emerald-500/20 hover:border-emerald-500/50 text-gray-300 text-xs font-bold py-2 rounded-xl transition-all border border-white/10">+500</button>
@@ -355,9 +368,8 @@
                   <button type="button" onclick="addAmount(5000)" class="flex-1 min-w-[60px] bg-white/5 hover:bg-rose-500/20 hover:border-rose-500/50 text-gray-300 text-xs font-bold py-2 rounded-xl transition-all border border-white/10">+5000</button>
                 </div>
 
-                <!-- Input box completely tightened, zero space between symbol and number -->
                 <div class="relative flex items-center bg-black/50 rounded-2xl border border-white/10 focus-within:border-blue-500 transition-colors shadow-inner overflow-hidden pr-1">
-                  <span id="currencySymbol" class="pl-4 pr-1 text-2xl font-black text-rose-500 transition-colors drop-shadow-md flex-shrink-0">₹</span>
+                  <span id="currencySymbol" class="pl-4 text-2xl font-black text-rose-500 transition-colors drop-shadow-md flex-shrink-0">₹</span>
                   <input type="number" id="amount" placeholder="0.00" step="0.01" required class="w-full bg-transparent py-4 pl-0 pr-20 md:pr-24 text-2xl md:text-3xl font-black text-white focus:outline-none" />
                   
                   <div class="absolute right-0 flex items-center space-x-1 pr-2 bg-black/40 h-full pl-2 border-l border-white/10 backdrop-blur-md">
@@ -375,7 +387,7 @@
               <div class="grid grid-cols-2 gap-4">
                 <div>
                   <label class="block text-[10px] font-bold text-gray-500 uppercase tracking-wider mb-2 pl-1">Category</label>
-                  <select id="category" class="w-full glass-input rounded-xl p-3.5 text-sm text-white hover:border-blue-500/30 transition-colors font-medium capitalize"></select>
+                  <select id="category" class="w-full glass-input rounded-xl p-3.5 text-sm text-white hover:border-blue-500/30 transition-colors font-medium"></select>
                 </div>
                 <div>
                   <label class="block text-[10px] font-bold text-gray-500 uppercase tracking-wider mb-2 pl-1">Account</label>
@@ -387,7 +399,7 @@
 
               <div>
                 <label class="block text-[10px] font-bold text-gray-500 uppercase tracking-wider mb-2 pl-1">Date</label>
-                <input type="date" id="date" required class="w-full glass-input rounded-xl p-3.5 text-sm text-white hover:border-blue-500/30 transition-colors font-bold uppercase tracking-wider" />
+                <input type="date" id="date" required class="w-full glass-input rounded-xl p-3.5 text-sm text-white hover:border-blue-500/30 transition-colors font-bold tracking-wider" />
               </div>
               
               <div>
@@ -430,7 +442,7 @@
                 <input type="url" id="wishLink" placeholder="Paste product URL link..." class="w-full glass-input rounded-xl p-4 pr-10 text-sm text-white font-medium hover:border-blue-500/30 transition-colors" />
                 <i id="linkStatusIcon" data-lucide="link" class="absolute right-4 top-1/2 transform -translate-y-1/2 w-4 h-4 text-gray-500"></i>
               </div>
-              <input type="text" id="wishName" placeholder="Product Name Target" required class="w-full glass-input rounded-xl p-4 text-sm text-white font-medium hover:border-blue-500/30 transition-colors uppercase tracking-wider" />
+              <input type="text" id="wishName" placeholder="Product Name Target" required class="w-full glass-input rounded-xl p-4 text-sm text-white font-medium hover:border-blue-500/30 transition-colors tracking-wider" />
               <input type="number" id="wishPrice" placeholder="Price Matrix (₹)" required class="w-full glass-input rounded-xl p-4 text-sm font-bold text-white hover:border-blue-500/30 transition-colors" />
               <div>
                 <label class="block text-[10px] font-bold text-gray-500 uppercase tracking-wider mb-1.5 pl-1">Wish Category</label>
@@ -460,7 +472,7 @@
           <div class="glass-panel rounded-3xl p-5 md:p-6 sticky top-6">
             <h3 class="text-xs font-bold text-gray-400 mb-6 uppercase tracking-widest">Add Media</h3>
             <form id="mediaForm" class="space-y-4">
-              <input type="text" id="mediaName" placeholder="Title (e.g. Inception)" required class="w-full glass-input rounded-xl p-4 text-sm text-white font-medium hover:border-blue-500/30 transition-colors uppercase tracking-wider" />
+              <input type="text" id="mediaName" placeholder="Title (e.g. Inception)" required class="w-full glass-input rounded-xl p-4 text-sm text-white font-medium hover:border-blue-500/30 transition-colors tracking-wider" />
               <div>
                 <label class="block text-[10px] font-bold text-gray-500 uppercase tracking-wider mb-1.5 pl-1">Media Type</label>
                 <select id="mediaType" class="w-full glass-input rounded-xl p-4 text-sm text-white font-bold hover:border-blue-500/30 transition-colors uppercase tracking-wider">
@@ -468,6 +480,27 @@
                   <option value="Book">📚 BOOK</option>
                   <option value="Series">📺 SERIES</option>
                 </select>
+              </div>
+              <div class="grid grid-cols-2 gap-4">
+                  <div>
+                      <label class="block text-[10px] font-bold text-gray-500 uppercase tracking-wider mb-1.5 pl-1">Status</label>
+                      <select id="mediaStatus" class="w-full glass-input rounded-xl p-4 text-xs text-white font-bold hover:border-blue-500/30 transition-colors uppercase tracking-wider">
+                        <option value="Planned">📌 PLANNED</option>
+                        <option value="In Progress">⏳ PROGRESS</option>
+                        <option value="Completed">✅ DONE</option>
+                      </select>
+                  </div>
+                  <div>
+                      <label class="block text-[10px] font-bold text-gray-500 uppercase tracking-wider mb-1.5 pl-1">Rating</label>
+                      <select id="mediaRating" class="w-full glass-input rounded-xl p-4 text-xs text-white font-bold hover:border-blue-500/30 transition-colors uppercase tracking-wider">
+                        <option value="Unrated">UNRATED</option>
+                        <option value="5">⭐⭐⭐⭐⭐</option>
+                        <option value="4">⭐⭐⭐⭐</option>
+                        <option value="3">⭐⭐⭐</option>
+                        <option value="2">⭐⭐</option>
+                        <option value="1">⭐</option>
+                      </select>
+                  </div>
               </div>
               <input type="url" id="mediaLink" placeholder="Link (Optional)" class="w-full glass-input rounded-xl p-4 text-sm text-white font-medium hover:border-blue-500/30 transition-colors" />
               <input type="url" id="mediaImage" placeholder="Image URL (Optional)" class="w-full glass-input rounded-xl p-4 text-sm text-white font-medium hover:border-blue-500/30 transition-colors" />
@@ -530,7 +563,7 @@
 
   <script>
     lucide.createIcons();
-    // Enable DataLabels explicitly to draw text around pie chart
+    // Disable Chart.js DataLabels globally so they don't break line/bar charts
     Chart.register(ChartDataLabels);
     Chart.defaults.plugins.datalabels.display = false;
     
@@ -551,11 +584,11 @@
 
     document.getElementById('wishlistSavingsInput').value = monthlyWishlistSavings || '';
 
-    // Fixed Category list & Explicitly added EB Bill / Electricity charges
-    const EXPENSE_CATEGORIES = ['Food & Dining', 'Groceries', 'Transport', 'Utilities', 'Electricity charges', 'EB Bill', 'Rent', 'Education', 'Travel', 'Shopping', 'Entertainment', 'Health', 'Subscriptions', 'Other'];
+    // Fixed Category list. EB Bill is removed.
+    const EXPENSE_CATEGORIES = ['Food & Dining', 'Groceries', 'Transport', 'Utilities', 'Electricity charges', 'Rent', 'Education', 'Travel', 'Shopping', 'Entertainment', 'Health', 'Subscriptions', 'Other'];
     const INCOME_CATEGORIES = ['Salary', 'Freelance', 'Investments', 'Refund', 'Other'];
     
-    // Explicit Unique Palette
+    // Explicit Unique Palette without EB Bill
     const CAT_COLORS = { 
         'Food & Dining': '#ef4444',     
         'Groceries': '#f97316',         
@@ -563,8 +596,6 @@
         'Transport': '#3b82f6',         
         'Utilities': '#eab308',         
         'Electricity charges': '#22d3ee', 
-        'EB Bill': '#06b6d4',           
-        'Electricity Bill': '#0ea5e9',  
         'Rent': '#6366f1',              
         'Education': '#38bdf8',         
         'Travel': '#2dd4bf',            
@@ -716,7 +747,7 @@
       document.getElementById('recurringToggleDiv').style.display = type === 'expense' ? 'flex' : 'none';
       document.getElementById('tabExpense').className = `flex-1 py-2 text-sm font-bold rounded-lg transition-all ${type === 'expense' ? 'bg-white/10 text-white shadow-md border border-white/5' : 'text-gray-500 hover:text-white border border-transparent'} tracking-wider uppercase`;
       document.getElementById('tabIncome').className = `flex-1 py-2 text-sm font-bold rounded-lg transition-all ${type === 'income' ? 'bg-white/10 text-white shadow-md border border-white/5' : 'text-gray-500 hover:text-white border border-transparent'} tracking-wider uppercase`;
-      document.getElementById('currencySymbol').className = `pl-3 pr-1 text-2xl font-black transition-colors drop-shadow-md flex-shrink-0 ${type === 'expense' ? 'text-rose-500' : 'text-emerald-500'}`;
+      document.getElementById('currencySymbol').className = `pl-4 text-2xl font-black transition-colors drop-shadow-md flex-shrink-0 ${type === 'expense' ? 'text-rose-500' : 'text-emerald-500'}`;
       document.getElementById('submitBtn').className = `w-full mt-4 text-white font-black py-4 rounded-2xl transition-all shadow-[0_0_20px_rgba(0,0,0,0.4)] active:scale-[0.98] border border-white/10 tracking-widest uppercase ${type === 'expense' ? 'bg-gradient-to-r from-rose-600 to-rose-500 shadow-[0_0_20px_rgba(244,63,94,0.3)]' : 'bg-gradient-to-r from-emerald-600 to-emerald-500 shadow-[0_0_20px_rgba(16,185,129,0.3)]'}`;
       populateCategories();
     }
@@ -1066,6 +1097,8 @@
             imageUrl: document.getElementById('mediaImage').value, 
             category: 'MEDIA NODE', 
             wishCategory: document.getElementById('mediaType').value, 
+            mediaStatus: document.getElementById('mediaStatus').value,
+            mediaRating: document.getElementById('mediaRating').value,
             isMedia: true,
             timestamp: Date.now()
         };
@@ -1092,6 +1125,10 @@
             `<div class="w-full h-44 rounded-xl mb-4 bg-gradient-to-br from-purple-900/20 to-pink-900/10 border border-white/5 flex flex-col items-center justify-center text-gray-500 shadow-inner"><i data-lucide="film" class="w-8 h-8 mb-2 text-purple-500/40"></i><span class="text-[10px] uppercase font-bold tracking-widest text-gray-400/60">No Image Asset</span></div>`;
             
         const formattedDate = item.timestamp ? new Date(item.timestamp).toLocaleDateString('en-GB', {day:'numeric', month:'short'}) : 'RECENT';
+        const ratingBadge = item.mediaRating && item.mediaRating !== 'Unrated' ? `<span class="text-yellow-400 text-xs font-black tracking-widest">${'⭐'.repeat(parseInt(item.mediaRating))}</span>` : '';
+        
+        const statusColors = { 'Planned': 'bg-blue-500/10 text-blue-400 border-blue-500/20', 'In Progress': 'bg-orange-500/10 text-orange-400 border-orange-500/20', 'Completed': 'bg-emerald-500/10 text-emerald-400 border-emerald-500/20' };
+        const sColor = statusColors[item.mediaStatus || 'Planned'] || statusColors['Planned'];
 
         return `<div class="glass-panel rounded-3xl p-5 relative group border border-white/5 flex flex-col justify-between hover:-translate-y-1.5 transition-transform shadow-[0_8px_30px_rgba(0,0,0,0.4)]">
             <button onclick="deleteMediaItem('${item.id}')" class="absolute top-3 right-3 bg-red-500/20 text-red-500 p-2 rounded-full opacity-100 md:opacity-0 group-hover:opacity-100 transition-all backdrop-blur-md z-10 hover:bg-red-500 hover:text-white"><i data-lucide="x" class="w-4 h-4"></i></button>
@@ -1102,6 +1139,10 @@
                     <span class="text-[9px] text-gray-500 font-bold uppercase tracking-widest">${formattedDate}</span>
                 </div>
                 <h3 class="font-bold text-white leading-tight line-clamp-2 pt-1 text-lg tracking-wider">${item.title}</h3>
+                <div class="flex items-center justify-between pt-1">
+                    <span class="px-2 py-1 ${sColor} border rounded text-[9px] font-black uppercase tracking-wider shadow-sm">${item.mediaStatus || 'Planned'}</span>
+                    ${ratingBadge}
+                </div>
             </div>
             ${item.link ? `<a href="${item.link}" target="_blank" class="block w-full text-center mt-4 bg-white/5 hover:bg-white/10 hover:text-purple-300 py-3 rounded-xl text-xs font-bold transition-all border border-white/10 text-white shadow-sm hover:border-purple-500/30 tracking-wide uppercase">View Online Link</a>` : ''}
         </div>`;
@@ -1115,30 +1156,15 @@
     let donutChart, lineChart, radarChart, cashflowChart, weeklyRhythmChart, sixMonthChart;
 
     function initCharts() {
-      // PIE CHART: Labels inside slices, Increased Hole Size (cutout) for center text
       donutChart = new Chart(document.getElementById('walletChart').getContext('2d'), { 
           type: 'doughnut', 
           data: { labels:[], datasets:[{data:[], backgroundColor:[], borderWidth: 2, borderColor: '#08080a', borderRadius: 4, hoverOffset: 12 }] }, 
           options: { 
-              responsive: true, maintainAspectRatio: false, cutout: '72%', 
-              layout: { padding: 30 }, 
+              responsive: true, maintainAspectRatio: false, cutout: '65%', 
+              layout: { padding: 10 }, 
               plugins: { 
                   legend: { display: false }, 
-                  datalabels: { 
-                      display: true,
-                      color: '#ffffff',
-                      anchor: 'end',
-                      align: 'end',
-                      formatter: (value, ctx) => {
-                          let sum = 0;
-                          let dataArr = ctx.chart.data.datasets[0].data;
-                          dataArr.map(data => { sum += data; });
-                          let percentage = (value*100 / sum).toFixed(0)+"%";
-                          return ctx.chart.data.labels[ctx.dataIndex] + '\n' + percentage;
-                      },
-                      font: { family: 'Fredoka', size: 12, weight: 'bold' },
-                      textAlign: 'center'
-                  },
+                  datalabels: { display: false },
                   tooltip: { 
                       yAlign: 'bottom',
                       caretPadding: 20,
@@ -1316,7 +1342,7 @@
       
       let periodNet = periodInc - periodExp;
       document.getElementById('currMonthNet').innerText = periodNet >= 0 ? `NET: + ₹${periodNet.toLocaleString()} SAVED` : `NET: - ₹${Math.abs(periodNet).toLocaleString()} DEFICIT`;
-      document.getElementById('currMonthNet').className = periodNet >= 0 ? 'text-xs md:text-sm font-bold mt-auto pt-3 uppercase tracking-wider text-emerald-400 border-t border-white/10 truncate whitespace-nowrap' : 'text-xs md:text-sm font-bold mt-auto pt-3 uppercase tracking-wider text-rose-400 border-t border-white/10 truncate whitespace-nowrap';
+      document.getElementById('currMonthNet').className = periodNet >= 0 ? 'text-xs md:text-sm font-bold uppercase tracking-wider text-emerald-400 truncate whitespace-nowrap' : 'text-xs md:text-sm font-bold uppercase tracking-wider text-rose-400 truncate whitespace-nowrap';
 
       const currentDay = (selectedMonth === 'all' || selectedMonth !== `${new Date().getFullYear()}-${String(new Date().getMonth()+1).padStart(2,'0')}`) ? 30 : Math.max(1, new Date().getDate());
       const burnRate = periodExp / currentDay; 
@@ -1325,9 +1351,9 @@
       
       if(selectedMonth === `${new Date().getFullYear()}-${String(new Date().getMonth()+1).padStart(2,'0')}`) {
           document.getElementById('projectedSavings').innerText = projectedNet >= 0 ? `PROJECTED EOM: + ₹${Math.round(projectedNet).toLocaleString()}` : `PROJECTED EOM: - ₹${Math.abs(Math.round(projectedNet)).toLocaleString()}`;
-          document.getElementById('projectedSavings').style.display = 'block';
+          document.getElementById('projectedSavingsContainer').style.display = 'flex';
       } else {
-          document.getElementById('projectedSavings').style.display = 'none';
+          document.getElementById('projectedSavingsContainer').style.display = 'none';
       }
 
       const pct = Math.min((allTimeExp / expenseGoal) * 100, 100) || 0; 
@@ -1468,6 +1494,17 @@
       sixMonthChart.data.datasets[0].data = sixMonthData.i;
       sixMonthChart.data.datasets[1].data = sixMonthData.e;
       sixMonthChart.update();
+
+      const insightsEl = document.getElementById('topInsights'); 
+      insightsEl.className = "w-full space-y-3 pt-4 border-t border-white/10 flex-grow overflow-y-auto max-h-[160px] pr-2";
+      if (sCats.length === 0) { 
+          insightsEl.innerHTML = `<p class="text-xs text-gray-500 text-center py-2 font-bold uppercase tracking-widest">No category logs processed.</p>`; 
+      } else { 
+          insightsEl.innerHTML = sCats.map(([cat, val]) => { 
+              const catPct = periodExp ? Math.round((val / periodExp) * 100) : 0; 
+              return `<div><div class="flex justify-between text-[10px] font-bold mb-1"><span class="text-gray-300 capitalize tracking-widest">${cat}</span><span class="text-gray-400 font-bold">₹${val.toLocaleString()} (${catPct}%)</span></div><div class="w-full bg-black/40 rounded-full h-1.5 shadow-inner border border-white/5"><div class="h-1.5 rounded-full shadow-[0_0_8px_rgba(255,255,255,0.2)]" style="width: ${catPct}%; background-color: ${getColor(cat)}"></div></div></div>`; 
+          }).join(''); 
+      }
 
       const list = document.getElementById('ledgerList');
       if(!filtered.length) {
