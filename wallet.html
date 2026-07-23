@@ -22,22 +22,24 @@
     
     body { 
         font-family: 'Fredoka', sans-serif; 
-        background-color: #08080a; 
+        background: radial-gradient(circle at top center, #13131f 0%, #08080a 100%);
+        background-attachment: fixed;
         color: #f3f4f6; 
         -webkit-overflow-scrolling: touch; 
         overflow-x: hidden; 
+        min-height: 100vh;
     }
     
     /* Clean animated background orbs */
-    .bg-orb-1 { position: fixed; top: -10%; left: -10%; width: 50vw; height: 50vw; background: radial-gradient(circle, rgba(59,130,246,0.08) 0%, transparent 60%); border-radius: 50%; z-index: -10; animation: float1 20s infinite alternate ease-in-out; }
-    .bg-orb-2 { position: fixed; bottom: -10%; right: -10%; width: 60vw; height: 60vw; background: radial-gradient(circle, rgba(168,85,247,0.06) 0%, transparent 60%); border-radius: 50%; z-index: -10; animation: float2 25s infinite alternate ease-in-out; }
+    .bg-orb-1 { position: fixed; top: -10%; left: -10%; width: 50vw; height: 50vw; background: radial-gradient(circle, rgba(59,130,246,0.12) 0%, transparent 60%); border-radius: 50%; z-index: -10; animation: float1 20s infinite alternate ease-in-out; }
+    .bg-orb-2 { position: fixed; bottom: -10%; right: -10%; width: 60vw; height: 60vw; background: radial-gradient(circle, rgba(168,85,247,0.1) 0%, transparent 60%); border-radius: 50%; z-index: -10; animation: float2 25s infinite alternate ease-in-out; }
     @keyframes float1 { 0% { transform: translate(0, 0); } 100% { transform: translate(5%, 10%); } }
     @keyframes float2 { 0% { transform: translate(0, 0); } 100% { transform: translate(-5%, -10%); } }
 
     /* NATIVE INPUT SPINNERS RESTORED */
     
     .glass-panel { 
-        background: rgba(20, 20, 25, 0.6); 
+        background: rgba(20, 20, 25, 0.5); 
         backdrop-filter: blur(24px); 
         border: 1px solid rgba(255, 255, 255, 0.08); 
         box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.3); 
@@ -78,9 +80,8 @@
     @media (min-width: 768px) { .ledger-item .action-btn { opacity: 0; transform: scale(0.8); } .ledger-item:hover .action-btn { opacity: 1; transform: scale(1); } }
   </style>
 </head>
-<body class="p-3 md:p-8 min-h-screen pb-24 relative overflow-x-hidden">
+<body class="p-3 md:p-8 pb-24 relative overflow-x-hidden">
 
-  <!-- Minimal Dark Background Blobs -->
   <div class="bg-orb-1"></div>
   <div class="bg-orb-2"></div>
 
@@ -108,14 +109,14 @@
       <div id="pendingContainer" class="hidden mb-6">
           <div class="bg-gray-900 border border-blue-500/30 rounded-xl p-4 md:p-6 shadow-[0_0_40px_rgba(59,130,246,0.15)] relative overflow-hidden transition-all">
                <div class="absolute inset-0 bg-gradient-to-r from-blue-600/10 to-purple-600/10 pointer-events-none"></div>
-               <h3 class="text-xs font-bold text-gray-400 uppercase tracking-widest mb-4 flex items-center">
+               <h3 class="text-xs font-bold text-blue-400 mb-4 uppercase tracking-widest flex items-center">
                    <div class="w-2 h-2 rounded-full bg-blue-500 mr-2 animate-pulse"></div> Action Required: AI Queue
                </h3>
                <div id="pending-list" class="space-y-3 relative z-10"></div>
           </div>
       </div>
 
-      <!-- 4-COLUMN TOP ROW: FULLY UNIFORM HEADINGS -->
+      <!-- ROW 1: 4-COLUMN TOP ROW -->
       <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 md:gap-6">
         
         <!-- Net Assets Card -->
@@ -168,8 +169,8 @@
                 <h3 id="currMonthExpense" class="text-xl md:text-2xl font-black text-rose-400 truncate whitespace-nowrap">₹0</h3>
              </div>
           </div>
-          <p id="currMonthNet" class="text-[10px] font-bold mt-auto pt-3 uppercase tracking-wider text-gray-400 border-t border-white/10 truncate whitespace-nowrap">Net Balance: ₹0</p>
-          <p id="projectedSavings" class="text-[9px] font-bold mt-1 uppercase tracking-wider text-blue-400 truncate whitespace-nowrap">Projected EOM: ₹0</p>
+          <p id="currMonthNet" class="text-[10px] font-bold mt-auto pt-3 tracking-wider text-gray-400 border-t border-white/10 truncate whitespace-nowrap">Net Balance: ₹0</p>
+          <p id="projectedSavings" class="text-[9px] font-bold mt-1 tracking-wider text-blue-400 truncate whitespace-nowrap">Projected EOM: ₹0</p>
         </div>
 
         <!-- All-Time Income -->
@@ -188,42 +189,42 @@
             <button onclick="setGoal()" class="text-gray-400 hover:text-white transition-all hover:scale-110 p-2 flex-shrink-0 bg-white/5 rounded-xl border border-white/10 mt-1" title="Set Budget"><i data-lucide="settings-2" class="w-4 h-4"></i></button>
           </div>
           <div class="mt-auto pt-4 md:pt-6 w-full bg-black/60 rounded-full h-2.5 border border-white/5 overflow-hidden flex-shrink-0"><div id="goalProgress" class="bg-gradient-to-r from-rose-500 to-orange-400 h-full rounded-full transition-all duration-1000"></div></div>
-          <p id="goalText" class="text-[10px] text-gray-500 mt-3 text-right uppercase tracking-widest font-bold truncate whitespace-nowrap">Budget: ₹0</p>
+          <p id="goalText" class="text-[10px] text-gray-500 mt-3 text-right font-bold truncate whitespace-nowrap">Budget: ₹0</p>
         </div>
       </div>
 
-      <!-- 6-COLUMN QUICK METRICS (PERFECT SYMMETRY) -->
-      <div class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-4 md:gap-6 mt-2">
+      <!-- ROW 2: 2-COLUMN QUICK METRICS (Adapts to 3 columns on large screens) -->
+      <div class="grid grid-cols-2 lg:grid-cols-3 gap-4 md:gap-6 mt-2">
         <div class="glass-panel rounded-2xl p-4 md:p-5 flex flex-col items-center justify-center text-center">
-          <p class="text-[10px] uppercase text-gray-400 font-bold tracking-widest mb-1 flex items-center justify-center w-full">
+          <p class="text-[10px] text-gray-400 font-bold tracking-widest mb-1 flex items-center justify-center w-full">
             <i data-lucide="activity" class="w-3 h-3 mr-1"></i> Health <span class="info-icon" data-tooltip="Score Algorithm: Base 50 + Savings Velocity Bonus + Liquid Runway Bonus + Low Debt Ratio Bonus.">i</span>
           </p>
           <p id="healthScore" class="text-xl md:text-2xl font-black text-emerald-400 drop-shadow-sm truncate whitespace-nowrap w-full">0/100</p>
         </div>
         
         <div class="glass-panel rounded-2xl p-4 md:p-5 flex flex-col items-center justify-center text-center">
-          <p class="text-[10px] uppercase text-blue-400 font-bold tracking-widest mb-1 flex items-center justify-center w-full">
+          <p class="text-[10px] text-blue-400 font-bold tracking-widest mb-1 flex items-center justify-center w-full">
             <i data-lucide="flame" class="w-3 h-3 mr-1"></i> Daily Burn <span class="info-icon" data-tooltip="Avg money spent per day in selected period">i</span>
           </p>
           <p id="statBurnRate" class="text-xl md:text-2xl font-black text-white truncate whitespace-nowrap w-full">₹0</p>
         </div>
 
         <div class="glass-panel rounded-2xl p-4 md:p-5 flex flex-col items-center justify-center text-center">
-          <p class="text-[10px] uppercase text-emerald-400 font-bold tracking-widest mb-1 flex items-center justify-center w-full">
+          <p class="text-[10px] text-emerald-400 font-bold tracking-widest mb-1 flex items-center justify-center w-full">
             <i data-lucide="trending-up" class="w-3 h-3 mr-1"></i> Velocity <span class="info-icon" data-tooltip="Percentage of income saved in selected period">i</span>
           </p>
           <p id="statSavingsRate" class="text-xl md:text-2xl font-black text-white truncate whitespace-nowrap w-full">0%</p>
         </div>
 
         <div class="glass-panel rounded-2xl p-4 md:p-5 flex flex-col items-center justify-center text-center">
-          <p class="text-[10px] uppercase text-rose-400 font-bold tracking-widest mb-1 flex items-center justify-center w-full">
+          <p class="text-[10px] text-rose-400 font-bold tracking-widest mb-1 flex items-center justify-center w-full">
             <i data-lucide="repeat" class="w-3 h-3 mr-1"></i> Liabilities <span class="info-icon" data-tooltip="Total fixed subscriptions in selected period">i</span>
           </p>
           <p id="statLiabilities" class="text-xl md:text-2xl font-black text-white truncate whitespace-nowrap w-full">₹0</p>
         </div>
 
         <div class="glass-panel rounded-2xl p-4 md:p-5 flex flex-col items-center justify-center text-center">
-          <p class="text-[10px] uppercase text-purple-400 font-bold tracking-widest mb-1 flex items-center justify-center w-full">
+          <p class="text-[10px] text-purple-400 font-bold tracking-widest mb-1 flex items-center justify-center w-full">
             <i data-lucide="clock" class="w-3 h-3 mr-1"></i> Runway <span class="info-icon" data-tooltip="Days your balance will last at current burn rate">i</span>
           </p>
           <p id="statRunway" class="text-xl md:text-2xl font-black text-white truncate whitespace-nowrap w-full">0 Days</p>
@@ -231,11 +232,11 @@
 
         <!-- NEW 6th Feature Cell: Top Expense Category -->
         <div class="glass-panel rounded-2xl p-4 md:p-5 flex flex-col items-center justify-center text-center">
-          <p class="text-[10px] uppercase text-orange-400 font-bold tracking-widest mb-1 flex items-center justify-center w-full">
+          <p class="text-[10px] text-orange-400 font-bold tracking-widest mb-1 flex items-center justify-center w-full">
             <i data-lucide="pie-chart" class="w-3 h-3 mr-1"></i> Top Expense <span class="info-icon" data-tooltip="Highest spending category in selected period">i</span>
           </p>
           <div class="flex flex-col items-center justify-center w-full mt-1">
-            <p id="statTopExpenseName" class="text-sm md:text-base font-black text-white truncate whitespace-nowrap w-full uppercase tracking-wider">-</p>
+            <p id="statTopExpenseName" class="text-sm md:text-base font-black text-white truncate whitespace-nowrap w-full tracking-wider capitalize">-</p>
             <p id="statTopExpenseAmount" class="text-xs font-bold text-rose-400 truncate whitespace-nowrap w-full mt-0.5">₹0</p>
           </div>
         </div>
@@ -255,17 +256,17 @@
               </div>
               <div id="aiTerminal" class="hidden mb-4 p-4 bg-black/60 border border-blue-500/30 rounded-xl text-xs md:text-sm text-gray-300 min-h-[80px] shadow-inner tracking-tight leading-relaxed"></div>
               
-              <!-- Pie Chart: Enlarged, no wordings inside, outside tooltip -->
+              <!-- Pie Chart: Text labels removed inside, tooltip positioned outside safely -->
               <div class="flex flex-col items-center justify-center gap-4 h-full w-full">
-                  <div class="w-full h-64 md:h-72 relative flex items-center justify-center">
+                  <div class="w-full max-w-[280px] h-64 md:h-72 relative flex items-center justify-center">
                       <canvas id="walletChart"></canvas>
                       <div class="absolute inset-0 flex flex-col items-center justify-center pointer-events-none">
                           <span class="text-gray-400 text-[10px] font-bold uppercase tracking-widest">Spent</span>
                           <h2 id="chartCenterText" class="text-2xl md:text-3xl font-black text-white drop-shadow-md m-0 truncate px-2 text-center">₹0</h2>
                       </div>
                   </div>
-                  <!-- Insights list beneath chart -->
-                  <div id="topInsights" class="w-full space-y-3 pt-4 border-t border-white/10 flex-grow overflow-y-auto max-h-[160px] pr-2 uppercase text-xs tracking-wider"></div>
+                  <!-- Insights list strictly beneath chart -->
+                  <div id="topInsights" class="w-full space-y-3 pt-4 border-t border-white/10 flex-grow overflow-y-auto max-h-[160px] pr-2 tracking-wider"></div>
               </div>
             </div>
             
@@ -331,13 +332,13 @@
             </div>
             
             <div class="flex space-x-2 mb-4 overflow-x-auto pb-2 scrollbar-hide">
-                 <button onclick="applyFilter('all')" class="px-4 py-1.5 rounded-full text-xs font-bold bg-white/10 text-white whitespace-nowrap transition-colors hover:bg-white/20 uppercase tracking-wider">All</button>
-                 <button onclick="applyFilter('income')" class="px-4 py-1.5 rounded-full text-xs font-bold bg-emerald-500/10 text-emerald-400 whitespace-nowrap transition-colors hover:bg-emerald-500/20 uppercase tracking-wider">Income Only</button>
-                 <button onclick="applyFilter('expense')" class="px-4 py-1.5 rounded-full text-xs font-bold bg-rose-500/10 text-rose-400 whitespace-nowrap transition-colors hover:bg-rose-500/20 uppercase tracking-wider">Expenses Only</button>
-                 <button onclick="applyFilter('High Impact')" class="px-4 py-1.5 rounded-full text-xs font-bold bg-purple-500/10 text-purple-400 whitespace-nowrap transition-colors hover:bg-purple-500/20 uppercase tracking-wider">> ₹10k</button>
+                 <button onclick="applyFilter('all')" class="px-4 py-1.5 rounded-full text-xs font-bold bg-white/10 text-white whitespace-nowrap transition-colors hover:bg-white/20 tracking-wider">All</button>
+                 <button onclick="applyFilter('income')" class="px-4 py-1.5 rounded-full text-xs font-bold bg-emerald-500/10 text-emerald-400 whitespace-nowrap transition-colors hover:bg-emerald-500/20 tracking-wider">Income Only</button>
+                 <button onclick="applyFilter('expense')" class="px-4 py-1.5 rounded-full text-xs font-bold bg-rose-500/10 text-rose-400 whitespace-nowrap transition-colors hover:bg-rose-500/20 tracking-wider">Expenses Only</button>
+                 <button onclick="applyFilter('High Impact')" class="px-4 py-1.5 rounded-full text-xs font-bold bg-purple-500/10 text-purple-400 whitespace-nowrap transition-colors hover:bg-purple-500/20 tracking-wider">> ₹10k</button>
             </div>
             
-            <div id="ledgerList" class="space-y-3 max-h-[350px] md:max-h-[400px] overflow-y-auto pr-2 touch-pan-y relative uppercase tracking-wider"></div>
+            <div id="ledgerList" class="space-y-3 max-h-[350px] md:max-h-[400px] overflow-y-auto pr-2 touch-pan-y relative tracking-wider"></div>
           </div>
         </div>
 
@@ -345,13 +346,14 @@
           <div class="glass-panel rounded-3xl p-5 md:p-6 sticky top-6">
             <h3 class="text-xs font-bold text-gray-400 uppercase tracking-widest mb-6">Quick Entry</h3>
             <div class="flex rounded-xl bg-black/40 p-1 mb-6 border border-white/5 shadow-inner relative z-10">
-              <button id="tabExpense" class="flex-1 py-2 text-sm font-bold rounded-lg bg-white/10 text-white transition-all shadow-md uppercase tracking-wider" onclick="switchTab('expense')">Expense</button>
-              <button id="tabIncome" class="flex-1 py-2 text-sm font-bold rounded-lg text-gray-500 hover:text-white hover:bg-white/5 transition-all uppercase tracking-wider" onclick="switchTab('income')">Income</button>
+              <button id="tabExpense" class="flex-1 py-2 text-sm font-bold rounded-lg bg-white/10 text-white transition-all shadow-md tracking-wider" onclick="switchTab('expense')">Expense</button>
+              <button id="tabIncome" class="flex-1 py-2 text-sm font-bold rounded-lg text-gray-500 hover:text-white hover:bg-white/5 transition-all tracking-wider" onclick="switchTab('income')">Income</button>
             </div>
 
             <form id="transactionForm" class="space-y-4 md:space-y-5 relative z-10">
               <div>
                   
+                <!-- FIXED: Reverted Chips Restored EXACTLY to original text (+100, +500) -->
                 <div class="flex gap-2 mb-3 overflow-x-auto scrollbar-hide touch-pan-x">
                   <button type="button" onclick="addAmount(100)" class="flex-1 min-w-[60px] bg-white/5 hover:bg-blue-500/20 hover:border-blue-500/50 text-gray-300 text-xs font-bold py-2 rounded-xl transition-all border border-white/10">+100</button>
                   <button type="button" onclick="addAmount(500)" class="flex-1 min-w-[60px] bg-white/5 hover:bg-emerald-500/20 hover:border-emerald-500/50 text-gray-300 text-xs font-bold py-2 rounded-xl transition-all border border-white/10">+500</button>
@@ -359,11 +361,14 @@
                   <button type="button" onclick="addAmount(5000)" class="flex-1 min-w-[60px] bg-white/5 hover:bg-rose-500/20 hover:border-rose-500/50 text-gray-300 text-xs font-bold py-2 rounded-xl transition-all border border-white/10">+5000</button>
                 </div>
 
+                <!-- Input box completely tightened -->
                 <div class="relative flex items-center bg-black/50 rounded-2xl border border-white/10 focus-within:border-blue-500 transition-colors shadow-inner overflow-hidden pr-1">
-                  <span id="currencySymbol" class="pl-4 text-2xl font-black text-rose-500 transition-colors drop-shadow-md flex-shrink-0">₹</span>
-                  <input type="number" id="amount" placeholder="0.00" step="0.01" required class="w-full bg-transparent py-4 pl-3 pr-20 md:pr-24 text-2xl md:text-3xl font-black text-white focus:outline-none" />
+                  <span id="currencySymbol" class="pl-3 pr-1 text-2xl font-black text-rose-500 transition-colors drop-shadow-md flex-shrink-0">₹</span>
                   
-                  <div class="flex items-center space-x-1 pl-2 border-l border-white/10 h-10 flex-shrink-0">
+                  <!-- RESTORED Native Input with tight padding -->
+                  <input type="number" id="amount" placeholder="0.00" step="0.01" required class="w-full bg-transparent py-4 pl-1 pr-20 md:pr-24 text-2xl md:text-3xl font-black text-white focus:outline-none" />
+                  
+                  <div class="absolute right-0 flex items-center space-x-1 pr-2 bg-black/40 h-full pl-2 border-l border-white/10 backdrop-blur-md">
                       <button type="button" onclick="handleSMSPaste()" class="p-2 bg-white/5 hover:bg-blue-600/20 text-gray-300 hover:text-blue-400 rounded-xl transition-colors border border-white/5" title="Paste Transaction SMS">
                         <i id="smsIcon" data-lucide="message-square" class="w-4 h-4"></i>
                       </button>
@@ -378,24 +383,24 @@
               <div class="grid grid-cols-2 gap-4">
                 <div>
                   <label class="block text-[10px] font-bold text-gray-500 uppercase tracking-wider mb-2 pl-1">Category</label>
-                  <select id="category" class="w-full glass-input rounded-xl p-3.5 text-sm text-white hover:border-blue-500/30 transition-colors font-medium uppercase tracking-wider"></select>
+                  <select id="category" class="w-full glass-input rounded-xl p-3.5 text-sm text-white hover:border-blue-500/30 transition-colors font-medium capitalize"></select>
                 </div>
                 <div>
                   <label class="block text-[10px] font-bold text-gray-500 uppercase tracking-wider mb-2 pl-1">Account</label>
-                  <select id="account" class="w-full glass-input rounded-xl p-3.5 text-sm text-white hover:border-blue-500/30 transition-colors font-medium uppercase tracking-wider">
-                    <option value="UPI">📱 UPI</option><option value="Card">💳 CARD</option><option value="Cash">💵 CASH</option>
+                  <select id="account" class="w-full glass-input rounded-xl p-3.5 text-sm text-white hover:border-blue-500/30 transition-colors font-medium">
+                    <option value="UPI">📱 UPI</option><option value="Card">💳 Card</option><option value="Cash">💵 Cash</option>
                   </select>
                 </div>
               </div>
 
               <div>
                 <label class="block text-[10px] font-bold text-gray-500 uppercase tracking-wider mb-2 pl-1">Date</label>
-                <input type="date" id="date" required class="w-full glass-input rounded-xl p-3.5 text-sm text-white hover:border-blue-500/30 transition-colors font-bold uppercase tracking-wider" />
+                <input type="date" id="date" required class="w-full glass-input rounded-xl p-3.5 text-sm text-white hover:border-blue-500/30 transition-colors font-bold tracking-wider" />
               </div>
               
               <div>
                 <label class="block text-[10px] font-bold text-gray-500 uppercase tracking-wider mb-2 pl-1">Description</label>
-                <input type="text" id="note" placeholder="Transaction context info..." class="w-full glass-input rounded-xl p-3.5 text-sm text-white hover:border-blue-500/30 transition-colors font-medium uppercase tracking-wider" />
+                <input type="text" id="note" placeholder="Transaction context info..." class="w-full glass-input rounded-xl p-3.5 text-sm text-white hover:border-blue-500/30 transition-colors font-medium" />
               </div>
 
               <div id="recurringToggleDiv" class="flex items-center justify-between p-4 bg-black/40 rounded-xl border border-white/5 hover:border-white/10 transition-colors shadow-inner">
@@ -406,7 +411,7 @@
                 </label>
               </div>
               
-              <button id="submitBtn" type="submit" class="w-full mt-4 bg-gradient-to-r from-rose-600 to-rose-500 hover:from-rose-500 hover:to-rose-400 text-white font-black py-4 rounded-2xl transition-all shadow-[0_0_25px_rgba(244,63,94,0.35)] active:scale-[0.98] border border-white/10 uppercase tracking-widest">Add Transaction</button>
+              <button id="submitBtn" type="submit" class="w-full mt-4 bg-gradient-to-r from-rose-600 to-rose-500 hover:from-rose-500 hover:to-rose-400 text-white font-black py-4 rounded-2xl transition-all shadow-[0_0_25px_rgba(244,63,94,0.35)] active:scale-[0.98] border border-white/10 tracking-widest">Add Transaction</button>
             </form>
           </div>
         </div>
@@ -416,7 +421,7 @@
     <!-- WISHLIST VIEW -->
     <div id="viewWishlist" class="view-hidden space-y-4 md:space-y-6">
       <div class="glass-panel rounded-3xl p-6 md:p-8 flex flex-col md:flex-row justify-between items-center gap-4">
-        <div><h2 class="text-3xl font-black text-white flex items-center uppercase tracking-wider"><i data-lucide="rocket" class="text-blue-400 mr-4 w-7 h-7 drop-shadow-[0_0_10px_rgba(59,130,246,0.5)]"></i> Target Goals</h2><p class="text-gray-400 text-xs mt-1.5 font-medium uppercase tracking-widest">Captured via automation hooks or items added manually below.</p></div>
+        <div><h2 class="text-3xl font-black text-white flex items-center tracking-wider"><i data-lucide="rocket" class="text-blue-400 mr-4 w-7 h-7 drop-shadow-[0_0_10px_rgba(59,130,246,0.5)]"></i> Target Goals</h2><p class="text-gray-400 text-xs mt-1.5 font-medium tracking-widest">Captured via automation hooks or items added manually below.</p></div>
         <div class="flex items-center space-x-3 w-full md:w-auto bg-black/40 p-2 rounded-2xl border border-white/5 shadow-inner">
           <div class="px-3 md:px-4 py-2 text-xs font-bold text-gray-400 uppercase tracking-widest border-r border-white/10">Savings Plan</div>
           <div class="relative w-full md:w-36"><span class="absolute left-2 top-1/2 transform -translate-y-1/2 text-emerald-400 font-black text-sm drop-shadow-[0_0_5px_rgba(16,185,129,0.5)]">₹</span>
@@ -433,19 +438,19 @@
                 <input type="url" id="wishLink" placeholder="Paste product URL link..." class="w-full glass-input rounded-xl p-4 pr-10 text-sm text-white font-medium hover:border-blue-500/30 transition-colors" />
                 <i id="linkStatusIcon" data-lucide="link" class="absolute right-4 top-1/2 transform -translate-y-1/2 w-4 h-4 text-gray-500"></i>
               </div>
-              <input type="text" id="wishName" placeholder="Product Name Target" required class="w-full glass-input rounded-xl p-4 text-sm text-white font-medium hover:border-blue-500/30 transition-colors uppercase tracking-wider" />
+              <input type="text" id="wishName" placeholder="Product Name Target" required class="w-full glass-input rounded-xl p-4 text-sm text-white font-medium hover:border-blue-500/30 transition-colors tracking-wider" />
               <input type="number" id="wishPrice" placeholder="Price Matrix (₹)" required class="w-full glass-input rounded-xl p-4 text-sm font-bold text-white hover:border-blue-500/30 transition-colors" />
               <div>
                 <label class="block text-[10px] font-bold text-gray-500 uppercase tracking-wider mb-1.5 pl-1">Wish Category</label>
-                <select id="wishCategory" class="w-full glass-input rounded-xl p-4 text-sm text-white font-bold hover:border-blue-500/30 transition-colors uppercase tracking-wider">
-                  <option value="Gadgets">💻 GADGETS</option>
-                  <option value="Apparel">👕 APPAREL</option>
-                  <option value="Lifestyle">✨ LIFESTYLE</option>
-                  <option value="Other">📦 OTHER</option>
+                <select id="wishCategory" class="w-full glass-input rounded-xl p-4 text-sm text-white font-bold hover:border-blue-500/30 transition-colors tracking-wider">
+                  <option value="Gadgets">💻 Gadgets</option>
+                  <option value="Apparel">👕 Apparel</option>
+                  <option value="Lifestyle">✨ Lifestyle</option>
+                  <option value="Other">📦 Other</option>
                 </select>
               </div>
               <input type="url" id="wishImage" placeholder="Image Resource Address" class="w-full glass-input rounded-xl p-4 text-sm text-white font-medium hover:border-blue-500/30 transition-colors" />
-              <button type="submit" class="w-full bg-gradient-to-r from-blue-600 to-blue-500 hover:to-blue-400 text-white font-black py-4 rounded-xl transition-all shadow-[0_0_20px_rgba(59,130,246,0.4)] active:scale-[0.98] border border-white/10 uppercase tracking-widest">Save to Tracker</button>
+              <button type="submit" class="w-full bg-gradient-to-r from-blue-600 to-blue-500 hover:to-blue-400 text-white font-black py-4 rounded-xl transition-all shadow-[0_0_20px_rgba(59,130,246,0.4)] active:scale-[0.98] border border-white/10 tracking-widest">Save to Tracker</button>
             </form>
           </div>
         </div>
@@ -484,26 +489,26 @@
               </div>
               <div>
                   <label class="block text-[10px] font-bold text-gray-500 uppercase tracking-wider mb-1 pl-1">Category</label>
-                  <select id="editCategory" class="w-full glass-input rounded-xl p-3.5 text-sm text-white font-bold hover:border-blue-500/30 transition-colors shadow-inner uppercase tracking-wider"></select>
+                  <select id="editCategory" class="w-full glass-input rounded-xl p-3.5 text-sm text-white font-bold hover:border-blue-500/30 transition-colors shadow-inner capitalize"></select>
               </div>
               <div>
                   <label class="block text-[10px] font-bold text-gray-500 uppercase tracking-wider mb-1 pl-1">Account</label>
-                  <select id="editAccount" class="w-full glass-input rounded-xl p-3.5 text-sm text-white font-bold hover:border-blue-500/30 transition-colors shadow-inner uppercase tracking-wider">
-                      <option value="UPI">📱 UPI</option><option value="Card">💳 CARD</option><option value="Cash">💵 CASH</option>
+                  <select id="editAccount" class="w-full glass-input rounded-xl p-3.5 text-sm text-white font-bold hover:border-blue-500/30 transition-colors shadow-inner">
+                      <option value="UPI">📱 UPI</option><option value="Card">💳 Card</option><option value="Cash">💵 Cash</option>
                   </select>
               </div>
               <div>
                   <label class="block text-[10px] font-bold text-gray-500 uppercase tracking-wider mb-1 pl-1">Description</label>
-                  <input type="text" id="editNote" class="w-full glass-input rounded-xl p-3.5 text-sm text-white font-medium hover:border-blue-500/30 transition-colors shadow-inner uppercase tracking-wider" placeholder="Description">
+                  <input type="text" id="editNote" class="w-full glass-input rounded-xl p-3.5 text-sm text-white font-medium hover:border-blue-500/30 transition-colors shadow-inner" placeholder="Description">
               </div>
-              <button onclick="saveEditTx()" class="w-full mt-2 py-4 rounded-xl text-white bg-gradient-to-r from-blue-600 to-blue-500 hover:to-blue-400 text-sm font-black transition-all shadow-[0_0_20px_rgba(59,130,246,0.3)] active:scale-[0.98] border border-white/10 uppercase tracking-widest">Save Changes</button>
+              <button onclick="saveEditTx()" class="w-full mt-2 py-4 rounded-xl text-white bg-gradient-to-r from-blue-600 to-blue-500 hover:to-blue-400 text-sm font-black transition-all shadow-[0_0_20px_rgba(59,130,246,0.3)] active:scale-[0.98] border border-white/10 tracking-widest">Save Changes</button>
           </div>
       </div>
   </div>
 
   <script>
     lucide.createIcons();
-    // Disable Chart.js DataLabels completely to rely entirely on custom legend
+    // Disable Chart.js DataLabels globally so they don't break line/bar charts
     Chart.register(ChartDataLabels);
     Chart.defaults.plugins.datalabels.display = false;
     
@@ -523,28 +528,43 @@
 
     document.getElementById('wishlistSavingsInput').value = monthlyWishlistSavings || '';
 
-    // Fixed Category list & Completely distinct vibrant colors mapped for pie chart
-    const EXPENSE_CATEGORIES = ['Food & Dining', 'Groceries', 'Transport', 'Utilities', 'Electricity charges', 'Rent', 'Education', 'Travel', 'Shopping', 'Entertainment', 'Health', 'Subscriptions', 'Other'];
+    // Fixed Category list & Explicitly added EB Bill / Electricity charges
+    const EXPENSE_CATEGORIES = ['Food & Dining', 'Groceries', 'Transport', 'Utilities', 'Electricity charges', 'EB Bill', 'Rent', 'Education', 'Travel', 'Shopping', 'Entertainment', 'Health', 'Subscriptions', 'Other'];
     const INCOME_CATEGORIES = ['Salary', 'Freelance', 'Investments', 'Refund', 'Other'];
+    
+    // Explicit Unique Palette
     const CAT_COLORS = { 
-        'Food & Dining': '#ef4444',     /* Red */
-        'Groceries': '#f97316',         /* Orange */
-        'Subscriptions': '#8b5cf6',     /* Purple */
-        'Transport': '#3b82f6',         /* Blue */
-        'Utilities': '#eab308',         /* Yellow */
-        'Electricity charges': '#22d3ee', /* Cyan */
-        'Rent': '#6366f1',              /* Indigo */
-        'Education': '#38bdf8',         /* Sky */
-        'Travel': '#2dd4bf',            /* Teal */
-        'Shopping': '#a855f7',          /* Fuchsia */
-        'Salary': '#10b981',            /* Emerald */
-        'Other': '#6b7280',             /* Gray */
-        'Entertainment': '#ec4899',     /* Pink */
-        'Health': '#84cc16',            /* Lime */
-        'Freelance': '#34d399',         /* Light Emerald */
-        'Investments': '#059669',       /* Dark Emerald */
-        'Refund': '#6ee7b7'             /* Mint */
+        'Food & Dining': '#ef4444',     
+        'Groceries': '#f97316',         
+        'Subscriptions': '#8b5cf6',     
+        'Transport': '#3b82f6',         
+        'Utilities': '#eab308',         
+        'Electricity charges': '#22d3ee', 
+        'EB Bill': '#06b6d4',           
+        'Electricity Bill': '#0ea5e9',  
+        'Rent': '#6366f1',              
+        'Education': '#38bdf8',         
+        'Travel': '#2dd4bf',            
+        'Shopping': '#a855f7',          
+        'Salary': '#10b981',            
+        'Other': '#9ca3af',             
+        'Entertainment': '#ec4899',     
+        'Health': '#84cc16',            
+        'Freelance': '#34d399',         
+        'Investments': '#059669',       
+        'Refund': '#6ee7b7'             
     };
+
+    // Smart Fallback Color Generator for custom categories
+    function getColor(cat) {
+        if(CAT_COLORS[cat]) return CAT_COLORS[cat];
+        let hash = 0;
+        for (let i = 0; i < cat.length; i++) {
+            hash = cat.charCodeAt(i) + ((hash << 5) - hash);
+        }
+        const hue = Math.abs(hash % 360);
+        return `hsl(${hue}, 70%, 55%)`;
+    }
 
     function applyFilter(f) {
         currentFilter = f;
@@ -578,17 +598,17 @@
                 <div class="bg-black/50 p-3 md:p-4 rounded-xl flex flex-col md:flex-row md:items-center justify-between space-y-3 md:space-y-0 border border-white/5 hover:bg-black/70 hover:border-white/10 transition-colors shadow-inner">
                     <div class="flex-1">
                         <div class="flex justify-between md:block">
-                            <span class="text-xs font-bold text-gray-300 uppercase">${txn.sender || txn.merchant || 'Bank SMS'}</span>
+                            <span class="text-xs font-bold text-gray-300 capitalize">${txn.sender || txn.merchant || 'Bank SMS'}</span>
                             <span class="font-black text-sm md:hidden ${isI ? 'text-emerald-400' : 'text-rose-400'}">${isI ? '+' : '-'}₹${txn.amount}</span>
                         </div>
-                        <p class="text-[9px] text-blue-400 uppercase tracking-widest font-bold mt-1 inline-flex items-center bg-blue-500/10 px-2 py-0.5 rounded border border-blue-500/20"><i data-lucide="sparkles" class="w-2.5 h-2.5 mr-1"></i> AI Tag: <span class="uppercase tracking-wider ml-1">${txn.category || 'Other'}</span></p>
-                        <p class="text-gray-500 text-xs mt-1.5 italic font-medium uppercase tracking-wider">"${txn.rawMessage}"</p>
+                        <p class="text-[9px] text-blue-400 uppercase tracking-widest font-bold mt-1 inline-flex items-center bg-blue-500/10 px-2 py-0.5 rounded border border-blue-500/20"><i data-lucide="sparkles" class="w-2.5 h-2.5 mr-1"></i> AI Tag: <span class="capitalize tracking-normal ml-1">${txn.category || 'Other'}</span></p>
+                        <p class="text-gray-500 text-xs mt-1.5 italic font-medium">"${txn.rawMessage}"</p>
                     </div>
                     <div class="flex items-center justify-between md:justify-end md:space-x-4">
                         <span class="hidden md:inline font-black text-lg mr-2 ${isI ? 'text-emerald-400 drop-shadow-[0_0_5px_rgba(16,185,129,0.5)]' : 'text-rose-400 drop-shadow-[0_0_5px_rgba(244,63,94,0.5)]'}">${isI ? '+' : '-'}₹${txn.amount}</span>
                         <div class="flex space-x-2 w-full md:w-auto">
-                            <button onclick="handleDecision('${txn.id}', 'reject')" class="flex-1 md:flex-none px-3 py-2 bg-rose-600/20 hover:bg-rose-600 text-rose-400 hover:text-white text-xs font-bold rounded-lg transition-all border border-rose-500/30 shadow-sm active:scale-95 uppercase tracking-wider">Reject</button>
-                            <button onclick="handleDecision('${txn.id}', 'approve')" class="flex-1 md:flex-none px-3 py-2 bg-emerald-600/20 hover:bg-emerald-600 text-emerald-400 hover:text-white text-xs font-bold rounded-lg transition-all border border-emerald-500/30 shadow-[0_0_10px_rgba(16,185,129,0.15)] active:scale-95 uppercase tracking-wider">Approve</button>
+                            <button onclick="handleDecision('${txn.id}', 'reject')" class="flex-1 md:flex-none px-3 py-2 bg-rose-600/20 hover:bg-rose-600 text-rose-400 hover:text-white text-xs font-bold rounded-lg transition-all border border-rose-500/30 shadow-sm active:scale-95 tracking-wider">Reject</button>
+                            <button onclick="handleDecision('${txn.id}', 'approve')" class="flex-1 md:flex-none px-3 py-2 bg-emerald-600/20 hover:bg-emerald-600 text-emerald-400 hover:text-white text-xs font-bold rounded-lg transition-all border border-emerald-500/30 shadow-[0_0_10px_rgba(16,185,129,0.15)] active:scale-95 tracking-wider">Approve</button>
                         </div>
                     </div>
                 </div>`;
@@ -648,21 +668,21 @@
       document.getElementById('viewWishlist').className = view === 'wishlist' ? 'view-active space-y-4 md:space-y-6' : 'view-hidden';
       const dBtn = document.getElementById('navDashboard'); const wBtn = document.getElementById('navWishlist');
       if (view === 'dashboard') {
-          dBtn.className = 'flex-1 sm:flex-none px-4 md:px-5 py-2.5 rounded-xl font-bold text-sm bg-white/10 text-white shadow-sm transition-all border border-white/5 uppercase tracking-wider';
-          wBtn.className = 'flex-1 sm:flex-none px-4 md:px-5 py-2.5 rounded-xl font-bold text-sm text-gray-400 hover:text-white hover:bg-white/5 transition-all border border-transparent uppercase tracking-wider';
+          dBtn.className = 'flex-1 sm:flex-none px-4 md:px-5 py-2.5 rounded-xl font-bold text-sm bg-white/10 text-white shadow-sm transition-all border border-white/5 tracking-wider';
+          wBtn.className = 'flex-1 sm:flex-none px-4 md:px-5 py-2.5 rounded-xl font-bold text-sm text-gray-400 hover:text-white hover:bg-white/5 transition-all border border-transparent tracking-wider';
       } else {
-          wBtn.className = 'flex-1 sm:flex-none px-4 md:px-5 py-2.5 rounded-xl font-bold text-sm bg-blue-600/80 text-white shadow-sm transition-all border border-blue-500/50 shadow-[0_0_15px_rgba(59,130,246,0.3)] uppercase tracking-wider';
-          dBtn.className = 'flex-1 sm:flex-none px-4 md:px-5 py-2.5 rounded-xl font-bold text-sm text-gray-400 hover:text-white hover:bg-white/5 transition-all border border-transparent uppercase tracking-wider';
+          wBtn.className = 'flex-1 sm:flex-none px-4 md:px-5 py-2.5 rounded-xl font-bold text-sm bg-blue-600/80 text-white shadow-sm transition-all border border-blue-500/50 shadow-[0_0_15px_rgba(59,130,246,0.3)] tracking-wider';
+          dBtn.className = 'flex-1 sm:flex-none px-4 md:px-5 py-2.5 rounded-xl font-bold text-sm text-gray-400 hover:text-white hover:bg-white/5 transition-all border border-transparent tracking-wider';
       }
     }
 
     function switchTab(type) {
       currentType = type;
       document.getElementById('recurringToggleDiv').style.display = type === 'expense' ? 'flex' : 'none';
-      document.getElementById('tabExpense').className = `flex-1 py-2 text-sm font-bold rounded-lg transition-all ${type === 'expense' ? 'bg-white/10 text-white shadow-md border border-white/5' : 'text-gray-500 hover:text-white border border-transparent'} uppercase tracking-wider`;
-      document.getElementById('tabIncome').className = `flex-1 py-2 text-sm font-bold rounded-lg transition-all ${type === 'income' ? 'bg-white/10 text-white shadow-md border border-white/5' : 'text-gray-500 hover:text-white border border-transparent'} uppercase tracking-wider`;
-      document.getElementById('currencySymbol').className = `pl-4 text-2xl font-black transition-colors drop-shadow-md flex-shrink-0 ${type === 'expense' ? 'text-rose-500' : 'text-emerald-500'}`;
-      document.getElementById('submitBtn').className = `w-full mt-4 text-white font-black py-4 rounded-2xl transition-all shadow-[0_0_20px_rgba(0,0,0,0.4)] active:scale-[0.98] border border-white/10 uppercase tracking-widest ${type === 'expense' ? 'bg-gradient-to-r from-rose-600 to-rose-500 shadow-[0_0_20px_rgba(244,63,94,0.3)]' : 'bg-gradient-to-r from-emerald-600 to-emerald-500 shadow-[0_0_20px_rgba(16,185,129,0.3)]'}`;
+      document.getElementById('tabExpense').className = `flex-1 py-2 text-sm font-bold rounded-lg transition-all ${type === 'expense' ? 'bg-white/10 text-white shadow-md border border-white/5' : 'text-gray-500 hover:text-white border border-transparent'} tracking-wider`;
+      document.getElementById('tabIncome').className = `flex-1 py-2 text-sm font-bold rounded-lg transition-all ${type === 'income' ? 'bg-white/10 text-white shadow-md border border-white/5' : 'text-gray-500 hover:text-white border border-transparent'} tracking-wider`;
+      document.getElementById('currencySymbol').className = `pl-3 pr-1 text-2xl font-black transition-colors drop-shadow-md flex-shrink-0 ${type === 'expense' ? 'text-rose-500' : 'text-emerald-500'}`;
+      document.getElementById('submitBtn').className = `w-full mt-4 text-white font-black py-4 rounded-2xl transition-all shadow-[0_0_20px_rgba(0,0,0,0.4)] active:scale-[0.98] border border-white/10 tracking-widest ${type === 'expense' ? 'bg-gradient-to-r from-rose-600 to-rose-500 shadow-[0_0_20px_rgba(244,63,94,0.3)]' : 'bg-gradient-to-r from-emerald-600 to-emerald-500 shadow-[0_0_20px_rgba(16,185,129,0.3)]'}`;
       populateCategories();
     }
 
@@ -742,10 +762,10 @@
         }).sort((a,b)=>b.timestamp-a.timestamp).map(t => [
             new Date(t.timestamp).toLocaleDateString('en-GB'),
             t.type.toUpperCase(),
-            t.category.toUpperCase(),
-            t.account.toUpperCase(),
+            t.category,
+            t.account,
             `Rs ${t.amount.toLocaleString()}`,
-            t.note ? t.note.toUpperCase() : '-'
+            t.note || '-'
         ]);
 
         doc.autoTable({
@@ -769,10 +789,10 @@
         }).sort((a,b)=>b.timestamp-a.timestamp).map(t => ({
             Date: new Date(t.timestamp).toLocaleDateString('en-GB'),
             Type: t.type.toUpperCase(),
-            Category: t.category.toUpperCase(),
-            Account: t.account.toUpperCase(),
+            Category: t.category,
+            Account: t.account,
             Amount: t.amount,
-            Description: t.note ? t.note.toUpperCase() : ''
+            Description: t.note || ''
         }));
         
         const ws = XLSX.utils.json_to_sheet(exportTx);
@@ -983,7 +1003,7 @@
                     <span class="px-2 py-0.5 bg-blue-500/10 text-blue-400 border border-blue-500/20 rounded text-[9px] font-black uppercase tracking-wider shadow-sm">${catTag}</span>
                     <span class="text-[9px] text-gray-500 font-bold uppercase tracking-widest">${formattedDate}</span>
                 </div>
-                <h3 class="font-bold text-white leading-tight line-clamp-2 pt-1 text-sm uppercase tracking-wider">${item.title}</h3>
+                <h3 class="font-bold text-white leading-tight line-clamp-2 pt-1 text-sm tracking-wider capitalize">${item.title}</h3>
                 <div class="flex items-baseline justify-between pt-1 mt-auto">
                     <h4 class="text-3xl font-black text-emerald-400 drop-shadow-[0_0_8px_rgba(16,185,129,0.3)]">₹${item.price.toLocaleString()}</h4>
                     <span class="text-[9px] font-black text-gray-400 uppercase tracking-widest flex items-center bg-white/5 px-2 py-1 rounded border border-white/5 shadow-inner"><i data-lucide="shopping-bag" class="w-3 h-3 mr-1 text-purple-400"></i> ${item.wishCategory || 'Other'}</span>
@@ -1002,25 +1022,34 @@
     let donutChart, lineChart, radarChart, cashflowChart, weeklyRhythmChart, sixMonthChart;
 
     function initCharts() {
+      // PIE CHART: Labels moved strictly OUTSIDE the chart using datalabels anchor plugins
       donutChart = new Chart(document.getElementById('walletChart').getContext('2d'), { 
           type: 'doughnut', 
-          data: { labels:[], datasets:[{data:[], backgroundColor:[], borderWidth: 3, borderColor: '#08080a', borderRadius: 5, hoverOffset: 15 }] }, 
+          data: { labels:[], datasets:[{data:[], backgroundColor:[], borderWidth: 2, borderColor: '#08080a', borderRadius: 4, hoverOffset: 12 }] }, 
           options: { 
-              responsive: true, maintainAspectRatio: false, cutout: '65%', 
-              layout: { padding: 20 }, 
+              responsive: true, maintainAspectRatio: false, cutout: '55%', 
+              layout: { padding: 40 }, // Large padding to hold outside labels without cutting them
               plugins: { 
                   legend: { display: false }, 
-                  datalabels: { display: false }, // Internal wordings strictly removed
+                  datalabels: { 
+                      display: true,
+                      color: '#ffffff',
+                      anchor: 'end',
+                      align: 'end',
+                      formatter: (value, ctx) => {
+                          let sum = 0;
+                          let dataArr = ctx.chart.data.datasets[0].data;
+                          dataArr.map(data => { sum += data; });
+                          let percentage = (value*100 / sum).toFixed(0)+"%";
+                          return percentage; // Pure percentage outside the slice
+                      },
+                      font: { family: 'Fredoka', size: 14, weight: 'bold' },
+                      textAlign: 'center'
+                  },
                   tooltip: { 
-                      yAlign: 'bottom', // Pushes tooltip strictly outside the ring
-                      caretPadding: 25,
-                      backgroundColor: 'rgba(15, 23, 42, 0.98)', 
-                      titleFont: { size: 14, family: 'Fredoka' }, 
-                      bodyFont: { font: 'Fredoka', weight: 'bold', size: 16 }, 
-                      padding: 16, 
-                      cornerRadius: 8, 
-                      borderColor: 'rgba(59,130,246,0.3)', 
-                      borderWidth: 1 
+                      yAlign: 'bottom', // Pushes tooltip downward strictly outside the chart
+                      caretPadding: 20,
+                      backgroundColor: 'rgba(15, 23, 42, 0.98)', titleFont: { size: 14, family: 'Fredoka' }, bodyFont: { font: 'Fredoka', weight: 'bold', size: 16 }, padding: 14, cornerRadius: 8, borderColor: 'rgba(59,130,246,0.3)', borderWidth: 1 
                   } 
               } 
           } 
@@ -1148,14 +1177,20 @@
       document.getElementById('allTimeIncome').innerText = `₹${allTimeInc.toLocaleString()}`; 
       document.getElementById('allTimeExpense').innerText = `₹${allTimeExp.toLocaleString()}`; 
       
-      const liquidTotal = bal.UPI + bal.Card + bal.Cash;
-      document.getElementById('netBalance').innerText = `₹${liquidTotal.toLocaleString()}`; 
+      // Dynamic safe math for Total Assets bar logic
+      const u = Math.max(0, bal.UPI);
+      const c = Math.max(0, bal.Card);
+      const ca = Math.max(0, bal.Cash);
+      const liquidTotal = u + c + ca;
+      
+      const realLiquidTotal = bal.UPI + bal.Card + bal.Cash;
+      document.getElementById('netBalance').innerText = `₹${realLiquidTotal.toLocaleString()}`; 
       ['UPI', 'Card', 'Cash'].forEach(a => document.getElementById(`bal${a}`).innerText = `₹${bal[a].toLocaleString()}`);
       
       if(liquidTotal > 0) {
-          document.getElementById('barUPI').style.width = `${(bal.UPI/liquidTotal)*100}%`;
-          document.getElementById('barCard').style.width = `${(bal.Card/liquidTotal)*100}%`;
-          document.getElementById('barCash').style.width = `${(bal.Cash/liquidTotal)*100}%`;
+          document.getElementById('barUPI').style.width = `${(u/liquidTotal)*100}%`;
+          document.getElementById('barCard').style.width = `${(c/liquidTotal)*100}%`;
+          document.getElementById('barCash').style.width = `${(ca/liquidTotal)*100}%`;
       } else {
           document.getElementById('barUPI').style.width = `33.3%`;
           document.getElementById('barCard').style.width = `33.3%`;
@@ -1217,7 +1252,7 @@
       filtered.forEach(t => { if(t.type === 'expense' && t.isRecurring) tLiabilities += t.amount; }); 
       document.getElementById('statLiabilities').innerText = `₹${tLiabilities.toLocaleString()}`;
       
-      const runway = burnRate > 0 ? liquidTotal / burnRate : 0; 
+      const runway = burnRate > 0 ? realLiquidTotal / burnRate : 0; 
       document.getElementById('statRunway').innerText = `${Math.round(runway)} Days`;
 
       let healthScore = 50; 
@@ -1250,7 +1285,6 @@
       filtered.filter(t=>t.type==='expense').forEach(e => catData[e.category] = (catData[e.category]||0)+e.amount);
       const sCats = Object.entries(catData).sort((a,b)=>b[1]-a[1]);
       
-      // Update Top Expense Metric
       if (sCats.length > 0) {
           document.getElementById('statTopExpenseName').innerText = sCats[0][0];
           document.getElementById('statTopExpenseAmount').innerText = `₹${sCats[0][1].toLocaleString()}`;
@@ -1263,7 +1297,7 @@
 
       donutChart.data = { 
           labels: sCats.map(c=>c[0]), 
-          datasets: [{ data: sCats.map(c=>c[1]), backgroundColor: sCats.map(c=>CAT_COLORS[c[0]]||'#6b7280'), borderWidth: 3, borderColor: '#08080a', borderRadius: 4, hoverOffset: 12 }] 
+          datasets: [{ data: sCats.map(c=>c[1]), backgroundColor: sCats.map(c=>getColor(c[0])), borderWidth: 2, borderColor: '#08080a', borderRadius: 4, hoverOffset: 12 }] 
       }; 
       donutChart.update();
 
@@ -1343,15 +1377,14 @@
       sixMonthChart.data.datasets[1].data = sixMonthData.e;
       sixMonthChart.update();
 
-      // RESTORED TOP INSIGHTS BELOW PIE CHART
       const insightsEl = document.getElementById('topInsights'); 
-      insightsEl.className = "w-full space-y-3 pt-4 border-t border-white/10 flex-grow overflow-y-auto max-h-[160px] pr-2 uppercase tracking-wider";
+      insightsEl.className = "w-full space-y-3 pt-4 border-t border-white/10 flex-grow overflow-y-auto max-h-[160px] pr-2";
       if (sCats.length === 0) { 
           insightsEl.innerHTML = `<p class="text-xs text-gray-500 text-center py-2 font-bold uppercase tracking-widest">No category logs processed.</p>`; 
       } else { 
           insightsEl.innerHTML = sCats.map(([cat, val]) => { 
               const catPct = periodExp ? Math.round((val / periodExp) * 100) : 0; 
-              return `<div><div class="flex justify-between text-[10px] font-bold mb-1"><span class="text-gray-300 uppercase tracking-widest">${cat}</span><span class="text-gray-400 font-bold">₹${val.toLocaleString()} (${catPct}%)</span></div><div class="w-full bg-black/40 rounded-full h-1.5 shadow-inner border border-white/5"><div class="h-1.5 rounded-full shadow-[0_0_8px_rgba(255,255,255,0.2)]" style="width: ${catPct}%; background-color: ${CAT_COLORS[cat] || '#6b7280'}"></div></div></div>`; 
+              return `<div><div class="flex justify-between text-[10px] font-bold mb-1"><span class="text-gray-300 capitalize tracking-widest">${cat}</span><span class="text-gray-400 font-bold">₹${val.toLocaleString()} (${catPct}%)</span></div><div class="w-full bg-black/40 rounded-full h-1.5 shadow-inner border border-white/5"><div class="h-1.5 rounded-full shadow-[0_0_8px_rgba(255,255,255,0.2)]" style="width: ${catPct}%; background-color: ${getColor(cat)}"></div></div></div>`; 
           }).join(''); 
       }
 
@@ -1368,7 +1401,7 @@
               impactBadge = `<span class="px-1.5 py-0.5 bg-gray-500/20 text-gray-400 border border-gray-500/30 rounded text-[8px] font-black uppercase ml-2 tracking-widest relative -top-0.5 shadow-sm">Micro</span>`;
           }
 
-          return `<div class="ledger-item flex items-center justify-between p-4 rounded-2xl mb-2.5 relative overflow-hidden"><div class="absolute inset-0 bg-gradient-to-r from-transparent via-white/[0.01] to-transparent opacity-0 hover:opacity-100 transition-opacity pointer-events-none"></div><div class="flex items-center space-x-3 md:space-x-4 relative z-10"><div class="w-10 h-10 rounded-full flex items-center justify-center shadow-inner border border-white/5 flex-shrink-0 ${isI ? 'bg-emerald-500/10 text-emerald-400 shadow-[0_0_15px_rgba(16,185,129,0.1)]' : 'bg-rose-500/10 text-rose-400 shadow-[0_0_15px_rgba(244,63,94,0.1)]'}"><i data-lucide="${isI ? 'arrow-down-left' : 'credit-card'}" class="w-5 h-5 drop-shadow-md"></i></div><div class="min-w-0"><p class="font-bold text-gray-200 text-sm flex items-center uppercase tracking-wider truncate">${t.category} ${t.isRecurring ? '<span class="bg-blue-600/30 text-blue-400 text-[8px] px-1 ml-1 rounded border border-blue-500/20 shadow-sm flex-shrink-0">AUTO</span>' : ''} ${impactBadge}</p><p class="text-[10px] text-gray-500 uppercase mt-0.5 tracking-wider font-bold truncate">${t.account} • ${new Date(t.timestamp).toLocaleDateString('en-GB',{day:'numeric',month:'short'})}</p></div></div><div class="flex flex-col items-end space-y-1 relative z-10 flex-shrink-0"><div class="flex items-center space-x-2"><p class="font-black text-sm md:text-base ${isI ? 'text-emerald-400 drop-shadow-[0_0_5px_rgba(16,185,129,0.4)]' : 'text-rose-400 drop-shadow-[0_0_5px_rgba(244,63,94,0.4)]'}">${isI?'+':'-'}₹${t.amount.toLocaleString()}</p><button onclick="openEditModal('${t.id}')" class="action-btn text-gray-500 hover:text-blue-400 p-2 transition-colors hover:scale-110 active:scale-95"><i data-lucide="edit-2" class="w-4 h-4"></i></button><button onclick="deleteTx('${t.id}')" class="action-btn text-gray-500 hover:text-rose-500 p-2 pl-0 transition-colors hover:scale-110 active:scale-95"><i data-lucide="trash-2" class="w-4 h-4"></i></button></div>${t.note ? `<p class="text-[10px] text-gray-500 transaction-desc text-right mt-1 font-medium tracking-wide uppercase truncate max-w-[120px]">"${t.note}"</p>`:''}</div></div>`;
+          return `<div class="ledger-item flex items-center justify-between p-4 rounded-2xl mb-2.5 relative overflow-hidden"><div class="absolute inset-0 bg-gradient-to-r from-transparent via-white/[0.01] to-transparent opacity-0 hover:opacity-100 transition-opacity pointer-events-none"></div><div class="flex items-center space-x-3 md:space-x-4 relative z-10"><div class="w-10 h-10 rounded-full flex items-center justify-center shadow-inner border border-white/5 flex-shrink-0 ${isI ? 'bg-emerald-500/10 text-emerald-400 shadow-[0_0_15px_rgba(16,185,129,0.1)]' : 'bg-rose-500/10 text-rose-400 shadow-[0_0_15px_rgba(244,63,94,0.1)]'}"><i data-lucide="${isI ? 'arrow-down-left' : 'credit-card'}" class="w-5 h-5 drop-shadow-md"></i></div><div class="min-w-0"><p class="font-bold text-gray-200 text-sm flex items-center capitalize truncate">${t.category} ${t.isRecurring ? '<span class="bg-blue-600/30 text-blue-400 text-[8px] px-1 ml-1 rounded border border-blue-500/20 shadow-sm flex-shrink-0">AUTO</span>' : ''} ${impactBadge}</p><p class="text-[10px] text-gray-500 uppercase mt-0.5 tracking-wider font-bold truncate">${t.account} • ${new Date(t.timestamp).toLocaleDateString('en-GB',{day:'numeric',month:'short'})}</p></div></div><div class="flex flex-col items-end space-y-1 relative z-10 flex-shrink-0"><div class="flex items-center space-x-2"><p class="font-black text-sm md:text-base ${isI ? 'text-emerald-400 drop-shadow-[0_0_5px_rgba(16,185,129,0.4)]' : 'text-rose-400 drop-shadow-[0_0_5px_rgba(244,63,94,0.4)]'}">${isI?'+':'-'}₹${t.amount.toLocaleString()}</p><button onclick="openEditModal('${t.id}')" class="action-btn text-gray-500 hover:text-blue-400 p-2 transition-colors hover:scale-110 active:scale-95"><i data-lucide="edit-2" class="w-4 h-4"></i></button><button onclick="deleteTx('${t.id}')" class="action-btn text-gray-500 hover:text-rose-500 p-2 pl-0 transition-colors hover:scale-110 active:scale-95"><i data-lucide="trash-2" class="w-4 h-4"></i></button></div>${t.note ? `<p class="text-[10px] text-gray-500 transaction-desc text-right mt-1 font-medium tracking-wide truncate max-w-[120px]">"${t.note}"</p>`:''}</div></div>`;
       }).join(''); 
       }
       lucide.createIcons();
