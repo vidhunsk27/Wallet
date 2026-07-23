@@ -114,16 +114,15 @@
           </div>
       </div>
 
-      <!-- 4-COLUMN TOP ROW WITH UN-CROPPED WRAPPING AND ALIGNMENTS FIX -->
-      <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 md:gap-6">
+      <!-- 1-COLUMN TOP ROW -->
+      <div class="grid grid-cols-1 gap-4 md:gap-6">
         
         <!-- Net Assets Card -->
         <div class="glass-panel rounded-3xl p-6 md:p-8">
           <div class="flex justify-between items-start mb-2">
               <h3 class="text-xs font-bold text-gray-400 uppercase tracking-widest flex items-center"><div class="w-2 h-2 rounded-full bg-blue-500 mr-2"></div> Total Assets</h3>
           </div>
-          <!-- Cleanly shrinking text that truncates with ellipsis if impossibly long -->
-          <h1 id="netBalance" class="text-3xl lg:text-4xl xl:text-5xl font-black text-white mt-2 drop-shadow-sm truncate whitespace-nowrap">₹0</h1>
+          <h1 id="netBalance" class="text-4xl lg:text-5xl font-black text-white mt-2 drop-shadow-sm truncate whitespace-nowrap">₹0</h1>
           
           <div class="w-full h-1.5 flex rounded-full overflow-hidden mt-5 bg-gray-800 border border-white/5">
               <div id="barUPI" class="h-full bg-blue-500 transition-all duration-1000" style="width: 33.3%"></div>
@@ -138,17 +137,15 @@
           </div>
         </div>
 
-        <!-- Selected Period Card (Matches Image Request exactly) -->
+        <!-- Selected Period Card -->
         <div class="glass-panel rounded-3xl p-6 md:p-8 flex flex-col justify-center">
           <div class="flex justify-between items-center mb-4 relative z-10 border-b border-white/5 pb-3">
-              <div class="relative">
-                  <!-- Transparent dropdown that perfectly mimics the image's "JULY 2026" text -->
-                  <select id="cardMonthFilter" class="bg-transparent text-sm md:text-base font-black text-white uppercase tracking-widest outline-none cursor-pointer appearance-none hover:text-blue-400 transition-colors pr-4" onchange="selectedMonth = this.value; if(document.getElementById('monthFilter')) document.getElementById('monthFilter').value = this.value; updateUI();"></select>
+              <div class="relative w-full max-w-[200px]">
+                  <select id="cardMonthFilter" class="bg-transparent text-sm md:text-base font-black text-white uppercase tracking-widest outline-none cursor-pointer appearance-none hover:text-blue-400 transition-colors w-full" onchange="selectedMonth = this.value; if(document.getElementById('monthFilter')) document.getElementById('monthFilter').value = this.value; updateUI();"></select>
                   <i data-lucide="chevron-down" class="absolute right-0 top-1/2 transform -translate-y-1/2 w-4 h-4 text-white pointer-events-none"></i>
               </div>
               
-              <!-- Explained Weather Badge -->
-              <div class="px-2 py-1 bg-black/40 border border-white/5 rounded-lg flex items-center shadow-inner backdrop-blur-md cursor-help relative group">
+              <div class="px-2 py-1 bg-black/40 border border-white/5 rounded-lg flex items-center shadow-inner backdrop-blur-md cursor-help relative group ml-2">
                   <span id="weatherIcon"><i data-lucide="sun" class="w-3 h-3 text-yellow-400 mr-1.5"></i></span>
                   <span id="weatherText" class="text-[9px] text-gray-300 uppercase font-bold tracking-widest">Stable</span>
                   
@@ -183,7 +180,6 @@
         <!-- All-Time Expenses & Budget -->
         <div class="glass-panel rounded-3xl p-6 md:p-8 flex flex-col justify-center min-w-0">
           <div class="flex justify-between items-start gap-2">
-            <!-- Ensure Settings button doesn't get pushed out by long numbers -->
             <div class="flex-1 min-w-0 pr-2">
                 <h3 class="text-xs font-bold text-gray-400 uppercase tracking-widest mb-1 truncate whitespace-nowrap">Total Expenses</h3>
                 <h2 id="allTimeExpense" class="text-3xl lg:text-4xl xl:text-5xl font-black text-rose-400 mt-2 truncate whitespace-nowrap">₹0</h2>
@@ -195,8 +191,8 @@
         </div>
       </div>
 
-      <!-- CENTERED Quick Metrics Row -->
-      <div class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-4 md:gap-6 mt-2">
+      <!-- 1-COLUMN Quick Metrics Row -->
+      <div class="grid grid-cols-1 gap-4 md:gap-6 mt-2">
         <div class="glass-panel rounded-2xl p-4 md:p-5 flex flex-col items-center justify-center text-center">
           <p class="text-[10px] uppercase text-gray-400 font-bold tracking-widest mb-1 flex items-center justify-center w-full">
             <i data-lucide="activity" class="w-3 h-3 mr-1"></i> Health <span class="info-icon" data-tooltip="Score Algorithm: Base 50 + Savings Velocity Bonus + Liquid Runway Bonus + Low Debt Ratio Bonus.">i</span>
@@ -244,16 +240,16 @@
               </div>
               <div id="aiTerminal" class="hidden mb-4 p-4 bg-black/60 border border-blue-500/30 rounded-xl text-xs md:text-sm text-gray-300 min-h-[80px] shadow-inner tracking-tight leading-relaxed"></div>
               
-              <!-- REVERTED: Pie Chart with outside DataLabels + Text List Below -->
+              <!-- Pie Chart: Text labels rendered purely inside the slices via DataLabels, Increased Size -->
               <div class="flex flex-col items-center justify-center gap-4 h-full w-full">
-                  <div class="w-56 h-56 relative flex items-center justify-center">
+                  <div class="w-full max-w-[280px] h-64 md:h-72 relative flex items-center justify-center">
                       <canvas id="walletChart"></canvas>
-                      <div class="absolute inset-0 flex flex-col items-center justify-center pointer-events-none pt-1">
+                      <div class="absolute inset-0 flex flex-col items-center justify-center pointer-events-none">
                           <span class="text-gray-400 text-[10px] font-bold uppercase tracking-widest">Spent</span>
                           <h2 id="chartCenterText" class="text-2xl font-black text-white drop-shadow-md m-0 truncate px-2 text-center">₹0</h2>
                       </div>
                   </div>
-                  <!-- Insights list moved perfectly beneath chart -->
+                  <!-- Insights list beneath chart -->
                   <div id="topInsights" class="w-full space-y-3 pt-4 border-t border-white/10 flex-grow overflow-y-auto max-h-[160px] pr-2 capitalize"></div>
               </div>
             </div>
@@ -307,7 +303,6 @@
                <div class="flex justify-between items-center">
                  <h3 class="text-sm font-bold text-gray-300 uppercase tracking-widest flex items-center">Ledger<span id="recordCount" class="ml-3 px-2.5 py-0.5 bg-black/40 border border-white/10 rounded-md text-xs font-bold text-white shadow-inner">0</span></h3>
                  
-                 <!-- PDF and Excel Export Buttons -->
                  <div class="flex items-center space-x-1.5">
                    <button onclick="exportPDF()" class="bg-red-500/10 hover:bg-red-500/20 text-red-400 p-2 rounded-xl border border-red-500/20 transition-colors" title="Export PDF"><i data-lucide="file-text" class="w-4 h-4"></i></button>
                    <button onclick="exportExcel()" class="bg-emerald-500/10 hover:bg-emerald-500/20 text-emerald-400 p-2 rounded-xl border border-emerald-500/20 transition-colors" title="Export Excel"><i data-lucide="file-spreadsheet" class="w-4 h-4"></i></button>
@@ -342,7 +337,6 @@
             <form id="transactionForm" class="space-y-4 md:space-y-5 relative z-10">
               <div>
                   
-                <!-- REVERTED: Original Increment Chips -->
                 <div class="flex gap-2 mb-3 overflow-x-auto scrollbar-hide touch-pan-x">
                   <button type="button" onclick="addAmount(100)" class="flex-1 min-w-[60px] bg-white/5 hover:bg-blue-500/20 hover:border-blue-500/50 text-gray-300 text-xs font-bold py-2 rounded-xl transition-all border border-white/10">+100</button>
                   <button type="button" onclick="addAmount(500)" class="flex-1 min-w-[60px] bg-white/5 hover:bg-emerald-500/20 hover:border-emerald-500/50 text-gray-300 text-xs font-bold py-2 rounded-xl transition-all border border-white/10">+500</button>
@@ -350,7 +344,6 @@
                   <button type="button" onclick="addAmount(5000)" class="flex-1 min-w-[60px] bg-white/5 hover:bg-rose-500/20 hover:border-rose-500/50 text-gray-300 text-xs font-bold py-2 rounded-xl transition-all border border-white/10">+5000</button>
                 </div>
 
-                <!-- Input box with native up/down spinners safely isolated from icons -->
                 <div class="relative flex items-center bg-black/50 rounded-2xl border border-white/10 focus-within:border-blue-500 transition-colors shadow-inner overflow-hidden pr-1">
                   <span id="currencySymbol" class="pl-4 text-2xl font-black text-rose-500 transition-colors drop-shadow-md flex-shrink-0">₹</span>
                   <input type="number" id="amount" placeholder="0.00" step="0.01" required class="w-full bg-transparent py-4 px-3 text-2xl md:text-3xl font-black text-white focus:outline-none" />
@@ -495,7 +488,7 @@
 
   <script>
     lucide.createIcons();
-    // Enable DataLabels to show outside the pie chart
+    // Enable DataLabels explicitly for the Pie Chart
     Chart.register(ChartDataLabels);
     Chart.defaults.plugins.datalabels.display = false;
     
@@ -977,20 +970,20 @@
     let donutChart, lineChart, radarChart, cashflowChart, weeklyRhythmChart, sixMonthChart;
 
     function initCharts() {
-      // 1. OLD PIE CHART RESTORED: Datalabels re-enabled on chart, side-legend removed.
+      // INTERNAL DATALABELS FOR PIE CHART
       donutChart = new Chart(document.getElementById('walletChart').getContext('2d'), { 
           type: 'doughnut', 
           data: { labels:[], datasets:[{data:[], backgroundColor:[], borderWidth: 2, borderColor: '#08080a', borderRadius: 4, hoverOffset: 12 }] }, 
           options: { 
-              responsive: true, maintainAspectRatio: false, cutout: '65%', 
-              layout: { padding: 40 }, // Space for outside datalabels
+              responsive: true, maintainAspectRatio: false, cutout: '55%', 
+              layout: { padding: 10 }, 
               plugins: { 
                   legend: { display: false }, 
                   datalabels: { 
                       display: true,
-                      color: '#e5e7eb',
-                      anchor: 'end',
-                      align: 'end',
+                      color: '#ffffff',
+                      anchor: 'center',
+                      align: 'center',
                       formatter: (value, ctx) => {
                           let sum = 0;
                           let dataArr = ctx.chart.data.datasets[0].data;
@@ -998,7 +991,7 @@
                           let percentage = (value*100 / sum).toFixed(0)+"%";
                           return ctx.chart.data.labels[ctx.dataIndex] + '\n' + percentage;
                       },
-                      font: { family: 'Fredoka', size: 10, weight: 'bold' },
+                      font: { family: 'Fredoka', size: 12, weight: 'bold' },
                       textAlign: 'center'
                   },
                   tooltip: { 
@@ -1316,7 +1309,6 @@
       sixMonthChart.data.datasets[1].data = sixMonthData.e;
       sixMonthChart.update();
 
-      // RESTORED TOP INSIGHTS BELOW PIE CHART
       const insightsEl = document.getElementById('topInsights'); 
       insightsEl.className = "w-full space-y-3 pt-4 border-t border-white/10 flex-grow overflow-y-auto max-h-[160px] pr-2 capitalize";
       if (sCats.length === 0) { 
