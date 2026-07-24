@@ -150,8 +150,8 @@ app.post('/api/sms-webhook', async (req, res) => {
         const prompt = `Analyze this bank SMS: "${rawText}". 
         Extract the amount, merchant, date, type (income/expense), and category.
         Rules for "category":
-        - For expense, choose from ONLY these: 'Food & Dining', 'Groceries', 'Transport', 'Utilities', 'Electricity Bill', 'Rent', 'Education', 'Travel', 'Shopping', 'Entertainment', 'Health', 'Subscriptions', 'Other'.
-        - Example mapping: Swiggy/Zomato -> 'Food & Dining'. Uber/Ola/redBus/IRCTC -> 'Transport'. Amazon/Flipkart -> 'Shopping'. Electricity/TNEB -> 'Electricity Bill'. School/College -> 'Education'.
+        - For expense, choose from ONLY these: 'Food & Dining', 'Groceries', 'Transport', 'Utilities', 'Electricity charges', 'Rent', 'Education', 'Travel', 'Shopping', 'Entertainment', 'Health', 'Subscriptions', 'Other'.
+        - Example mapping: Swiggy/Zomato -> 'Food & Dining'. Uber/Ola/redBus/IRCTC -> 'Transport'. Amazon/Flipkart -> 'Shopping'. Electricity/TNEB -> 'Electricity charges'. School/College -> 'Education'.
         - For income, choose from: 'Salary', 'Freelance', 'Investments', 'Refund', 'Other'.
         Return ONLY a valid JSON object matching this structure exactly: 
         {"amount": number, "merchant": string, "date": "YYYY-MM-DD", "type": "income" | "expense", "category": string}. 
@@ -219,7 +219,7 @@ app.post('/api/receipt-ocr', upload.single('receipt'), async (req, res) => {
 });
 
 // =======================================================
-//   HIGH-SPEED BLAZING SCRAPER (BLOCKS IMAGES/FONTS)
+//   HIGH-SPEED PRODUCT SCRAPER (FOR WISHLIST)
 // =======================================================
 app.post('/api/scrape-price', async (req, res) => {
     const targetUrl = req.body.url;
@@ -232,7 +232,6 @@ app.post('/api/scrape-price', async (req, res) => {
         });
         const page = await browser.newPage();
         
-        // INTERCEPTOR: Stop images/fonts/css from loading so it fetches 10x faster!
         await page.setRequestInterception(true);
         page.on('request', (req) => {
             if (['image', 'stylesheet', 'font', 'media'].includes(req.resourceType())) req.abort();
@@ -241,7 +240,7 @@ app.post('/api/scrape-price', async (req, res) => {
 
         await page.setUserAgent('Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/122.0.0.0 Safari/537.36');
         await page.goto(targetUrl, { waitUntil: 'domcontentloaded', timeout: 15000 });
-        await new Promise(r => setTimeout(r, 1000)); // Lowered wait time
+        await new Promise(r => setTimeout(r, 1000));
 
         const scrapedData = await page.evaluate(() => {
             let title = '';
@@ -331,7 +330,101 @@ app.post('/api/scrape-price', async (req, res) => {
     }
 });
 
-// FAST FIREWALL BYPASS ROUTE (RICH FULL METADATA SYNC)
+// =======================================================
+//   NEW: MEDIA SCRAPER (Extracts Pages, Duration, Platform)
+// =======================================================
+app.post('/api/scrape-media', async (req, res) => {
+    const targetUrl = req.body.url;
+    if (!targetUrl) return res.status(400).json({ error: 'No URL provided' });
+
+    let browser;
+    try {
+        browser = await puppeteer.launch({ 
+            args: ['--no-sandbox', '--disable-setuid-sandbox', '--disable-dev-shm-usage', '--disable-blink-features=AutomationControlled'] 
+        });
+        const page = await browser.newPage();
+        
+        await page.setRequestInterception(true);
+        page.on('request', (req) => {
+            if (['font', 'media'].includes(req.resourceType())) req.abort();
+            else req.continue();
+        });
+
+        await page.setUserAgent('Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/122.0.0.0 Safari/537.36');
+        await page.goto(targetUrl, { waitUntil: 'domcontentloaded', timeout: 15000 });
+        await new Promise(r => setTimeout(r, 1000));
+
+        const scrapedData = await page.evaluate(() => {
+            let title = document.querySelector('meta[property="og:title"]')?.content || document.title || '';
+            let imageUrl = document.querySelector('meta[property="og:image"]')?.content || document.querySelector('#landingImage, #imgTagWrapperId img, img[src*="images"]')?.src || '';
+            let description = document.querySelector('meta[property="og:description"]')?.content || document.querySelector('meta[name="description"]')?.content || '';
+            let pageText = document.body.innerText || '';
+
+            // Detect Media Type
+            let mediaType = 'Movie';
+            if (/book|isbn|author|pages|paperback|hardcover|goodreads/i.test(targetUrl + title + description)) {
+                mediaType = 'Book';
+            } else if (/series|season|episode|tv|show|anime/i.test(targetUrl + title + description)) {
+                mediaType = 'Series';
+            }
+
+            // Extract Duration or Pages
+            let details = '';
+            let pagesMatch = pageText.match(/(\d{1,4})\s*(?:pages|page|pgs)/i) || description.match(/(\d{1,4})\s*(?:pages|page)/i);
+            let durationMatch = pageText.match(/(\d{1,2}\s*h(?:our)?s?\s*\d{0,2}\s*m(?:in)?s?|\d{2,3}\s*mins?)/i) || description.match(/(\d{1,2}\s*h\s*\d{1,2}\s*m)/i);
+            
+            if (mediaType === 'Book' && pagesMatch) {
+                details += `📖 ${pagesMatch[1]} pages`;
+            } else if (durationMatch) {
+                details += `⏱️ ${durationMatch[1]}`;
+            }
+
+            // Extract Platform / Where to Watch / Source
+            let platform = '';
+            if (/netflix/i.test(targetUrl + pageText)) platform = 'Netflix';
+            else if (/amazon|prime/i.test(targetUrl + pageText)) platform = 'Amazon Prime';
+            else if (/hotstar|disney/i.test(targetUrl + pageText)) platform = 'Disney+ Hotstar';
+            else if (/goodreads/i.test(targetUrl + pageText)) platform = 'Goodreads';
+            else if (/imdb/i.test(targetUrl + pageText)) platform = 'IMDb';
+            else if (/youtube/i.test(targetUrl + pageText)) platform = 'YouTube';
+
+            if (platform) {
+                details += details ? ` • ${platform}` : platform;
+            }
+
+            // Price extraction if available (e.g. Amazon book)
+            let price = 0;
+            let priceMatch = pageText.match(/(?:₹|Rs\.?|INR)\s*([0-9,]{2,}(?:\.[0-9]{2})?)/i);
+            if (priceMatch) price = parseFloat(priceMatch[1].replace(/,/g, ''));
+
+            title = title.split('|')[0].split('- Buy')[0].split(': Amazon')[0].replace(/Online Shopping.*/i, '').trim();
+
+            return { title, imageUrl, mediaType, details, price: price || 0 };
+        });
+
+        await browser.close();
+
+        // Gemini AI Backup Fallback if extracted metadata is incomplete
+        if (!scrapedData.title || scrapedData.title.length < 3) {
+            try {
+                const model = genAI.getGenerativeModel({ model: 'gemini-2.5-flash' });
+                const prompt = `Analyze this URL: ${targetUrl}. Extract title, mediaType (Movie, Book, or Series), and brief details (pages, duration, or platform). Return JSON: {"title":"","mediaType":"","details":""}`;
+                const aiRes = await model.generateContent(prompt);
+                const aiJson = JSON.parse(aiRes.response.text().replace(/```json/gi, '').replace(/```/g, '').trim());
+                if (aiJson.title) scrapedData.title = aiJson.title;
+                if (aiJson.mediaType) scrapedData.mediaType = aiJson.mediaType;
+                if (aiJson.details && !scrapedData.details) scrapedData.details = aiJson.details;
+            } catch(e) {}
+        }
+
+        res.status(200).json(scrapedData);
+    } catch (error) {
+        if (browser) await browser.close();
+        res.status(500).json({ error: 'Media scraping failed' });
+    }
+});
+
+// FAST FIREWALL BYPASS ROUTE
 app.get('/api/bookmark-auto', async (req, res) => {
     const { title, price, link, img, cat } = req.query;
     if (!link || !price) return res.send("Error: Missing parameters.");
