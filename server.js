@@ -144,7 +144,12 @@ app.post('/api/sms-webhook', async (req, res) => {
         const rawText = req.body.smsText || req.body.message;
         const sender = req.body.sender || 'Bank SMS';
 
-        if (!rawText) return res.status(400).json({ error: 'No SMS text provided' });
+        console.log("📲 INCOMING SMS RECEIVED:", { rawText, sender });
+
+        if (!rawText) {
+            console.log("❌ REJECTED: No raw text found in request body.");
+            return res.status(400).json({ error: 'No SMS text provided' });
+        }
 
         const model = genAI.getGenerativeModel({ model: 'gemini-2.5-flash' });
         const prompt = `Analyze this bank SMS: "${rawText}". 
@@ -159,9 +164,15 @@ app.post('/api/sms-webhook', async (req, res) => {
 
         const result = await model.generateContent(prompt);
         let cleanText = result.response.text().replace(/```json/gi, '').replace(/```/g, '').trim();
+        
+        console.log("🤖 GEMINI PARSED RESPONSE:", cleanText);
+
         const parsedData = JSON.parse(cleanText);
 
-        if (parsedData.error) return res.status(400).json({ message: 'Invalid SMS format' });
+        if (parsedData.error) {
+            console.log("⚠️ REJECTED BY GEMINI: Message was not a valid transaction.");
+            return res.status(400).json({ message: 'Invalid SMS format' });
+        }
 
         const txId = String(Date.now());
         const txData = { 
@@ -169,8 +180,12 @@ app.post('/api/sms-webhook', async (req, res) => {
         };
         
         await db.collection('pending').doc(txId).set(txData);
+        console.log("✅ SUCCESSFULLY SAVED TO FIRESTORE QUEUE:", txId);
         res.status(201).json({ message: 'Saved to pending firestore queue', data: txData });
-    } catch (error) { res.status(500).json({ error: 'Webhook processing exception occurred.' }); }
+    } catch (error) { 
+        console.error("💥 WEBHOOK EXCEPTION:", error);
+        res.status(500).json({ error: 'Webhook processing exception occurred.' }); 
+    }
 });
 
 app.get('/api/pending', async (req, res) => {
