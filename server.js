@@ -164,6 +164,7 @@ app.post('/api/sms-webhook', async (req, res) => {
 
         const result = await model.generateContent(prompt);
         let cleanText = result.response.text().replace(/```json/gi, '').replace(/```/g, '').trim();
+        
         console.log("🤖 GEMINI PARSED RESPONSE:", cleanText);
 
         const parsedData = JSON.parse(cleanText);
@@ -353,148 +354,112 @@ app.post('/api/scrape-media', async (req, res) => {
 
     console.log("🎬 SCRAPING MEDIA URL:", targetUrl);
 
-    let browser;
     try {
-        browser = await puppeteer.launch({ 
-            args: ['--no-sandbox', '--disable-setuid-sandbox', '--disable-dev-shm-usage', '--disable-blink-features=AutomationControlled'] 
+        // FAST FETCH WITH GOOGLEBOT UA (Bypasses IMDb / Amazon blocks instantly)
+        const fetchRes = await fetch(targetUrl, { 
+            headers: { 
+                'User-Agent': 'Mozilla/5.0 (compatible; Googlebot/2.1; +http://www.google.com/bot.html)',
+                'Accept-Language': 'en-US,en;q=0.9'
+            },
+            signal: AbortSignal.timeout(8000)
         });
-        const page = await browser.newPage();
+        const html = await fetchRes.text();
 
-        // Pass clean desktop browser headers to prevent IMDb anti-bot blocks
-        await page.setExtraHTTPHeaders({
-            'accept-language': 'en-US,en;q=0.9',
-            'accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,image/apng,*/*;q=0.8'
-        });
+        let title = html.match(/<meta\s+property="og:title"\s+content="([^"]+)"/i)?.[1] || html.match(/<title[^>]*>([^<]+)<\/title>/i)?.[1] || '';
+        let imageUrl = html.match(/<meta\s+property="og:image"\s+content="([^"]+)"/i)?.[1] || '';
+        let description = html.match(/<meta\s+property="og:description"\s+content="([^"]+)"/i)?.[1] || html.match(/<meta\s+name="description"\s+content="([^"]+)"/i)?.[1] || '';
+        let jsonLdRawMatch = html.match(/<script\s+type="application\/ld\+json">([\s\S]*?)<\/script>/gi);
 
-        await page.setUserAgent('Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0.0.0 Safari/537.36');
-        
-        // Block fonts and heavy media, but keep essential script execution enabled for JSON-LD schema
-        await page.setRequestInterception(true);
-        page.on('request', (r) => {
-            if (['font', 'media'].includes(r.resourceType())) r.abort();
-            else r.continue();
-        });
+        let details = '';
+        let mediaType = 'Movie';
+        let rating = 'Unrated';
+        let genre = 'Other';
+        let price = 0;
 
-        await page.goto(targetUrl, { waitUntil: 'domcontentloaded', timeout: 20000 });
-        await new Promise(r => setTimeout(r, 1200));
+        // Auto-detect Media Type
+        if (/book|goodreads|isbn|pages/i.test(targetUrl + title + description)) mediaType = 'Book';
+        else if (/series|tv|season|episode/i.test(targetUrl + title + description)) mediaType = 'Series';
+        if (/anime|myanimelist/i.test(targetUrl + title + description)) mediaType = 'Anime';
 
-        const scrapedData = await page.evaluate(() => {
-            let title = '';
-            let imageUrl = '';
-            let mediaType = 'Movie';
-            let details = '';
-            let price = 0;
-            let rating = 'Unrated';
-
-            // 1. Try parsing JSON-LD Schema (Used by IMDb, Goodreads, Amazon, Disney+)
-            const jsonLdScripts = Array.from(document.querySelectorAll('script[type="application/ld+json"]'));
-            for (const script of jsonLdScripts) {
+        // Parse JSON-LD blocks (Extracts rich data from IMDb, Amazon, Goodreads directly)
+        if (jsonLdRawMatch) {
+            for (let block of jsonLdRawMatch) {
                 try {
-                    const parsed = JSON.parse(script.innerText);
-                    const items = Array.isArray(parsed) ? parsed : [parsed];
+                    let inner = block.replace(/<script[^>]*>/i, '').replace(/<\/script>/i, '');
+                    let parsed = JSON.parse(inner);
+                    let items = Array.isArray(parsed) ? parsed : [parsed];
                     
-                    for (const item of items) {
-                        const type = item['@type'] || '';
+                    for (let item of items) {
+                        // Extract graph if nested
+                        if (item['@graph']) items.push(...item['@graph']);
                         
-                        if (['Movie', 'TVSeries', 'TVEpisode', 'Book', 'CreativeWork', 'Product'].includes(type) || item.name) {
-                            if (item.name) title = item.name;
-                            if (item.image) {
-                                imageUrl = typeof item.image === 'string' ? item.image : (item.image.url || (Array.isArray(item.image) ? item.image[0] : ''));
+                        if (['Movie', 'TVSeries', 'Book', 'Product'].includes(item['@type']) || item.aggregateRating) {
+                            if (item.name && !title) title = item.name;
+                            if (item.image && !imageUrl) imageUrl = typeof item.image === 'string' ? item.image : item.image?.url;
+                            
+                            if (item.aggregateRating?.ratingValue) {
+                                const s = parseFloat(item.aggregateRating.ratingValue);
+                                rating = s >= 8.5 ? '5' : s >= 7.5 ? '4' : s >= 6.5 ? '3' : s >= 5.0 ? '2' : '1';
+                                if (!details.includes('⭐')) details += `⭐ ${s}/10`;
                             }
                             
-                            // Media Type Detection
-                            if (type === 'TVSeries' || type === 'TVEpisode' || /series|season/i.test(type)) {
-                                mediaType = 'Series';
-                            } else if (type === 'Book' || item.author) {
-                                mediaType = 'Book';
-                            }
-
-                            // ISO 8601 Duration Parser (e.g. PT2H28M -> 2h 28m)
                             if (item.duration) {
                                 const durMatch = String(item.duration).match(/PT(?:(\d+)H)?(?:(\d+)M)?/i);
                                 if (durMatch) {
                                     const h = durMatch[1] ? `${durMatch[1]}h` : '';
                                     const m = durMatch[2] ? `${durMatch[2]}m` : '';
-                                    details = `⏱️ ${h} ${m}`.trim();
+                                    const dStr = `⏱️ ${h} ${m}`.trim();
+                                    if (!details.includes(dStr)) details += (details ? ` • ${dStr}` : dStr);
                                 }
                             }
 
-                            // IMDb rating conversion to star rating
-                            if (item.aggregateRating && item.aggregateRating.ratingValue) {
-                                const score = parseFloat(item.aggregateRating.ratingValue);
-                                if (score >= 8.5) rating = '5';
-                                else if (score >= 7.5) rating = '4';
-                                else if (score >= 6.5) rating = '3';
-                                else if (score >= 5.0) rating = '2';
-                                else rating = '1';
-                                
-                                details += details ? ` • ⭐ ${score}/10 IMDb` : `⭐ ${score}/10 IMDb`;
-                            }
-
-                            // Genre tag
                             if (item.genre) {
-                                const g = Array.isArray(item.genre) ? item.genre.slice(0, 2).join(', ') : item.genre;
-                                details += details ? ` • ${g}` : g;
+                                const gArr = Array.isArray(item.genre) ? item.genre : [item.genre];
+                                genre = gArr[0].split(',')[0].trim();
                             }
-                            break;
+                            
+                            // Offers / Price
+                            if (item.offers) {
+                                let offers = Array.isArray(item.offers) ? item.offers : [item.offers];
+                                if (offers[0].price) price = parseFloat(offers[0].price);
+                            }
                         }
                     }
-                } catch(e) {}
+                } catch (e) {}
             }
-
-            // 2. OpenGraph Fallbacks if JSON-LD missing
-            if (!title) {
-                const metaTitle = document.querySelector('meta[property="og:title"]')?.content || document.title || '';
-                title = metaTitle.replace(/\(TV Series\s*\d*–?\d*\)/gi, '').replace(/- IMDb/gi, '').split('|')[0].trim();
-            }
-
-            if (!imageUrl) {
-                imageUrl = document.querySelector('meta[property="og:image"]')?.content || document.querySelector('meta[name="twitter:image"]')?.content || '';
-            }
-
-            // Clean title string
-            title = title.replace(/Online Shopping.*/i, '').replace(/ - Buy.*/i, '').trim();
-
-            return { title, imageUrl, mediaType, details, price, mediaRating: rating };
-        });
-
-        await browser.close();
-
-        // 3. Fallback using Gemini Flash AI if title/details are incomplete
-        if (!scrapedData.title || scrapedData.title.length < 2) {
-            console.log("⚠️ Fallback to Gemini AI scraper for media URL...");
-            try {
-                const model = genAI.getGenerativeModel({ model: 'gemini-2.5-flash' });
-                const prompt = `Analyze this URL: "${targetUrl}". If it is an IMDb, Goodreads, or streaming link, extract the title, cover/poster image URL if known, mediaType ('Movie', 'Book', or 'Series'), and a short detail line (like '2h 15m • Action' or '380 pages'). Return ONLY a valid JSON: {"title":"","imageUrl":"","mediaType":"","details":"","mediaRating":"5"}`;
-                const aiRes = await model.generateContent(prompt);
-                const aiJson = JSON.parse(aiRes.response.text().replace(/```json/gi, '').replace(/```/g, '').trim());
-                
-                if (aiJson.title) scrapedData.title = aiJson.title;
-                if (aiJson.imageUrl) scrapedData.imageUrl = aiJson.imageUrl;
-                if (aiJson.mediaType) scrapedData.mediaType = aiJson.mediaType;
-                if (aiJson.details) scrapedData.details = aiJson.details;
-                if (aiJson.mediaRating) scrapedData.mediaRating = aiJson.mediaRating;
-            } catch(e) {}
         }
 
-        console.log("✅ MEDIA SCRAPE COMPLETE:", scrapedData);
-        res.status(200).json(scrapedData);
-    } catch (error) {
-        if (browser) await browser.close();
-        
-        // Direct HTML fetch fallback if Puppeteer fails entirely
-        try {
-            const fetchRes = await fetch(targetUrl, { headers: { 'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64)', 'Accept-Language': 'en-US,en;q=0.9' } });
-            const html = await fetchRes.text();
-            
-            const ogTitle = html.match(/<meta[^>]*property="og:title"[^>]*content="([^"]+)"/i)?.[1] || html.match(/<title[^>]*>([^<]+)<\/title>/i)?.[1] || '';
-            const ogImg = html.match(/<meta[^>]*property="og:image"[^>]*content="([^"]+)"/i)?.[1] || '';
-            
-            const cleanT = ogTitle.replace(/\(TV Series.*?\)/gi, '').replace(/- IMDb/gi, '').split('|')[0].trim();
-            res.status(200).json({ title: cleanT || 'Saved Media', imageUrl: ogImg, mediaType: 'Movie', details: 'IMDb Media', price: 0, mediaRating: '5' });
-        } catch(fallbackErr) {
-            res.status(500).json({ error: 'Media scraping failed' });
+        // Duration fallback
+        if (!details.includes('⏱️')) {
+            let durationMatch = html.match(/(\d{1,2}h\s*\d{1,2}m|\d{2,3} mins?)/i);
+            if (durationMatch) details += (details ? ` • ⏱️ ${durationMatch[1]}` : `⏱️ ${durationMatch[1]}`);
         }
+
+        // Pages fallback
+        if (mediaType === 'Book' && !details.includes('pages')) {
+            let pagesMatch = html.match(/(\d{1,4})\s*pages/i);
+            if (pagesMatch) details += (details ? ` • 📖 ${pagesMatch[1]} pages` : `📖 ${pagesMatch[1]} pages`);
+        }
+
+        if (title) {
+            title = title.replace(/\(TV Series.*?\)/gi, '').replace(/- IMDb/gi, '').split('|')[0].trim();
+            console.log("✅ FAST SCRAPE SUCCESS:", title);
+            return res.status(200).json({ title, imageUrl, mediaType, details, genre, mediaRating: rating, price });
+        }
+    } catch(e) {
+        console.log("Fast fetch failed, falling back to Gemini...");
+    }
+
+    // --- IF FETCH FAILS, FALLBACK DIRECTLY TO GEMINI ---
+    console.log("⚠️ Fallback to Gemini AI scraper for media URL...");
+    try {
+        const model = genAI.getGenerativeModel({ model: 'gemini-2.5-flash' });
+        const prompt = `Analyze this URL: "${targetUrl}". If it is an IMDb, Goodreads, or streaming link, guess the title, cover/poster image URL, mediaType ('Movie', 'Book', 'Series', or 'Anime'), genre ('Action', 'Anime', 'Comedy', etc.), and a short detail line (like '2h 15m'). Return ONLY a valid JSON: {"title":"","imageUrl":"","mediaType":"","genre":"","details":"","mediaRating":"5"}`;
+        const aiRes = await model.generateContent(prompt);
+        const aiJson = JSON.parse(aiRes.response.text().replace(/```json/gi, '').replace(/```/g, '').trim());
+        return res.status(200).json(aiJson);
+    } catch(e) {
+        res.status(500).json({ error: 'Media scraping completely failed' });
     }
 });
 
