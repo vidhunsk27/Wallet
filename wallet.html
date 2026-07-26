@@ -196,8 +196,10 @@
             <button onclick="setGoal()" class="text-gray-400 hover:text-white transition-all hover:scale-110 p-2 flex-shrink-0 bg-white/5 rounded-xl border border-white/10 mt-1" title="Set Budget"><i data-lucide="settings-2" class="w-4 h-4"></i></button>
           </div>
           
-          <div class="mt-auto pt-4 md:pt-5 w-full bg-black/60 rounded-full h-3.5 border border-white/10 overflow-hidden flex-shrink-0 p-0.5 shadow-inner">
-            <div id="goalProgress" class="bg-gradient-to-r from-rose-500 via-orange-400 to-amber-400 h-full rounded-full transition-all duration-1000 shadow-[0_0_12px_rgba(244,63,94,0.6)]" style="width: 0%"></div>
+          <div class="mt-auto pt-4 md:pt-5 w-full flex-shrink-0">
+              <div class="w-full bg-black/60 rounded-full h-3.5 border border-white/10 overflow-hidden p-[1.5px] shadow-inner">
+                <div id="goalProgress" class="bg-gradient-to-r from-rose-500 via-orange-400 to-amber-400 h-full rounded-full transition-all duration-1000 shadow-[0_0_12px_rgba(244,63,94,0.6)]" style="width: 0%"></div>
+              </div>
           </div>
           <p id="goalText" class="text-xs md:text-sm text-gray-300 mt-3 text-right font-bold truncate whitespace-nowrap">Target Threshold: ₹0 (0%)</p>
         </div>
@@ -471,7 +473,6 @@
           <div class="glass-panel rounded-3xl p-5 md:p-6 sticky top-6">
             <h3 class="text-xs font-bold text-gray-400 mb-6 uppercase tracking-widest">Auto-Fetch Media</h3>
             <form id="mediaForm" class="space-y-4">
-              <!-- MEDIA AUTO-SCRAPER LINK INPUT -->
               <div class="relative">
                 <input type="url" id="mediaLink" placeholder="Paste link (IMDb, Goodreads, Netflix...)" class="w-full glass-input rounded-xl p-4 pr-10 text-sm text-white font-medium hover:border-purple-500/30 transition-colors" />
                 <i id="mediaLinkStatusIcon" data-lucide="link" class="absolute right-4 top-1/2 transform -translate-y-1/2 w-4 h-4 text-gray-500"></i>
@@ -493,7 +494,6 @@
                     <select id="mediaGenre" class="w-full glass-input rounded-xl p-4 text-xs text-white font-bold hover:border-blue-500/30 transition-colors uppercase tracking-wider">
                         <option value="Action">💥 Action</option>
                         <option value="Adventure">🗺️ Adventure</option>
-                        <option value="Anime">🎌 Anime</option>
                         <option value="Comedy">😂 Comedy</option>
                         <option value="Crime">🕵️ Crime</option>
                         <option value="Drama">🎭 Drama</option>
@@ -503,6 +503,15 @@
                         <option value="Romance">❤️ Romance</option>
                         <option value="Sci-Fi">🚀 Sci-Fi</option>
                         <option value="Thriller">🔪 Thriller</option>
+                        <option disabled>──────────</option>
+                        <option value="Shounen">⚔️ Shounen</option>
+                        <option value="Shoujo">🌸 Shoujo</option>
+                        <option value="Isekai">🌀 Isekai</option>
+                        <option value="Harem">💕 Harem</option>
+                        <option value="Mecha">🤖 Mecha</option>
+                        <option value="Slice of Life">☕ Slice of Life</option>
+                        <option value="Seinen">🔥 Seinen</option>
+                        <option disabled>──────────</option>
                         <option value="Non-Fiction">📘 Non-Fiction</option>
                         <option value="Other">📦 Other</option>
                     </select>
@@ -1115,7 +1124,7 @@
       lucide.createIcons();
     }
 
-    // WATCH & READ AUTO-SCRAPER LISTENER (FOR IMDB, GOODREADS, NETFLIX LINKS)
+    // WATCH & READ AUTO-SCRAPER LISTENER
     const mediaLinkInput = document.getElementById('mediaLink');
     if (mediaLinkInput) {
       ['input', 'paste', 'change'].forEach(eventType => {
@@ -1142,7 +1151,6 @@
                       if(result.price && result.price > 0) document.getElementById('mediaPrice').value = result.price;
                       if(result.mediaRating) document.getElementById('mediaRating').value = String(result.mediaRating);
                       
-                      // Auto-select genre if returned by scraper
                       if(result.genre) {
                           const g = result.genre.toLowerCase();
                           const sel = document.getElementById('mediaGenre');
