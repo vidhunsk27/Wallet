@@ -97,7 +97,8 @@
       <div class="flex space-x-1 bg-black/40 p-1 rounded-2xl border border-white/5 w-full sm:w-auto shadow-inner overflow-x-auto scrollbar-hide">
         <button id="navDashboard" onclick="switchMainView('dashboard')" class="flex-1 sm:flex-none px-4 md:px-5 py-2.5 rounded-xl font-bold text-sm bg-blue-600/80 text-white shadow-sm transition-all border border-blue-500/50 uppercase tracking-wider"><i data-lucide="activity" class="inline w-4 h-4 mr-1.5"></i> Ledger</button>
         <button id="navWishlist" onclick="switchMainView('wishlist')" class="flex-1 sm:flex-none px-4 md:px-5 py-2.5 rounded-xl font-bold text-sm text-gray-400 hover:text-white hover:bg-white/5 transition-all border border-transparent uppercase tracking-wider"><i data-lucide="target" class="inline w-4 h-4 mr-1.5"></i> Wishlist</button>
-        <button id="navMedia" onclick="switchMainView('media')" class="flex-1 sm:flex-none px-4 md:px-5 py-2.5 rounded-xl font-bold text-sm text-gray-400 hover:text-white hover:bg-white/5 transition-all border border-transparent uppercase tracking-wider"><i data-lucide="film" class="inline w-4 h-4 mr-1.5"></i> Media</button>
+        <!-- RENAMED MEDIA TAB TO WATCH & READ -->
+        <button id="navMedia" onclick="switchMainView('media')" class="flex-1 sm:flex-none px-4 md:px-5 py-2.5 rounded-xl font-bold text-sm text-gray-400 hover:text-white hover:bg-white/5 transition-all border border-transparent uppercase tracking-wider"><i data-lucide="clapperboard" class="inline w-4 h-4 mr-1.5"></i> Watch & Read</button>
       </div>
     </header>
 
@@ -145,7 +146,7 @@
                   <i data-lucide="chevron-down" class="absolute right-0 top-1/2 transform -translate-y-1/2 w-4 h-4 text-white pointer-events-none"></i>
               </div>
               
-              <!-- FIXED MODERATE TOOLTIP CROPPING: POSITIONED DOWNWARD (top-full mt-2) -->
+              <!-- FIXED TOOLTIP CROPPING -->
               <div class="px-2 py-1 bg-black/40 border border-white/5 rounded-lg flex items-center shadow-inner backdrop-blur-md cursor-help relative group ml-2 z-30">
                   <span id="weatherIcon"><i data-lucide="sun" class="w-3 h-3 text-yellow-400 mr-1.5"></i></span>
                   <span id="weatherText" class="text-[9px] text-gray-300 uppercase font-bold tracking-widest">Stable</span>
@@ -187,7 +188,7 @@
           <h2 id="allTimeIncome" class="text-3xl lg:text-4xl xl:text-5xl font-black text-emerald-400 mt-2 truncate whitespace-nowrap">₹0</h2>
         </div>
 
-        <!-- All-Time Expenses & Budget -->
+        <!-- Total Expenses with ENHANCED HIGH-VISIBILITY PROGRESS BAR -->
         <div class="glass-panel rounded-3xl p-6 md:p-8 flex flex-col justify-center min-w-0 h-full">
           <div class="flex justify-between items-start gap-2">
             <div class="flex-1 min-w-0 pr-2">
@@ -196,8 +197,12 @@
             </div>
             <button onclick="setGoal()" class="text-gray-400 hover:text-white transition-all hover:scale-110 p-2 flex-shrink-0 bg-white/5 rounded-xl border border-white/10 mt-1" title="Set Budget"><i data-lucide="settings-2" class="w-4 h-4"></i></button>
           </div>
-          <div class="mt-auto pt-4 md:pt-6 w-full bg-black/60 rounded-full h-2.5 border border-white/5 overflow-hidden flex-shrink-0"><div id="goalProgress" class="bg-gradient-to-r from-rose-500 to-orange-400 h-full rounded-full transition-all duration-1000"></div></div>
-          <p id="goalText" class="text-xs md:text-sm text-gray-300 mt-3 text-right font-bold truncate whitespace-nowrap">Target Threshold: ₹0</p>
+          
+          <!-- ENHANCED GLOWING PROGRESS BAR -->
+          <div class="mt-auto pt-4 md:pt-5 w-full bg-black/60 rounded-full h-3.5 border border-white/10 overflow-hidden flex-shrink-0 p-0.5 shadow-inner">
+            <div id="goalProgress" class="bg-gradient-to-r from-rose-500 via-orange-400 to-amber-400 h-full rounded-full transition-all duration-1000 shadow-[0_0_12px_rgba(244,63,94,0.6)]" style="width: 0%"></div>
+          </div>
+          <p id="goalText" class="text-xs md:text-sm text-gray-300 mt-3 text-right font-bold truncate whitespace-nowrap">Target Threshold: ₹0 (0%)</p>
         </div>
       </div>
 
@@ -459,15 +464,15 @@
       </div>
     </div>
 
-    <!-- MEDIA VIEW (With Media Auto-Scraper & Direct Wishlist Link) -->
+    <!-- WATCH & READ VIEW (RENAMED FROM MEDIA VIEW) -->
     <div id="viewMedia" class="view-hidden space-y-4 md:space-y-6">
       <div class="glass-panel rounded-3xl p-6 md:p-8 flex flex-col md:flex-row justify-between items-center gap-4">
-        <div><h2 class="text-3xl font-black text-white flex items-center tracking-wider uppercase"><i data-lucide="film" class="text-purple-400 mr-4 w-7 h-7 drop-shadow-[0_0_10px_rgba(168,85,247,0.5)]"></i> Media List</h2><p class="text-gray-400 text-xs mt-1.5 font-medium tracking-widest uppercase">Movies, Books & Shows to explore.</p></div>
+        <div><h2 class="text-3xl font-black text-white flex items-center tracking-wider uppercase"><i data-lucide="clapperboard" class="text-purple-400 mr-4 w-7 h-7 drop-shadow-[0_0_10px_rgba(168,85,247,0.5)]"></i> Watch & Read Library</h2><p class="text-gray-400 text-xs mt-1.5 font-medium tracking-widest uppercase">Movies, Books & Shows to explore.</p></div>
       </div>
       <div class="grid grid-cols-1 lg:grid-cols-3 gap-4 md:gap-6">
         <div class="lg:col-span-1">
           <div class="glass-panel rounded-3xl p-5 md:p-6 sticky top-6">
-            <h3 class="text-xs font-bold text-gray-400 mb-6 uppercase tracking-widest">Add Media</h3>
+            <h3 class="text-xs font-bold text-gray-400 mb-6 uppercase tracking-widest">Auto-Fetch Movie / Book</h3>
             <form id="mediaForm" class="space-y-4">
               <!-- MEDIA AUTO-SCRAPER LINK INPUT -->
               <div class="relative">
@@ -504,10 +509,10 @@
                       </select>
                   </div>
               </div>
-              <input type="text" id="mediaDetails" placeholder="Extracted Info (e.g. 350 pages, 2h 15m, Netflix)" class="w-full glass-input rounded-xl p-4 text-xs text-gray-300 font-medium hover:border-purple-500/30 transition-colors" />
+              <input type="text" id="mediaDetails" placeholder="Extracted Info (e.g. 2h 28m, Action, Sci-Fi)" class="w-full glass-input rounded-xl p-4 text-xs text-gray-300 font-medium hover:border-purple-500/30 transition-colors" />
               <input type="number" id="mediaPrice" placeholder="Book / Buy Price (₹) - Optional" class="w-full glass-input rounded-xl p-4 text-xs font-bold text-emerald-400 hover:border-purple-500/30 transition-colors" />
-              <input type="url" id="mediaImage" placeholder="Image URL (Optional)" class="w-full glass-input rounded-xl p-4 text-sm text-white font-medium hover:border-blue-500/30 transition-colors" />
-              <button type="submit" class="w-full bg-gradient-to-r from-purple-600 to-purple-500 hover:to-purple-400 text-white font-black py-4 rounded-xl transition-all shadow-[0_0_20px_rgba(168,85,247,0.4)] active:scale-[0.98] border border-white/10 uppercase tracking-widest">Save Media</button>
+              <input type="url" id="mediaImage" placeholder="Image Poster URL" class="w-full glass-input rounded-xl p-4 text-sm text-white font-medium hover:border-blue-500/30 transition-colors" />
+              <button type="submit" class="w-full bg-gradient-to-r from-purple-600 to-purple-500 hover:to-purple-400 text-white font-black py-4 rounded-xl transition-all shadow-[0_0_20px_rgba(168,85,247,0.4)] active:scale-[0.98] border border-white/10 uppercase tracking-widest">Save to Vault</button>
             </form>
           </div>
         </div>
@@ -689,8 +694,15 @@
         lucide.createIcons();
         try {
             const res = await fetch(`${API_BASE}/sms-webhook`, { method: 'POST', headers: apiHeaders, body: JSON.stringify({ smsText: smsText }) });
-            if (res.ok) { alert("SMS processed! Jarvis AI is categorizing the data."); loadPendingTransactions(); } 
+            if (res.ok) { 
+                alert("SMS processed! Jarvis AI is categorizing the data."); 
+                loadPendingTransactions(); 
+            } else {
+                const errData = await res.json();
+                alert(`⚠️ Server Error: ${errData.message || errData.error || 'Failed to process'}\n\nCheck your Render Logs for details!`);
+            }
         } catch (error) { 
+            alert("❌ Network Error: Could not reach the server. Is it asleep?");
         } finally { 
             icon.setAttribute('data-lucide', 'message-square'); 
             icon.classList.remove('animate-spin', 'text-blue-400'); 
@@ -1082,7 +1094,7 @@
       lucide.createIcons();
     }
 
-    // MEDIA SCRAPER LISTENER (Auto-fetches details on paste/link enter)
+    // WATCH & READ AUTO-SCRAPER LISTENER (FOR IMDB, GOODREADS, NETFLIX LINKS)
     const mediaLinkInput = document.getElementById('mediaLink');
     if (mediaLinkInput) {
       ['input', 'paste', 'change'].forEach(eventType => {
@@ -1107,6 +1119,7 @@
                       if(result.mediaType) document.getElementById('mediaType').value = result.mediaType;
                       if(result.details) document.getElementById('mediaDetails').value = result.details;
                       if(result.price && result.price > 0) document.getElementById('mediaPrice').value = result.price;
+                      if(result.mediaRating) document.getElementById('mediaRating').value = String(result.mediaRating);
                   } catch(err) {
                   } finally { 
                       if (icn) {
@@ -1181,20 +1194,20 @@
     }
 
     async function deleteMediaItem(id) { 
-        if(confirm("Remove this media from database?")) { mediaItems = mediaItems.filter(w => w.id !== id); renderMedia(); try { await fetch(`${API_BASE}/delete-wishlist/${id}`, { method: 'DELETE' }); } catch(err){} } 
+        if(confirm("Remove this entry from database?")) { mediaItems = mediaItems.filter(w => w.id !== id); renderMedia(); try { await fetch(`${API_BASE}/delete-wishlist/${id}`, { method: 'DELETE' }); } catch(err){} } 
     }
 
     function renderMedia() {
       const grid = document.getElementById('mediaGrid');
       
       if (!mediaItems.length) { 
-          grid.innerHTML = `<p class="text-gray-500 text-sm py-4 font-bold uppercase tracking-widest text-center col-span-full">No media stored in database frame.</p>`; return; 
+          grid.innerHTML = `<p class="text-gray-500 text-sm py-4 font-bold uppercase tracking-widest text-center col-span-full">No movies or books stored in database frame.</p>`; return; 
       }
       
       grid.innerHTML = [...mediaItems].sort((a,b)=>b.timestamp-a.timestamp).map(item => {
         const img = item.imageUrl ? 
-            `<img src="${item.imageUrl}" class="w-full h-44 object-cover rounded-xl mb-4 bg-black/50 border border-white/5 shadow-inner">` : 
-            `<div class="w-full h-44 rounded-xl mb-4 bg-gradient-to-br from-purple-900/20 to-pink-900/10 border border-white/5 flex flex-col items-center justify-center text-gray-500 shadow-inner"><i data-lucide="film" class="w-8 h-8 mb-2 text-purple-500/40"></i><span class="text-[10px] uppercase font-bold tracking-widest text-gray-400/60">No Image Asset</span></div>`;
+            `<img src="${item.imageUrl}" class="w-full h-56 object-cover rounded-xl mb-4 bg-black/50 border border-white/5 shadow-inner">` : 
+            `<div class="w-full h-56 rounded-xl mb-4 bg-gradient-to-br from-purple-900/20 to-pink-900/10 border border-white/5 flex flex-col items-center justify-center text-gray-500 shadow-inner"><i data-lucide="film" class="w-8 h-8 mb-2 text-purple-500/40"></i><span class="text-[10px] uppercase font-bold tracking-widest text-gray-400/60">No Poster Asset</span></div>`;
             
         const formattedDate = item.timestamp ? new Date(item.timestamp).toLocaleDateString('en-GB', {day:'numeric', month:'short'}) : 'RECENT';
         const ratingBadge = item.mediaRating && item.mediaRating !== 'Unrated' ? `<span class="text-yellow-400 text-xs font-black tracking-widest">${'⭐'.repeat(parseInt(item.mediaRating))}</span>` : '';
@@ -1205,7 +1218,6 @@
         const detailsPill = item.mediaDetails ? `<p class="text-[11px] text-gray-300 font-medium bg-black/40 px-2.5 py-1 rounded-lg border border-white/5 flex items-center mt-2 shadow-inner"><i data-lucide="info" class="w-3 h-3 text-purple-400 mr-1.5 flex-shrink-0"></i>${item.mediaDetails}</p>` : '';
         const priceTag = item.price > 0 ? `<p class="text-sm font-black text-emerald-400 mt-1">₹${item.price.toLocaleString()}</p>` : '';
 
-        // LINK TO WISHLIST BUTTON (Especially for Books / Buyable media)
         const wishlistBtn = `<button onclick="linkMediaToWishlist('${item.id}')" class="w-full text-center mt-2 bg-blue-500/10 hover:bg-blue-500/20 text-blue-400 py-2.5 rounded-xl text-xs font-bold transition-all border border-blue-500/20 flex items-center justify-center shadow-sm uppercase tracking-wider"><i data-lucide="shopping-cart" class="w-3.5 h-3.5 mr-1.5"></i> Add to Wishlist</button>`;
 
         return `<div class="glass-panel rounded-3xl p-5 relative group border border-white/5 flex flex-col justify-between hover:-translate-y-1.5 transition-transform shadow-[0_8px_30px_rgba(0,0,0,0.4)]">
@@ -1226,7 +1238,7 @@
             </div>
             <div class="space-y-1.5">
               ${wishlistBtn}
-              ${item.link ? `<a href="${item.link}" target="_blank" class="block w-full text-center bg-white/5 hover:bg-white/10 hover:text-purple-300 py-2.5 rounded-xl text-xs font-bold transition-all border border-white/10 text-white shadow-sm hover:border-purple-500/30 tracking-wide uppercase">View Media Link</a>` : ''}
+              ${item.link ? `<a href="${item.link}" target="_blank" class="block w-full text-center bg-white/5 hover:bg-white/10 hover:text-purple-300 py-2.5 rounded-xl text-xs font-bold transition-all border border-white/10 text-white shadow-sm hover:border-purple-500/30 tracking-wide uppercase">View Source Link</a>` : ''}
             </div>
         </div>`;
       }).join(''); 
@@ -1439,9 +1451,13 @@
           document.getElementById('projectedSavingsContainer').style.display = 'none';
       }
 
-      const pct = Math.min((allTimeExp / expenseGoal) * 100, 100) || 0; 
-      document.getElementById('goalProgress').style.width = `${pct}%`; 
-      document.getElementById('goalText').innerText = `Target Threshold: ₹${expenseGoal.toLocaleString()} (${Math.round(pct)}%)`;
+      // ACCURATE PERCENTAGE & PROGRESS BAR FOR TOTAL EXPENSES
+      const rawPct = (allTimeExp / expenseGoal) * 100;
+      const displayPct = Math.round(rawPct) || 0;
+      const barPct = Math.min(rawPct, 100) || 0;
+
+      document.getElementById('goalProgress').style.width = `${barPct}%`; 
+      document.getElementById('goalText').innerText = `Target Threshold: ₹${expenseGoal.toLocaleString()} (${displayPct}%)`;
       document.getElementById('recordCount').innerText = filtered.length;
 
       document.getElementById('statBurnRate').innerText = `₹${Math.round(burnRate).toLocaleString()}`;

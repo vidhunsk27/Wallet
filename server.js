@@ -164,7 +164,6 @@ app.post('/api/sms-webhook', async (req, res) => {
 
         const result = await model.generateContent(prompt);
         let cleanText = result.response.text().replace(/```json/gi, '').replace(/```/g, '').trim();
-        
         console.log("🤖 GEMINI PARSED RESPONSE:", cleanText);
 
         const parsedData = JSON.parse(cleanText);
@@ -346,11 +345,13 @@ app.post('/api/scrape-price', async (req, res) => {
 });
 
 // =======================================================
-//   NEW: MEDIA SCRAPER (Extracts Pages, Duration, Platform)
+//   REVISED & FIXED MEDIA / IMDB SCRAPER ROUTE
 // =======================================================
 app.post('/api/scrape-media', async (req, res) => {
     const targetUrl = req.body.url;
     if (!targetUrl) return res.status(400).json({ error: 'No URL provided' });
+
+    console.log("🎬 SCRAPING MEDIA URL:", targetUrl);
 
     let browser;
     try {
@@ -358,84 +359,142 @@ app.post('/api/scrape-media', async (req, res) => {
             args: ['--no-sandbox', '--disable-setuid-sandbox', '--disable-dev-shm-usage', '--disable-blink-features=AutomationControlled'] 
         });
         const page = await browser.newPage();
-        
-        await page.setRequestInterception(true);
-        page.on('request', (req) => {
-            if (['font', 'media'].includes(req.resourceType())) req.abort();
-            else req.continue();
+
+        // Pass clean desktop browser headers to prevent IMDb anti-bot blocks
+        await page.setExtraHTTPHeaders({
+            'accept-language': 'en-US,en;q=0.9',
+            'accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,image/apng,*/*;q=0.8'
         });
 
-        await page.setUserAgent('Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/122.0.0.0 Safari/537.36');
-        await page.goto(targetUrl, { waitUntil: 'domcontentloaded', timeout: 15000 });
-        await new Promise(r => setTimeout(r, 1000));
+        await page.setUserAgent('Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0.0.0 Safari/537.36');
+        
+        // Block fonts and heavy media, but keep essential script execution enabled for JSON-LD schema
+        await page.setRequestInterception(true);
+        page.on('request', (r) => {
+            if (['font', 'media'].includes(r.resourceType())) r.abort();
+            else r.continue();
+        });
+
+        await page.goto(targetUrl, { waitUntil: 'domcontentloaded', timeout: 20000 });
+        await new Promise(r => setTimeout(r, 1200));
 
         const scrapedData = await page.evaluate(() => {
-            let title = document.querySelector('meta[property="og:title"]')?.content || document.title || '';
-            let imageUrl = document.querySelector('meta[property="og:image"]')?.content || document.querySelector('#landingImage, #imgTagWrapperId img, img[src*="images"]')?.src || '';
-            let description = document.querySelector('meta[property="og:description"]')?.content || document.querySelector('meta[name="description"]')?.content || '';
-            let pageText = document.body.innerText || '';
-
-            // Detect Media Type
+            let title = '';
+            let imageUrl = '';
             let mediaType = 'Movie';
-            if (/book|isbn|author|pages|paperback|hardcover|goodreads/i.test(targetUrl + title + description)) {
-                mediaType = 'Book';
-            } else if (/series|season|episode|tv|show|anime/i.test(targetUrl + title + description)) {
-                mediaType = 'Series';
-            }
-
-            // Extract Duration or Pages
             let details = '';
-            let pagesMatch = pageText.match(/(\d{1,4})\s*(?:pages|page|pgs)/i) || description.match(/(\d{1,4})\s*(?:pages|page)/i);
-            let durationMatch = pageText.match(/(\d{1,2}\s*h(?:our)?s?\s*\d{0,2}\s*m(?:in)?s?|\d{2,3}\s*mins?)/i) || description.match(/(\d{1,2}\s*h\s*\d{1,2}\s*m)/i);
-            
-            if (mediaType === 'Book' && pagesMatch) {
-                details += `📖 ${pagesMatch[1]} pages`;
-            } else if (durationMatch) {
-                details += `⏱️ ${durationMatch[1]}`;
-            }
-
-            // Extract Platform / Where to Watch / Source
-            let platform = '';
-            if (/netflix/i.test(targetUrl + pageText)) platform = 'Netflix';
-            else if (/amazon|prime/i.test(targetUrl + pageText)) platform = 'Amazon Prime';
-            else if (/hotstar|disney/i.test(targetUrl + pageText)) platform = 'Disney+ Hotstar';
-            else if (/goodreads/i.test(targetUrl + pageText)) platform = 'Goodreads';
-            else if (/imdb/i.test(targetUrl + pageText)) platform = 'IMDb';
-            else if (/youtube/i.test(targetUrl + pageText)) platform = 'YouTube';
-
-            if (platform) {
-                details += details ? ` • ${platform}` : platform;
-            }
-
-            // Price extraction if available (e.g. Amazon book)
             let price = 0;
-            let priceMatch = pageText.match(/(?:₹|Rs\.?|INR)\s*([0-9,]{2,}(?:\.[0-9]{2})?)/i);
-            if (priceMatch) price = parseFloat(priceMatch[1].replace(/,/g, ''));
+            let rating = 'Unrated';
 
-            title = title.split('|')[0].split('- Buy')[0].split(': Amazon')[0].replace(/Online Shopping.*/i, '').trim();
+            // 1. Try parsing JSON-LD Schema (Used by IMDb, Goodreads, Amazon, Disney+)
+            const jsonLdScripts = Array.from(document.querySelectorAll('script[type="application/ld+json"]'));
+            for (const script of jsonLdScripts) {
+                try {
+                    const parsed = JSON.parse(script.innerText);
+                    const items = Array.isArray(parsed) ? parsed : [parsed];
+                    
+                    for (const item of items) {
+                        const type = item['@type'] || '';
+                        
+                        if (['Movie', 'TVSeries', 'TVEpisode', 'Book', 'CreativeWork', 'Product'].includes(type) || item.name) {
+                            if (item.name) title = item.name;
+                            if (item.image) {
+                                imageUrl = typeof item.image === 'string' ? item.image : (item.image.url || (Array.isArray(item.image) ? item.image[0] : ''));
+                            }
+                            
+                            // Media Type Detection
+                            if (type === 'TVSeries' || type === 'TVEpisode' || /series|season/i.test(type)) {
+                                mediaType = 'Series';
+                            } else if (type === 'Book' || item.author) {
+                                mediaType = 'Book';
+                            }
 
-            return { title, imageUrl, mediaType, details, price: price || 0 };
+                            // ISO 8601 Duration Parser (e.g. PT2H28M -> 2h 28m)
+                            if (item.duration) {
+                                const durMatch = String(item.duration).match(/PT(?:(\d+)H)?(?:(\d+)M)?/i);
+                                if (durMatch) {
+                                    const h = durMatch[1] ? `${durMatch[1]}h` : '';
+                                    const m = durMatch[2] ? `${durMatch[2]}m` : '';
+                                    details = `⏱️ ${h} ${m}`.trim();
+                                }
+                            }
+
+                            // IMDb rating conversion to star rating
+                            if (item.aggregateRating && item.aggregateRating.ratingValue) {
+                                const score = parseFloat(item.aggregateRating.ratingValue);
+                                if (score >= 8.5) rating = '5';
+                                else if (score >= 7.5) rating = '4';
+                                else if (score >= 6.5) rating = '3';
+                                else if (score >= 5.0) rating = '2';
+                                else rating = '1';
+                                
+                                details += details ? ` • ⭐ ${score}/10 IMDb` : `⭐ ${score}/10 IMDb`;
+                            }
+
+                            // Genre tag
+                            if (item.genre) {
+                                const g = Array.isArray(item.genre) ? item.genre.slice(0, 2).join(', ') : item.genre;
+                                details += details ? ` • ${g}` : g;
+                            }
+                            break;
+                        }
+                    }
+                } catch(e) {}
+            }
+
+            // 2. OpenGraph Fallbacks if JSON-LD missing
+            if (!title) {
+                const metaTitle = document.querySelector('meta[property="og:title"]')?.content || document.title || '';
+                title = metaTitle.replace(/\(TV Series\s*\d*–?\d*\)/gi, '').replace(/- IMDb/gi, '').split('|')[0].trim();
+            }
+
+            if (!imageUrl) {
+                imageUrl = document.querySelector('meta[property="og:image"]')?.content || document.querySelector('meta[name="twitter:image"]')?.content || '';
+            }
+
+            // Clean title string
+            title = title.replace(/Online Shopping.*/i, '').replace(/ - Buy.*/i, '').trim();
+
+            return { title, imageUrl, mediaType, details, price, mediaRating: rating };
         });
 
         await browser.close();
 
-        // Gemini AI Backup Fallback if extracted metadata is incomplete
-        if (!scrapedData.title || scrapedData.title.length < 3) {
+        // 3. Fallback using Gemini Flash AI if title/details are incomplete
+        if (!scrapedData.title || scrapedData.title.length < 2) {
+            console.log("⚠️ Fallback to Gemini AI scraper for media URL...");
             try {
                 const model = genAI.getGenerativeModel({ model: 'gemini-2.5-flash' });
-                const prompt = `Analyze this URL: ${targetUrl}. Extract title, mediaType (Movie, Book, or Series), and brief details (pages, duration, or platform). Return JSON: {"title":"","mediaType":"","details":""}`;
+                const prompt = `Analyze this URL: "${targetUrl}". If it is an IMDb, Goodreads, or streaming link, extract the title, cover/poster image URL if known, mediaType ('Movie', 'Book', or 'Series'), and a short detail line (like '2h 15m • Action' or '380 pages'). Return ONLY a valid JSON: {"title":"","imageUrl":"","mediaType":"","details":"","mediaRating":"5"}`;
                 const aiRes = await model.generateContent(prompt);
                 const aiJson = JSON.parse(aiRes.response.text().replace(/```json/gi, '').replace(/```/g, '').trim());
+                
                 if (aiJson.title) scrapedData.title = aiJson.title;
+                if (aiJson.imageUrl) scrapedData.imageUrl = aiJson.imageUrl;
                 if (aiJson.mediaType) scrapedData.mediaType = aiJson.mediaType;
-                if (aiJson.details && !scrapedData.details) scrapedData.details = aiJson.details;
+                if (aiJson.details) scrapedData.details = aiJson.details;
+                if (aiJson.mediaRating) scrapedData.mediaRating = aiJson.mediaRating;
             } catch(e) {}
         }
 
+        console.log("✅ MEDIA SCRAPE COMPLETE:", scrapedData);
         res.status(200).json(scrapedData);
     } catch (error) {
         if (browser) await browser.close();
-        res.status(500).json({ error: 'Media scraping failed' });
+        
+        // Direct HTML fetch fallback if Puppeteer fails entirely
+        try {
+            const fetchRes = await fetch(targetUrl, { headers: { 'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64)', 'Accept-Language': 'en-US,en;q=0.9' } });
+            const html = await fetchRes.text();
+            
+            const ogTitle = html.match(/<meta[^>]*property="og:title"[^>]*content="([^"]+)"/i)?.[1] || html.match(/<title[^>]*>([^<]+)<\/title>/i)?.[1] || '';
+            const ogImg = html.match(/<meta[^>]*property="og:image"[^>]*content="([^"]+)"/i)?.[1] || '';
+            
+            const cleanT = ogTitle.replace(/\(TV Series.*?\)/gi, '').replace(/- IMDb/gi, '').split('|')[0].trim();
+            res.status(200).json({ title: cleanT || 'Saved Media', imageUrl: ogImg, mediaType: 'Movie', details: 'IMDb Media', price: 0, mediaRating: '5' });
+        } catch(fallbackErr) {
+            res.status(500).json({ error: 'Media scraping failed' });
+        }
     }
 });
 
