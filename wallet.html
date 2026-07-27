@@ -186,7 +186,7 @@
           <h2 id="allTimeIncome" class="text-3xl lg:text-4xl xl:text-5xl font-black text-emerald-400 mt-2 truncate whitespace-nowrap">₹0</h2>
         </div>
 
-        <!-- Total Expenses & Target Progress Bar [FIXED] -->
+        <!-- Total Expenses & Target Progress Bar -->
         <div class="glass-panel rounded-3xl p-6 md:p-8 flex flex-col justify-center min-w-0 h-full">
           <div class="flex justify-between items-start gap-2">
             <div class="flex-1 min-w-0 pr-2">
@@ -196,7 +196,6 @@
             <button onclick="setGoal()" class="text-gray-400 hover:text-white transition-all hover:scale-110 p-2 flex-shrink-0 bg-white/5 rounded-xl border border-white/10 mt-1" title="Set Budget"><i data-lucide="settings-2" class="w-4 h-4"></i></button>
           </div>
           
-          <!-- Separated padding container so overflow-hidden doesn't eat the height -->
           <div class="mt-auto pt-4 md:pt-5 w-full flex-shrink-0">
               <div class="w-full bg-[#0a0a0f] rounded-full h-4 border border-white/5 overflow-hidden p-[2px] shadow-inner relative">
                 <div id="goalProgress" class="bg-gradient-to-r from-rose-500 via-rose-400 to-rose-300 h-full rounded-full transition-all duration-1000 shadow-[0_0_10px_rgba(244,63,94,0.5)] absolute top-[2px] left-[2px] bottom-[2px]" style="width: 0%"></div>
@@ -371,11 +370,14 @@
 
                 <div class="relative flex items-center bg-black/50 rounded-2xl border border-white/10 focus-within:border-blue-500 transition-colors shadow-inner overflow-hidden pr-1">
                   <span id="currencySymbol" class="pl-4 text-2xl font-black text-rose-500 transition-colors drop-shadow-md flex-shrink-0">₹</span>
-                  <input type="number" id="amount" placeholder="0.00" step="0.01" required class="w-full bg-transparent py-4 pl-0 pr-20 md:pr-24 text-2xl md:text-3xl font-black text-white focus:outline-none" />
+                  <input type="number" id="amount" placeholder="0.00" step="0.01" required class="w-full bg-transparent py-4 pl-0 pr-20 md:pr-32 text-2xl md:text-3xl font-black text-white focus:outline-none" />
                   
                   <div class="absolute right-0 flex items-center space-x-1 pr-2 bg-black/40 h-full pl-2 border-l border-white/10 backdrop-blur-md">
                       <button type="button" onclick="handleSMSPaste()" class="p-2 bg-white/5 hover:bg-blue-600/20 text-gray-300 hover:text-blue-400 rounded-xl transition-colors border border-white/5" title="Paste Transaction SMS">
                         <i id="smsIcon" data-lucide="message-square" class="w-4 h-4"></i>
+                      </button>
+                      <button type="button" onclick="handleBulkSMS()" class="p-2 bg-white/5 hover:bg-purple-600/20 text-gray-300 hover:text-purple-400 rounded-xl transition-colors border border-white/5" title="Sync Multiple Old SMS">
+                        <i id="bulkSmsIcon" data-lucide="layers" class="w-4 h-4"></i>
                       </button>
                       <label for="receiptUpload" class="p-2 bg-white/5 hover:bg-emerald-600/20 text-gray-300 hover:text-emerald-400 rounded-xl cursor-pointer transition-colors border border-white/5" title="Scan Receipt/PDF">
                         <i id="scanIcon" data-lucide="camera" class="w-4 h-4"></i>
@@ -474,7 +476,6 @@
           <div class="glass-panel rounded-3xl p-5 md:p-6 sticky top-6">
             <h3 class="text-xs font-bold text-gray-400 mb-6 uppercase tracking-widest">Auto-Fetch Media</h3>
             <form id="mediaForm" class="space-y-4">
-              <!-- MEDIA AUTO-SCRAPER LINK INPUT -->
               <div class="relative">
                 <input type="url" id="mediaLink" placeholder="Paste link (IMDb, Goodreads, Netflix...)" class="w-full glass-input rounded-xl p-4 pr-10 text-sm text-white font-medium hover:border-purple-500/30 transition-colors" />
                 <i id="mediaLinkStatusIcon" data-lucide="link" class="absolute right-4 top-1/2 transform -translate-y-1/2 w-4 h-4 text-gray-500"></i>
@@ -738,6 +739,32 @@
         } finally { 
             icon.setAttribute('data-lucide', 'message-square'); 
             icon.classList.remove('animate-spin', 'text-blue-400'); 
+            lucide.createIcons(); 
+        }
+    }
+
+    // NEW: Handle bulk historical SMS sync
+    async function handleBulkSMS() {
+        const smsText = prompt("Paste all your old SMS messages here (you can paste a giant block of text):");
+        if (!smsText || smsText.trim() === '') return;
+        const icon = document.getElementById('bulkSmsIcon');
+        icon.setAttribute('data-lucide', 'loader-2'); 
+        icon.classList.add('animate-spin', 'text-purple-400'); 
+        lucide.createIcons();
+        try {
+            const res = await fetch(`${API_BASE}/bulk-sms`, { method: 'POST', headers: apiHeaders, body: JSON.stringify({ bulkText: smsText }) });
+            if (res.ok) { 
+                alert("Bulk SMS sync initiated! Check your Action Required Queue to approve them."); 
+                loadPendingTransactions(); 
+            } else {
+                const errData = await res.json();
+                alert(`⚠️ Server Error: ${errData.message || errData.error || 'Failed to process bulk text'}`);
+            }
+        } catch (error) { 
+            alert("❌ Network Error: Could not reach the server.");
+        } finally { 
+            icon.setAttribute('data-lucide', 'layers'); 
+            icon.classList.remove('animate-spin', 'text-purple-400'); 
             lucide.createIcons(); 
         }
     }
@@ -1126,7 +1153,7 @@
       lucide.createIcons();
     }
 
-    // WATCH & READ AUTO-SCRAPER LISTENER (FOR IMDB, GOODREADS, NETFLIX LINKS)
+    // WATCH & READ AUTO-SCRAPER LISTENER
     const mediaLinkInput = document.getElementById('mediaLink');
     if (mediaLinkInput) {
       ['input', 'paste', 'change'].forEach(eventType => {
@@ -1153,7 +1180,6 @@
                       if(result.price && result.price > 0) document.getElementById('mediaPrice').value = result.price;
                       if(result.mediaRating) document.getElementById('mediaRating').value = String(result.mediaRating);
                       
-                      // Auto-select genre if returned by scraper
                       if(result.genre) {
                           const g = result.genre.toLowerCase();
                           const sel = document.getElementById('mediaGenre');

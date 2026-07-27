@@ -2,7 +2,6 @@ const express = require('express');
 const cors = require('cors');
 const { GoogleGenerativeAI } = require('@google/generative-ai');
 const multer = require('multer');
-const puppeteer = require('puppeteer');
 
 // --- FIREBASE IMPORTS ---
 const { initializeApp, cert } = require('firebase-admin/app');
@@ -127,7 +126,7 @@ app.post('/api/sync-wishlist', async (req, res) => {
 app.post('/api/jarvis-advice', async (req, res) => {
     try {
         const { transactions, monthlyBudget } = req.body;
-        const model = genAI.getGenerativeModel({ model: 'gemini-1.5-flash' }); // FIXED MODEL
+        const model = genAI.getGenerativeModel({ model: 'gemini-1.5-flash' });
         const prompt = `You are a sharp, highly intelligent personal financial assistant. 
         Analyze these transactions (with pre-calculated totals): ${JSON.stringify(transactions)}. 
         The user's monthly budget is ₹${monthlyBudget}. 
@@ -139,6 +138,51 @@ app.post('/api/jarvis-advice', async (req, res) => {
     } catch (error) { res.status(500).json({ error: 'Failed to generate' }); }
 });
 
+// BULK SMS SYNC ROUTE
+app.post('/api/bulk-sms', async (req, res) => {
+    try {
+        const { bulkText } = req.body;
+        if (!bulkText) return res.status(400).json({ error: 'No text provided' });
+
+        const model = genAI.getGenerativeModel({ model: 'gemini-1.5-flash' });
+        const prompt = `Analyze this large block of text which contains multiple historical bank SMS messages:
+        "${bulkText}"
+        
+        Extract EVERY valid transaction (income or expense) you can find. Ignore OTPs and non-financial spam.
+        Rules for "category":
+        - Expense ONLY: 'Food & Dining', 'Groceries', 'Transport', 'Utilities', 'Electricity charges', 'Rent', 'Education', 'Travel', 'Shopping', 'Entertainment', 'Health', 'Subscriptions', 'Other'.
+        - Income ONLY: 'Salary', 'Freelance', 'Investments', 'Refund', 'Other'.
+        
+        Return ONLY a JSON array of objects. Format strictly like this:
+        [
+          {"amount": 500, "merchant": "Swiggy", "date": "YYYY-MM-DD", "type": "expense", "category": "Food & Dining", "rawText": "Rs 500 debited..."},
+          {"amount": 10000, "merchant": "Salary Info", "date": "YYYY-MM-DD", "type": "income", "category": "Salary", "rawText": "Rs 10,000 credited..."}
+        ]`;
+
+        const result = await model.generateContent(prompt);
+        const jsonMatch = result.response.text().match(/\[[\s\S]*\]/);
+        if (!jsonMatch) throw new Error("No JSON array returned");
+        
+        const parsedArray = JSON.parse(jsonMatch[0]);
+        const batch = db.batch();
+
+        parsedArray.forEach(parsedData => {
+            if (parsedData.amount > 0) {
+                const txId = String(Date.now() + Math.floor(Math.random() * 1000));
+                const txData = { 
+                    id: txId, type: parsedData.type || 'expense', amount: parsedData.amount || 0, merchant: parsedData.merchant || 'Unknown Vendor', account: 'UPI', category: parsedData.category || 'Other', note: (parsedData.merchant || 'Transaction') + " (Bulk SMS)", timestamp: Date.now(), isRecurring: false, rawMessage: parsedData.rawText || 'Bulk Upload', sender: 'Bulk Sync'
+                };
+                batch.set(db.collection('pending').doc(txId), txData);
+            }
+        });
+
+        await batch.commit();
+        res.status(201).json({ message: 'Successfully synced historical SMS messages.' });
+    } catch (error) { 
+        res.status(500).json({ error: 'Bulk processing exception occurred.' }); 
+    }
+});
+
 app.post('/api/sms-webhook', async (req, res) => {
     try {
         const rawText = req.body.smsText || req.body.message || JSON.stringify(req.body);
@@ -147,47 +191,37 @@ app.post('/api/sms-webhook', async (req, res) => {
         console.log("📲 INCOMING SMS RECEIVED:", { rawText, sender });
 
         if (!rawText || rawText === '{}') {
-            console.log("❌ REJECTED: No raw text found in request body.");
             return res.status(400).json({ error: 'No SMS text provided' });
         }
 
-        const model = genAI.getGenerativeModel({ model: 'gemini-1.5-flash' }); // FIXED MODEL
+        const model = genAI.getGenerativeModel({ model: 'gemini-1.5-flash' });
         const prompt = `Analyze this bank SMS: "${rawText}". 
         Extract the amount, merchant, date, type (income/expense), and category.
         Rules for "category":
         - For expense, choose from ONLY these: 'Food & Dining', 'Groceries', 'Transport', 'Utilities', 'Electricity charges', 'Rent', 'Education', 'Travel', 'Shopping', 'Entertainment', 'Health', 'Subscriptions', 'Other'.
-        - Example mapping: Swiggy/Zomato -> 'Food & Dining'. Uber/Ola/redBus/IRCTC -> 'Transport'. Amazon/Flipkart -> 'Shopping'. Electricity/TNEB -> 'Electricity charges'. School/College -> 'Education'.
         - For income, choose from: 'Salary', 'Freelance', 'Investments', 'Refund', 'Other'.
         Return ONLY a valid JSON object matching this structure exactly: 
         {"amount": number, "merchant": string, "date": "YYYY-MM-DD", "type": "income" | "expense", "category": string}. 
         If you cannot process it, return {"error":"invalid"}`;
 
         const result = await model.generateContent(prompt);
-        
         const jsonMatch = result.response.text().match(/\{[\s\S]*\}/);
         const cleanText = jsonMatch ? jsonMatch[0] : "{}";
-        
-        console.log("🤖 GEMINI PARSED RESPONSE:", cleanText);
-
         const parsedData = JSON.parse(cleanText);
 
         const txId = String(Date.now());
         let txData;
 
         if (parsedData.error || !parsedData.amount) {
-            console.log("⚠️ AI PARSING FAILED. Saving raw message to queue as backup.");
             txData = { id: txId, type: 'expense', amount: 0, merchant: 'Parse Error', account: 'UPI', category: 'Other', note: 'AI failed to parse', timestamp: Date.now(), isRecurring: false, rawMessage: rawText, sender: sender };
         } else {
             txData = { id: txId, type: parsedData.type || 'expense', amount: parsedData.amount || 0, merchant: parsedData.merchant || 'Unknown Vendor', account: 'UPI', category: parsedData.category || 'Other', note: (parsedData.merchant || 'Transaction') + " (SMS)", timestamp: Date.now(), isRecurring: false, rawMessage: rawText, sender: sender };
         }
         
         await db.collection('pending').doc(txId).set(txData);
-        console.log("✅ SUCCESSFULLY SAVED TO FIRESTORE QUEUE:", txId);
         res.status(201).json({ message: 'Saved to pending firestore queue', data: txData });
         
     } catch (error) { 
-        console.error("💥 WEBHOOK EXCEPTION:", error);
-        
         try {
             const txId = String(Date.now());
             const failData = { id: txId, type: 'expense', amount: 0, merchant: 'System Error', account: 'UPI', category: 'Other', note: 'Webhook crashed', timestamp: Date.now(), isRecurring: false, rawMessage: req.body.smsText || 'Error', sender: 'System' };
@@ -234,7 +268,7 @@ app.post('/api/reject', async (req, res) => {
 app.post('/api/receipt-ocr', upload.single('receipt'), async (req, res) => {
     try {
         if (!req.file) return res.status(400).json({ error: 'No image element payload detected.' });
-        const model = genAI.getGenerativeModel({ model: 'gemini-1.5-flash' }); // FIXED MODEL
+        const model = genAI.getGenerativeModel({ model: 'gemini-1.5-flash' });
         const receiptImageBufferPart = { inlineData: { data: req.file.buffer.toString("base64"), mimeType: req.file.mimetype } };
         const prompt = `Analyze this complex receipt/bill image closely. Even if it is blurry, itemized, or layout-dense, extract the overall Grand Total amount paid. Return ONLY a valid JSON object in this format: { "total": number }. If no numbers are decipherable, return { "total": 0 }. Do not write markdown wrapping.`;
 
@@ -245,125 +279,40 @@ app.post('/api/receipt-ocr', upload.single('receipt'), async (req, res) => {
 });
 
 // =======================================================
-//   HIGH-SPEED PRODUCT SCRAPER (FOR WISHLIST)
+//   PROXY & AI SCRAPER (No Puppeteer - Never Crashes Render)
 // =======================================================
 app.post('/api/scrape-price', async (req, res) => {
     const targetUrl = req.body.url;
     if (!targetUrl) return res.status(400).json({ error: 'No URL provided' });
 
-    let browser;
     try {
-        browser = await puppeteer.launch({ 
-            args: ['--no-sandbox', '--disable-setuid-sandbox', '--disable-dev-shm-usage', '--disable-blink-features=AutomationControlled'] 
-        });
-        const page = await browser.newPage();
-        
-        await page.setRequestInterception(true);
-        page.on('request', (req) => {
-            if (['image', 'stylesheet', 'font', 'media'].includes(req.resourceType())) req.abort();
-            else req.continue();
-        });
+        const proxyUrl = `https://api.allorigins.win/get?url=${encodeURIComponent(targetUrl)}`;
+        const fetchRes = await fetch(proxyUrl);
+        const proxyData = await fetchRes.json();
+        const html = proxyData.contents || '';
 
-        await page.setUserAgent('Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/122.0.0.0 Safari/537.36');
-        await page.goto(targetUrl, { waitUntil: 'domcontentloaded', timeout: 15000 });
-        await new Promise(r => setTimeout(r, 1000));
+        let title = html.match(/<meta[^>]*property="og:title"[^>]*content="([^"]+)"/i)?.[1] || html.match(/<title[^>]*>([^<]+)<\/title>/i)?.[1] || '';
+        let imageUrl = html.match(/<meta[^>]*property="og:image"[^>]*content="([^"]+)"/i)?.[1] || html.match(/<img[^>]*id="landingImage"[^>]*src="([^"]+)"/i)?.[1] || '';
+        let priceMatch = html.match(/(?:₹|Rs\.?|INR)\s*([0-9,]{2,}(?:\.[0-9]{2})?)/i);
+        let price = priceMatch ? parseFloat(priceMatch[1].replace(/,/g, '')) : 0;
 
-        const scrapedData = await page.evaluate(() => {
-            let title = '';
-            let price = 0;
+        title = title.replace(/Product summary presents key product information/gi, '').split('|')[0].split('- Buy')[0].split('- Price')[0].split(': Amazon')[0].trim();
 
-            const titleEl = document.querySelector('#productTitle, span.B_NuCI, .VU-VGd, ._2xm_p6, h1._6ERyO0, .product-title, meta[property="og:title"]');
-            if (titleEl) title = titleEl.content || titleEl.innerText || '';
-            if (!title || title.includes('Online Shopping for Men')) title = document.querySelector('h1')?.innerText || document.title || '';
-
-            title = title.replace(/Product summary presents key product information/gi, '').replace(/Keyboard shortcut\s*shift\s*\+\s*alt\s*\+\s*[A-Z]/gi, '').split('|')[0].split('- Buy')[0].split('- Price')[0].split(': Amazon')[0].trim();
-
-            let pMeta = document.querySelector('meta[property="product:price:amount"]')?.content || document.querySelector('meta[property="og:price:amount"]')?.content;
-            if (pMeta) {
-                let parsedMeta = parseFloat(pMeta.replace(/[^\d.]/g, ''));
-                if (parsedMeta > 10) price = parsedMeta;
-            }
-
-            if (price === 0 || isNaN(price) || price < 10) {
-                const ldScripts = Array.from(document.querySelectorAll('script[type="application/ld+json"]'));
-                for (const script of ldScripts) {
-                    try {
-                        const parsed = JSON.parse(script.innerText);
-                        const items = Array.isArray(parsed) ? parsed : [parsed];
-                        for (const item of items) {
-                            let target = null;
-                            if (item['@type'] === 'Product') target = item;
-                            else if (item['@graph'] && Array.isArray(item['@graph'])) target = item['@graph'].find(g => g['@type'] === 'Product');
-
-                            if (target && target.offers) {
-                                let offers = Array.isArray(target.offers) ? target.offers : [target.offers];
-                                for (let offer of offers) {
-                                    if (offer.price) price = parseFloat(String(offer.price).replace(/[^\d.]/g, ''));
-                                    else if (offer.lowPrice) price = parseFloat(String(offer.lowPrice).replace(/[^\d.]/g, ''));
-                                    if (price > 10) break;
-                                }
-                                if (target.name && (!title || title.length < 5)) title = target.name.split('|')[0].split('- Buy')[0].trim();
-                            }
-                        }
-                        if (price > 10) break;
-                    } catch(e) {}
-                }
-            }
-
-            if (price === 0 || isNaN(price) || price < 10) {
-                const priceSelectors = ['div[class*="Nx9bqj"]', '.a-price-whole', '._30jeq3', '._1V76Xq', '._25b18c', '[data-qa="product-price"]', '.price', '.product-price', '.final-price', '.pdp-price', '.discounted-price', '.fbold'];
-                for (const sel of priceSelectors) {
-                    const el = document.querySelector(sel);
-                    if (el && el.innerText) {
-                        let extracted = parseFloat(el.innerText.replace(/[^\d.]/g, ''));
-                        if (extracted > 10) { price = extracted; break; }
-                    }
-                }
-            }
-
-            if (price === 0 || isNaN(price) || price < 10) {
-                let match = document.body.innerText.match(/(?:₹|Rs\.?|INR)\s*([0-9,]{2,}(?:\.[0-9]{2})?)/i);
-                if (match) price = parseFloat(match[1].replace(/,/g, ''));
-            }
-
-            const imgEl = document.querySelector('meta[property="og:image"]')?.content || document.querySelector('#landingImage, #imgTagWrapperId img, .a-dynamic-image, img._396cs4, ._2r_T1I, img[class*="v25dir"]')?.src;
-            return { title, price: price || 0, imageUrl: imgEl || '' };
-        });
-
-        await browser.close();
-
-        if (!scrapedData.title || scrapedData.title.length < 3 || scrapedData.title.includes('Online Shopping')) {
-            try {
-                const pathParts = new URL(targetUrl).pathname.split('/').filter(p => p.length > 2);
-                if (pathParts.length > 0) scrapedData.title = pathParts[0].replace(/[-_]/g, ' ').replace(/\b\w/g, l => l.toUpperCase());
-            } catch(e) {}
+        if (title.length < 3 || title.includes("Amazon.in") || title.includes("Online Shopping")) {
+            const urlPath = new URL(targetUrl).pathname.split('/').filter(p => p.length > 2)[0];
+            if (urlPath) title = urlPath.replace(/[-_]/g, ' ').replace(/\b\w/g, l => l.toUpperCase());
         }
-        res.status(200).json(scrapedData);
+
+        res.status(200).json({ title: title || 'Saved Product', price: price || 0, imageUrl: imageUrl });
     } catch (error) {
-        if (browser) await browser.close();
-        try {
-            const response = await fetch(targetUrl, { headers: { 'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64)' } });
-            const html = await response.text();
-            let titleMatch = html.match(/<title[^>]*>([^<]+)<\/title>/i);
-            let imgMatch = html.match(/<meta[^>]*property="og:image"[^>]*content="([^"]+)"[^>]*>/i);
-            let priceMatch = html.match(/(?:₹|Rs\.?|INR)\s*([0-9,]{2,})/i);
-            let cleanTitle = titleMatch ? titleMatch[1].split('|')[0].split('- Buy')[0].trim() : 'Saved Item';
-            if (cleanTitle.includes('Online Shopping')) cleanTitle = new URL(targetUrl).pathname.split('/')[1]?.replace(/[-_]/g, ' ') || 'Saved Item';
-            res.status(200).json({ title: cleanTitle, price: priceMatch ? parseFloat(priceMatch[1].replace(/,/g, '')) : 0, imageUrl: imgMatch ? imgMatch[1] : '' });
-        } catch (fallbackErr) {
-            res.status(500).json({ error: 'Scraping failed completely' });
-        }
+        res.status(500).json({ error: 'Scraping failed completely' });
     }
 });
 
-// =======================================================
-//   REVISED & FIXED MEDIA / IMDB SCRAPER ROUTE
-// =======================================================
+// MEDIA SCRAPER (IMDb/Amazon/Goodreads)
 app.post('/api/scrape-media', async (req, res) => {
     const targetUrl = req.body.url;
     if (!targetUrl) return res.status(400).json({ error: 'No URL provided' });
-
-    console.log("🎬 SCRAPING MEDIA URL:", targetUrl);
 
     try {
         const proxyUrl = `https://api.allorigins.win/get?url=${encodeURIComponent(targetUrl)}`;
@@ -438,15 +387,13 @@ app.post('/api/scrape-media', async (req, res) => {
 
         if (title) {
             title = title.replace(/\(TV Series.*?\)/gi, '').replace(/- IMDb/gi, '').split('|')[0].trim();
-            console.log("✅ SCRAPE SUCCESS:", title);
             return res.status(200).json({ title, imageUrl, mediaType, details, genre, mediaRating: rating, price });
         } else {
             throw new Error("Proxy fetch successful but title was empty");
         }
     } catch(e) {
-        console.log("⚠️ Fast fetch failed, falling back to Gemini AI scraper...");
         try {
-            const model = genAI.getGenerativeModel({ model: 'gemini-1.5-flash' }); // FIXED MODEL
+            const model = genAI.getGenerativeModel({ model: 'gemini-1.5-flash' });
             const prompt = `Act as a web scraper. I am giving you a URL: "${targetUrl}". Guess the movie or book name from the URL string itself. Return ONLY a JSON object predicting the metadata: {"title":"[guessed title]","imageUrl":"","mediaType":"Movie","genre":"Other","details":"","mediaRating":"5"}`;
             const aiRes = await model.generateContent(prompt);
             const aiJsonMatch = aiRes.response.text().match(/\{[\s\S]*\}/);
@@ -460,7 +407,43 @@ app.post('/api/scrape-media', async (req, res) => {
     }
 });
 
-// FAST FIREWALL BYPASS ROUTE
+// WATCH & READ BOOKMARKLET
+app.get('/api/bookmark-media', async (req, res) => {
+    const targetUrl = req.query.url;
+    if (!targetUrl) return res.send("No URL provided.");
+    res.send(`
+        <html style="background:#050505; color:#a855f7; font-family:sans-serif; text-align:center; padding:2rem;">
+            <h2 style="margin-top: 20px; color:#a855f7;">🎬 Media Vault</h2>
+            <div id="manualEntryBox" style="background: rgba(255,255,255,0.05); padding: 20px; border-radius: 16px; margin-top: 20px; border: 1px solid rgba(255,255,255,0.1);">
+                <input type="text" id="manualName" placeholder="Movie / Book Name" style="background: rgba(0,0,0,0.5); color: #fff; font-size: 16px; border: 1px solid rgba(255,255,255,0.2); border-radius: 12px; padding: 15px; width: 100%; outline: none; margin-bottom: 10px;">
+                <select id="mediaType" style="background: rgba(0,0,0,0.5); color: #fff; border: 1px solid rgba(255,255,255,0.2); border-radius: 12px; padding: 12px; width: 100%; outline: none; margin-bottom: 10px;">
+                    <option value="Movie">🎬 Movie</option><option value="Book">📚 Book</option><option value="Series">📺 Series</option><option value="Anime">🎌 Anime</option>
+                </select>
+                <select id="mediaGenre" style="background: rgba(0,0,0,0.5); color: #fff; border: 1px solid rgba(255,255,255,0.2); border-radius: 12px; padding: 12px; width: 100%; outline: none; margin-bottom: 15px;">
+                    <option value="Action">Action</option><option value="Comedy">Comedy</option><option value="Drama">Drama</option><option value="Sci-Fi">Sci-Fi</option><option value="Romance">Romance</option><option value="Shounen">Shounen</option><option value="Isekai">Isekai</option><option value="Other">Other</option>
+                </select>
+                <button onclick="saveManualData()" style="background: #9333ea; color: white; border: none; padding: 15px; width: 100%; border-radius: 12px; font-size: 16px; font-weight: bold; cursor: pointer; transition: 0.2s;">Save to Vault</button>
+            </div>
+            <script>
+                function saveManualData() {
+                    const btn = document.querySelector('button');
+                    const nameInput = document.getElementById('manualName').value || 'Saved Media';
+                    const typeInput = document.getElementById('mediaType').value;
+                    const genreInput = document.getElementById('mediaGenre').value;
+                    btn.innerText = "Syncing to Cloud..."; btn.style.background = "#10b981";
+                    fetch('https://wallet-y7yv.onrender.com/api/add-wishlist', {
+                        method: 'POST', headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ id: String(Date.now()), title: nameInput, price: 0, link: '${targetUrl}', imageUrl: '', category: 'MEDIA NODE', wishCategory: typeInput, mediaGenre: genreInput, mediaStatus: 'Planned', isMedia: true, timestamp: Date.now() })
+                    }).then(() => {
+                        document.getElementById('manualEntryBox').innerHTML = '<h1 style="color:#10b981; font-size: 30px; margin: 30px 0;">Saved! 🎬</h1>';
+                        setTimeout(() => window.close(), 1500);
+                    });
+                }
+            </script>
+        </html>
+    `);
+});
+
 app.get('/api/bookmark-auto', async (req, res) => {
     const { title, price, link, img, cat } = req.query;
     if (!link || !price) return res.send("Error: Missing parameters.");
@@ -471,45 +454,19 @@ app.get('/api/bookmark-auto', async (req, res) => {
     const safeImg = img ? decodeURIComponent(img) : '';
     const safeCat = cat ? decodeURIComponent(cat) : hostname;
 
-    const item = { 
-        id: String(Date.now()), title: safeTitle, price: parseFloat(price) || 0, link: decodeURIComponent(link), imageUrl: safeImg, category: safeCat, wishCategory: 'Other', timestamp: Date.now()
-    };
-    
+    const item = { id: String(Date.now()), title: safeTitle, price: parseFloat(price) || 0, link: decodeURIComponent(link), imageUrl: safeImg, category: safeCat, wishCategory: 'Other', timestamp: Date.now() };
     try {
         await db.collection('wishlist').doc(item.id).set(item);
-        res.send(`
-            <html style="background:#050505; color:#10b981; font-family:sans-serif; padding:2rem; display:flex; justify-content:center; align-items:center; height:100vh; overflow:hidden;">
-                <div style="background:rgba(255,255,255,0.05); padding:30px; border-radius:24px; text-align:center; max-width:400px; border:1px solid rgba(255,255,255,0.1); box-shadow:0 10px 40px rgba(0,0,0,0.5);">
-                    <h2 style="margin-top:0; color:#3b82f6; font-size:24px;">🎯 Wishlist Added</h2>
-                    ${safeImg ? `<img src="${safeImg}" style="width:100%; height:180px; object-fit:cover; border-radius:12px; margin:15px 0;">` : ''}
-                    <div style="margin: 10px 0;"><span style="background:rgba(59,130,246,0.15); color:#60a5fa; padding:4px 10px; border-radius:8px; font-size:11px; font-weight:bold; text-transform:uppercase;">${safeCat}</span></div>
-                    <p style="color:#f3f4f6; margin: 15px 0; font-size: 14px; line-height: 1.4; font-weight:bold;">${safeTitle}</p>
-                    <h1 style="color:#10b981; font-size: 40px; margin: 10px 0;">₹${item.price.toLocaleString()}</h1>
-                    <p style="color:#10b981; font-weight:bold;">Saved to Database Successfully!</p>
-                    <p style="color:#6b7280; font-size:12px; margin-top:20px;">Closing window...</p>
-                </div>
-                <script>setTimeout(() => window.close(), 2500);</script>
-            </html>
-        `);
-    } catch(err) {
-        res.send("<h2 style='color:#ef4444; text-align:center;'>Database sync failed.</h2>");
-    }
+        res.send(`<script>window.close();</script>`);
+    } catch(err) { res.send("Database error."); }
 });
 
-// MANUAL FALLBACK BOOKMARKLET ROUTE
 app.get('/api/bookmark', async (req, res) => {
     const targetUrl = req.query.url;
-    if (!targetUrl) return res.send("No URL provided.");
-    
     res.send(`
         <html style="background:#050505; color:#10b981; font-family:sans-serif; text-align:center; padding:2rem;">
-            <h2 style="margin-top: 20px; color:#3b82f6;">🎯 Wallet V2.0</h2>
             <div id="manualEntryBox" style="background: rgba(255,255,255,0.05); padding: 20px; border-radius: 16px; margin-top: 20px; border: 1px solid rgba(255,255,255,0.1);">
-                <p style="color:#ef4444; font-size:12px; font-weight:bold; text-transform:uppercase; letter-spacing:1px; margin-bottom:15px;">⚠️ Enter Details Manually</p>
                 <input type="text" id="manualName" placeholder="Product Name" style="background: rgba(0,0,0,0.5); color: #fff; font-size: 16px; border: 1px solid rgba(255,255,255,0.2); border-radius: 12px; padding: 15px; width: 100%; outline: none; margin-bottom: 10px;">
-                <select id="manualCategory" style="background: rgba(0,0,0,0.5); color: #fff; border: 1px solid rgba(255,255,255,0.2); border-radius: 12px; padding: 12px; width: 100%; outline: none; margin-bottom: 12px;">
-                    <option value="Gadgets">💻 Gadgets</option><option value="Apparel">👕 Apparel</option><option value="Lifestyle">✨ Lifestyle</option><option value="Other">📦 Other</option>
-                </select>
                 <input type="number" id="manualPrice" placeholder="Enter Price (₹)" style="background: rgba(0,0,0,0.5); color: #10b981; font-size: 24px; font-weight: bold; text-align: center; border: 1px solid rgba(255,255,255,0.2); border-radius: 12px; padding: 15px; width: 100%; outline: none; margin-bottom: 15px;" autofocus>
                 <button onclick="saveManualData()" style="background: #3b82f6; color: white; border: none; padding: 15px; width: 100%; border-radius: 12px; font-size: 16px; font-weight: bold; cursor: pointer; transition: 0.2s;">Save to Tracker</button>
             </div>
@@ -518,16 +475,12 @@ app.get('/api/bookmark', async (req, res) => {
                     const btn = document.querySelector('button');
                     const priceInput = document.getElementById('manualPrice').value;
                     const nameInput = document.getElementById('manualName').value || 'Saved Item';
-                    const catInput = document.getElementById('manualCategory').value;
                     if (!priceInput || priceInput <= 0) return;
-                    btn.innerText = "Syncing to Cloud..."; btn.style.background = "#10b981";
+                    btn.innerText = "Syncing..."; btn.style.background = "#10b981";
                     fetch('https://wallet-y7yv.onrender.com/api/add-wishlist', {
                         method: 'POST', headers: { 'Content-Type': 'application/json' },
-                        body: JSON.stringify({ id: String(Date.now()), title: nameInput, price: parseFloat(priceInput), link: '${targetUrl}', imageUrl: '', category: 'MANUAL', wishCategory: catInput, timestamp: Date.now() })
-                    }).then(() => {
-                        document.getElementById('manualEntryBox').innerHTML = '<h1 style="color:#10b981; font-size: 30px; margin: 30px 0;">Saved! 🎯</h1>';
-                        setTimeout(() => window.close(), 1500);
-                    });
+                        body: JSON.stringify({ id: String(Date.now()), title: nameInput, price: parseFloat(priceInput), link: '${targetUrl}', imageUrl: '', category: 'MANUAL', wishCategory: 'Other', timestamp: Date.now() })
+                    }).then(() => { document.getElementById('manualEntryBox').innerHTML = '<h2>Saved!</h2>'; setTimeout(() => window.close(), 1500); });
                 }
             </script>
         </html>
