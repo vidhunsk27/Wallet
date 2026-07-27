@@ -127,7 +127,7 @@ app.post('/api/sync-wishlist', async (req, res) => {
 app.post('/api/jarvis-advice', async (req, res) => {
     try {
         const { transactions, monthlyBudget } = req.body;
-        const model = genAI.getGenerativeModel({ model: 'gemini-2.5-flash' });
+        const model = genAI.getGenerativeModel({ model: 'gemini-1.5-flash' }); // FIXED MODEL
         const prompt = `You are a sharp, highly intelligent personal financial assistant. 
         Analyze these transactions (with pre-calculated totals): ${JSON.stringify(transactions)}. 
         The user's monthly budget is ₹${monthlyBudget}. 
@@ -139,9 +139,6 @@ app.post('/api/jarvis-advice', async (req, res) => {
     } catch (error) { res.status(500).json({ error: 'Failed to generate' }); }
 });
 
-// -----------------------------------------------------
-// 🛡️ REWRITTEN BULLETPROOF SMS WEBHOOK
-// -----------------------------------------------------
 app.post('/api/sms-webhook', async (req, res) => {
     try {
         const rawText = req.body.smsText || req.body.message || JSON.stringify(req.body);
@@ -154,7 +151,7 @@ app.post('/api/sms-webhook', async (req, res) => {
             return res.status(400).json({ error: 'No SMS text provided' });
         }
 
-        const model = genAI.getGenerativeModel({ model: 'gemini-2.5-flash' });
+        const model = genAI.getGenerativeModel({ model: 'gemini-1.5-flash' }); // FIXED MODEL
         const prompt = `Analyze this bank SMS: "${rawText}". 
         Extract the amount, merchant, date, type (income/expense), and category.
         Rules for "category":
@@ -167,7 +164,6 @@ app.post('/api/sms-webhook', async (req, res) => {
 
         const result = await model.generateContent(prompt);
         
-        // Bulletproof JSON extraction incase Gemini adds markdown
         const jsonMatch = result.response.text().match(/\{[\s\S]*\}/);
         const cleanText = jsonMatch ? jsonMatch[0] : "{}";
         
@@ -192,7 +188,6 @@ app.post('/api/sms-webhook', async (req, res) => {
     } catch (error) { 
         console.error("💥 WEBHOOK EXCEPTION:", error);
         
-        // ULTIMATE FALLBACK: If everything crashes, STILL save the raw message so it's not lost
         try {
             const txId = String(Date.now());
             const failData = { id: txId, type: 'expense', amount: 0, merchant: 'System Error', account: 'UPI', category: 'Other', note: 'Webhook crashed', timestamp: Date.now(), isRecurring: false, rawMessage: req.body.smsText || 'Error', sender: 'System' };
@@ -239,7 +234,7 @@ app.post('/api/reject', async (req, res) => {
 app.post('/api/receipt-ocr', upload.single('receipt'), async (req, res) => {
     try {
         if (!req.file) return res.status(400).json({ error: 'No image element payload detected.' });
-        const model = genAI.getGenerativeModel({ model: 'gemini-2.5-flash' });
+        const model = genAI.getGenerativeModel({ model: 'gemini-1.5-flash' }); // FIXED MODEL
         const receiptImageBufferPart = { inlineData: { data: req.file.buffer.toString("base64"), mimeType: req.file.mimetype } };
         const prompt = `Analyze this complex receipt/bill image closely. Even if it is blurry, itemized, or layout-dense, extract the overall Grand Total amount paid. Return ONLY a valid JSON object in this format: { "total": number }. If no numbers are decipherable, return { "total": 0 }. Do not write markdown wrapping.`;
 
@@ -361,9 +356,9 @@ app.post('/api/scrape-price', async (req, res) => {
     }
 });
 
-// -----------------------------------------------------
-// 🛡️ REWRITTEN BULLETPROOF MEDIA SCRAPER (Proxy-Fetch for IMDb bypass)
-// -----------------------------------------------------
+// =======================================================
+//   REVISED & FIXED MEDIA / IMDB SCRAPER ROUTE
+// =======================================================
 app.post('/api/scrape-media', async (req, res) => {
     const targetUrl = req.body.url;
     if (!targetUrl) return res.status(400).json({ error: 'No URL provided' });
@@ -371,7 +366,6 @@ app.post('/api/scrape-media', async (req, res) => {
     console.log("🎬 SCRAPING MEDIA URL:", targetUrl);
 
     try {
-        // Use an anonymous free proxy fetch to completely bypass IMDb / Cloudflare blocks
         const proxyUrl = `https://api.allorigins.win/get?url=${encodeURIComponent(targetUrl)}`;
         const fetchRes = await fetch(proxyUrl);
         const proxyData = await fetchRes.json();
@@ -388,12 +382,10 @@ app.post('/api/scrape-media', async (req, res) => {
         let genre = 'Other';
         let price = 0;
 
-        // Auto-detect Media Type
         if (/book|goodreads|isbn|pages/i.test(targetUrl + title + description)) mediaType = 'Book';
         else if (/series|tv|season|episode/i.test(targetUrl + title + description)) mediaType = 'Series';
         if (/anime|myanimelist/i.test(targetUrl + title + description)) mediaType = 'Anime';
 
-        // Parse embedded JSON-LD blocks (Extracts rich data from IMDb, Amazon, Goodreads directly)
         if (jsonLdRawMatch) {
             for (let block of jsonLdRawMatch) {
                 try {
@@ -408,14 +400,12 @@ app.post('/api/scrape-media', async (req, res) => {
                             if (item.name && !title) title = item.name;
                             if (item.image && !imageUrl) imageUrl = typeof item.image === 'string' ? item.image : item.image?.url;
                             
-                            // IMDb Rating extraction
                             if (item.aggregateRating?.ratingValue) {
                                 const s = parseFloat(item.aggregateRating.ratingValue);
                                 rating = s >= 8.5 ? '5' : s >= 7.5 ? '4' : s >= 6.5 ? '3' : s >= 5.0 ? '2' : '1';
                                 if (!details.includes('⭐')) details += `⭐ ${s}/10`;
                             }
                             
-                            // Duration extraction
                             if (item.duration) {
                                 const durMatch = String(item.duration).match(/PT(?:(\d+)H)?(?:(\d+)M)?/i);
                                 if (durMatch) {
@@ -426,7 +416,6 @@ app.post('/api/scrape-media', async (req, res) => {
                                 }
                             }
 
-                            // Genre extraction
                             if (item.genre) {
                                 const gArr = Array.isArray(item.genre) ? item.genre : [item.genre];
                                 genre = gArr[0].split(',')[0].trim();
@@ -437,13 +426,11 @@ app.post('/api/scrape-media', async (req, res) => {
             }
         }
 
-        // Duration fallback
         if (!details.includes('⏱️')) {
             let durationMatch = html.match(/(\d{1,2}h\s*\d{1,2}m|\d{2,3} mins?)/i);
             if (durationMatch) details += (details ? ` • ⏱️ ${durationMatch[1]}` : `⏱️ ${durationMatch[1]}`);
         }
 
-        // Pages fallback
         if (mediaType === 'Book' && !details.includes('pages')) {
             let pagesMatch = html.match(/(\d{1,4})\s*pages/i);
             if (pagesMatch) details += (details ? ` • 📖 ${pagesMatch[1]} pages` : `📖 ${pagesMatch[1]} pages`);
@@ -459,7 +446,7 @@ app.post('/api/scrape-media', async (req, res) => {
     } catch(e) {
         console.log("⚠️ Fast fetch failed, falling back to Gemini AI scraper...");
         try {
-            const model = genAI.getGenerativeModel({ model: 'gemini-2.5-flash' });
+            const model = genAI.getGenerativeModel({ model: 'gemini-1.5-flash' }); // FIXED MODEL
             const prompt = `Act as a web scraper. I am giving you a URL: "${targetUrl}". Guess the movie or book name from the URL string itself. Return ONLY a JSON object predicting the metadata: {"title":"[guessed title]","imageUrl":"","mediaType":"Movie","genre":"Other","details":"","mediaRating":"5"}`;
             const aiRes = await model.generateContent(prompt);
             const aiJsonMatch = aiRes.response.text().match(/\{[\s\S]*\}/);
