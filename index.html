@@ -196,13 +196,21 @@
             <button onclick="setGoal()" class="text-gray-400 hover:text-white transition-all hover:scale-110 p-2 flex-shrink-0 bg-white/5 rounded-xl border border-white/10 mt-1" title="Set Budget"><i data-lucide="settings-2" class="w-4 h-4"></i></button>
           </div>
           
-          <div class="mt-3 grid grid-cols-3 gap-1 text-[10px] font-bold">
-            <div class="min-w-0"><p class="text-gray-500 mb-0.5 uppercase tracking-wider">UPI</p><p id="expUPI" class="text-rose-400/80 truncate">₹0</p></div>
-            <div class="min-w-0"><p class="text-gray-500 mb-0.5 uppercase tracking-wider">Card</p><p id="expCard" class="text-rose-400/80 truncate">₹0</p></div>
-            <div class="min-w-0"><p class="text-gray-500 mb-0.5 uppercase tracking-wider">Cash</p><p id="expCash" class="text-rose-400/80 truncate">₹0</p></div>
+          <!-- SPENT VIA CASH/CARD/UPI INDICATORS -->
+          <div class="w-full h-1.5 flex rounded-full overflow-hidden mt-4 mb-2 bg-gray-800 border border-white/5">
+              <div id="barExpUPI" title="UPI: ₹0" class="h-full bg-blue-500 transition-all duration-1000" style="width: 33.3%"></div>
+              <div id="barExpCard" title="Card: ₹0" class="h-full bg-purple-500 transition-all duration-1000" style="width: 33.3%"></div>
+              <div id="barExpCash" title="Cash: ₹0" class="h-full bg-emerald-500 transition-all duration-1000" style="width: 33.3%"></div>
           </div>
 
-          <div class="mt-auto pt-4 md:pt-5 w-full flex-shrink-0">
+          <div class="mt-1 mb-2 grid grid-cols-3 gap-1 text-[9px] font-bold">
+            <div class="min-w-0"><p class="text-gray-500 uppercase tracking-wider flex items-center"><span class="w-1.5 h-1.5 rounded-full bg-blue-500 mr-1.5 flex-shrink-0"></span>UPI Spent</p><p id="expUPI" class="text-rose-400/80 truncate">₹0</p></div>
+            <div class="min-w-0"><p class="text-gray-500 uppercase tracking-wider flex items-center"><span class="w-1.5 h-1.5 rounded-full bg-purple-500 mr-1.5 flex-shrink-0"></span>Card Spent</p><p id="expCard" class="text-rose-400/80 truncate">₹0</p></div>
+            <div class="min-w-0"><p class="text-gray-500 uppercase tracking-wider flex items-center"><span class="w-1.5 h-1.5 rounded-full bg-emerald-500 mr-1.5 flex-shrink-0"></span>Cash Spent</p><p id="expCash" class="text-rose-400/80 truncate">₹0</p></div>
+          </div>
+
+          <!-- BUDGET THRESHOLD GLOWING PROGRESS BAR -->
+          <div class="mt-auto pt-2 w-full flex-shrink-0">
               <div class="w-full bg-[#0a0a0f] rounded-full h-4 border border-white/5 overflow-hidden p-[2px] shadow-inner relative">
                 <div id="goalProgress" class="bg-gradient-to-r from-rose-500 via-rose-400 to-rose-300 h-full rounded-full transition-all duration-1000 shadow-[0_0_10px_rgba(244,63,94,0.5)] absolute top-[2px] left-[2px] bottom-[2px]" style="width: 0%"></div>
               </div>
@@ -267,9 +275,16 @@
             <div class="glass-panel rounded-3xl p-5 md:p-6 flex flex-col h-full">
               <div class="flex justify-between items-center mb-6">
                 <h3 class="text-xs font-bold text-gray-400 uppercase tracking-widest">Analytics</h3>
-                <button onclick="getAIInsights()" id="aiButton" class="bg-blue-600/20 text-blue-400 hover:bg-blue-600 hover:text-white px-3 py-1.5 rounded-lg text-xs font-bold transition-all border border-blue-500/30 flex items-center shadow-[0_0_15px_rgba(59,130,246,0.2)]">
-                  <i data-lucide="sparkles" class="w-3 h-3 mr-1"></i> Jarvis AI
-                </button>
+                
+                <!-- NEW: AI REPORT BUTTON ADDED -->
+                <div class="flex gap-2">
+                    <button onclick="getAIInsights()" id="aiButton" class="bg-blue-600/20 text-blue-400 hover:bg-blue-600 hover:text-white px-3 py-1.5 rounded-lg text-[10px] md:text-xs font-bold transition-all border border-blue-500/30 flex items-center shadow-[0_0_15px_rgba(59,130,246,0.2)] whitespace-nowrap">
+                      <i data-lucide="sparkles" class="w-3 h-3 mr-1"></i> Quick AI
+                    </button>
+                    <button onclick="openAIReport()" class="bg-purple-600/20 text-purple-400 hover:bg-purple-600 hover:text-white px-3 py-1.5 rounded-lg text-[10px] md:text-xs font-bold transition-all border border-purple-500/30 flex items-center shadow-[0_0_15px_rgba(168,85,247,0.2)] whitespace-nowrap">
+                      <i data-lucide="file-text" class="w-3 h-3 mr-1"></i> Full Report
+                    </button>
+                </div>
               </div>
               <div id="aiTerminal" class="hidden mb-4 p-4 bg-black/60 border border-blue-500/30 rounded-xl text-xs md:text-sm text-gray-300 min-h-[80px] shadow-inner tracking-tight leading-relaxed"></div>
               
@@ -567,6 +582,44 @@
 
   </div>
 
+  <!-- AI COMPREHENSIVE REPORT MODAL -->
+  <div id="aiReportModal" class="hidden fixed inset-0 bg-black/90 backdrop-blur-md z-[100] flex items-center justify-center p-4 transition-opacity overflow-y-auto">
+      <div class="glass-panel modal-active rounded-3xl w-full max-w-5xl my-auto border border-white/10 shadow-[0_0_60px_rgba(59,130,246,0.15)] relative flex flex-col max-h-[90vh]">
+          <div class="absolute inset-0 bg-gradient-to-br from-blue-500/5 to-transparent pointer-events-none rounded-3xl"></div>
+          <div class="flex justify-between items-center p-6 border-b border-white/5 relative z-10 flex-shrink-0">
+             <h3 class="text-white font-black uppercase tracking-widest text-sm flex items-center drop-shadow-sm"><i data-lucide="file-text" class="w-5 h-5 mr-2 text-blue-400"></i> AI Comprehensive Financial Report</h3>
+             <button onclick="closeAIReport()" class="text-gray-500 hover:text-white transition-colors bg-white/5 hover:bg-white/10 p-2 rounded-lg border border-white/5"><i data-lucide="x" class="w-5 h-5"></i></button>
+          </div>
+          
+          <div class="p-6 overflow-y-auto relative z-10 w-full space-y-8 flex-grow">
+              
+              <!-- AI Narrative Text Section -->
+              <div id="aiReportContent" class="text-sm text-gray-300 leading-relaxed space-y-4 tracking-wide">
+                  <div class="flex items-center text-blue-400 animate-pulse font-bold"><i data-lucide="loader-2" class="w-5 h-5 mr-2 animate-spin"></i> Jarvis is analyzing your entire financial history...</div>
+              </div>
+
+              <!-- Selected Month Graphical Breakdown -->
+              <div class="border-t border-white/10 pt-6">
+                  <h4 class="text-xs font-bold text-gray-400 uppercase tracking-widest mb-4">Current Selected Period Breakdown</h4>
+                  <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                      <div class="h-64 bg-black/40 rounded-xl p-4 border border-white/5 shadow-inner"><canvas id="reportPieMonth"></canvas></div>
+                      <div class="h-64 bg-black/40 rounded-xl p-4 border border-white/5 shadow-inner"><canvas id="reportBarMonth"></canvas></div>
+                  </div>
+              </div>
+
+              <!-- All-Time Graphical Breakdown -->
+              <div class="border-t border-white/10 pt-6">
+                  <h4 class="text-xs font-bold text-gray-400 uppercase tracking-widest mb-4">All-Time Overall Metrics</h4>
+                  <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                      <div class="h-64 bg-black/40 rounded-xl p-4 border border-white/5 shadow-inner"><canvas id="reportPieAll"></canvas></div>
+                      <div class="h-64 bg-black/40 rounded-xl p-4 border border-white/5 shadow-inner"><canvas id="reportBarAll"></canvas></div>
+                  </div>
+              </div>
+
+          </div>
+      </div>
+  </div>
+
   <!-- ALL-TIME TIMELINE MODAL -->
   <div id="allTimeModal" class="hidden fixed inset-0 bg-black/90 backdrop-blur-md z-[100] flex items-center justify-center p-4 transition-opacity">
       <div class="glass-panel modal-active rounded-3xl w-full max-w-5xl h-[80vh] border border-white/10 shadow-[0_0_60px_rgba(59,130,246,0.15)] relative overflow-hidden flex flex-col">
@@ -685,11 +738,12 @@
     let monthlyWishlistSavings = parseFloat(localStorage.getItem('walletWishlistSavings')) || 0;
     let aiTypingTimer; 
     let allTimeChartObj = null;
+    let reportCharts = {};
 
     document.getElementById('wishlistSavingsInput').value = monthlyWishlistSavings || '';
 
-    const EXPENSE_CATEGORIES = ['Food & Dining', 'Groceries', 'Transport', 'Utilities', 'Electricity charges', 'Rent', 'Education', 'Travel', 'Shopping', 'Entertainment', 'Health', 'Subscriptions', 'Other'];
-    const INCOME_CATEGORIES = ['Salary', 'Freelance', 'Investments', 'Refund', 'Other'];
+    const EXPENSE_CATEGORIES = ['Food & Dining', 'Groceries', 'Transport', 'Utilities', 'Electricity charges', 'Rent', 'Education', 'Travel', 'Shopping', 'Entertainment', 'Health', 'Subscriptions', 'Investments', 'Other'];
+    const INCOME_CATEGORIES = ['Salary', 'Freelance', 'Refund', 'Other'];
     
     const CAT_COLORS = { 
         'Food & Dining': '#ef4444',     
@@ -702,12 +756,12 @@
         'Education': '#38bdf8',         
         'Travel': '#2dd4bf',            
         'Shopping': '#a855f7',          
-        'Salary': '#10b981',            
+        'Salary': '#10b981',
+        'Investments': '#059669',             
         'Other': '#9ca3af',             
         'Entertainment': '#ec4899',     
         'Health': '#84cc16',            
         'Freelance': '#34d399',         
-        'Investments': '#059669',       
         'Refund': '#6ee7b7'             
     };
 
@@ -1056,6 +1110,83 @@
             typeWriter();
         } catch (err) { term.innerHTML = '<span class="text-red-400">Analysis stream offline.</span>'; btn.disabled = false; btn.classList.remove('opacity-50', 'cursor-not-allowed'); }
     }
+
+    // --- NEW: COMPREHENSIVE AI REPORT MODAL LOGIC ---
+    async function openAIReport() {
+        document.getElementById('aiReportModal').classList.remove('hidden');
+        const content = document.getElementById('aiReportContent');
+        content.innerHTML = '<div class="flex items-center text-blue-400 animate-pulse font-bold"><i data-lucide="loader-2" class="w-5 h-5 mr-2 animate-spin"></i> Jarvis is compiling your comprehensive report...</div>';
+        lucide.createIcons();
+
+        // Destroy old charts to prevent overlapping render
+        Object.values(reportCharts).forEach(c => c.destroy());
+        reportCharts = {};
+
+        const getCatData = (txs) => {
+            const data = {};
+            txs.filter(t=>t.type==='expense').forEach(t => data[t.category] = (data[t.category]||0)+t.amount);
+            return Object.entries(data).sort((a,b)=>b[1]-a[1]);
+        };
+
+        const getTimelineData = (txs) => {
+            const dates = {};
+            const sorted = [...txs].sort((a,b)=>a.timestamp-b.timestamp);
+            if(sorted.length === 0) return { labels:[], inc:[], exp:[] };
+            sorted.forEach(t => {
+                const d = new Date(t.timestamp);
+                const m = `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}`;
+                if(!dates[m]) dates[m] = {i:0,e:0};
+                t.type === 'income' ? dates[m].i += t.amount : dates[m].e += t.amount;
+            });
+            const labels = Object.keys(dates);
+            return { labels, inc: labels.map(l=>dates[l].i), exp: labels.map(l=>dates[l].e) };
+        };
+
+        const filtered = transactions.filter(t => {
+            if (selectedMonth !== 'all') { 
+                const d = new Date(t.timestamp); 
+                if (`${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}` !== selectedMonth) return false; 
+            }
+            return true;
+        });
+
+        // Current Period Breakdown
+        const monthCats = getCatData(filtered);
+        reportCharts.pieMonth = new Chart(document.getElementById('reportPieMonth').getContext('2d'), {
+            type: 'doughnut', data: { labels: monthCats.map(c=>c[0]), datasets: [{ data: monthCats.map(c=>c[1]), backgroundColor: monthCats.map(c=>getColor(c[0])), borderWidth: 2, borderColor: '#08080a' }] },
+            options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { position: 'right', labels:{color:'#9ca3af', font:{family:'Fredoka'}} } } }
+        });
+
+        reportCharts.barMonth = new Chart(document.getElementById('reportBarMonth').getContext('2d'), {
+            type: 'bar', data: { labels: monthCats.slice(0,7).map(c=>c[0]), datasets: [{ label: 'Top Expenses', data: monthCats.slice(0,7).map(c=>c[1]), backgroundColor: '#f43f5e', borderRadius:4 }] },
+            options: { responsive: true, maintainAspectRatio: false, scales: { x:{ticks:{color:'#9ca3af'}}, y:{ticks:{color:'#9ca3af'}} }, plugins: { legend:{display:false} } }
+        });
+
+        // All-Time Breakdown
+        const allCats = getCatData(transactions);
+        reportCharts.pieAll = new Chart(document.getElementById('reportPieAll').getContext('2d'), {
+            type: 'doughnut', data: { labels: allCats.map(c=>c[0]), datasets: [{ data: allCats.map(c=>c[1]), backgroundColor: allCats.map(c=>getColor(c[0])), borderWidth: 2, borderColor: '#08080a' }] },
+            options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { position: 'right', labels:{color:'#9ca3af', font:{family:'Fredoka'}} } } }
+        });
+
+        const allTime = getTimelineData(transactions);
+        reportCharts.barAll = new Chart(document.getElementById('reportBarAll').getContext('2d'), {
+            type: 'bar', data: { labels: allTime.labels, datasets: [ { label:'Income', data:allTime.inc, backgroundColor:'#10b981', borderRadius:4 }, { label:'Expense', data:allTime.exp, backgroundColor:'#f43f5e', borderRadius:4 } ] },
+            options: { responsive: true, maintainAspectRatio: false, scales: { x:{ticks:{color:'#9ca3af'}}, y:{ticks:{color:'#9ca3af'}} } }
+        });
+
+        try {
+            const res = await fetch(`${API_BASE}/jarvis-report`, { 
+                method: 'POST', headers: apiHeaders, 
+                body: JSON.stringify({ transactions: { monthly: filtered, allTime: transactions }, monthlyBudget: expenseGoal, selectedMonth }) 
+            });
+            const data = await res.json();
+            content.innerHTML = data.report;
+        } catch(e) {
+            content.innerHTML = '<span class="text-red-400">Failed to generate AI report. Connect to server.</span>';
+        }
+    }
+    function closeAIReport() { document.getElementById('aiReportModal').classList.add('hidden'); }
 
     document.getElementById('transactionForm').addEventListener('submit', async (e) => {
         e.preventDefault(); 
@@ -1624,10 +1755,23 @@
       document.getElementById('barCard').title = `Card: ₹${bal.Card.toLocaleString()}`;
       document.getElementById('barCash').title = `Cash: ₹${bal.Cash.toLocaleString()}`;
 
-      // Set Expense Breakdown
       document.getElementById('expUPI').innerText = `₹${expBal.UPI.toLocaleString()}`;
       document.getElementById('expCard').innerText = `₹${expBal.Card.toLocaleString()}`;
       document.getElementById('expCash').innerText = `₹${expBal.Cash.toLocaleString()}`;
+      
+      const totalExpLiquid = expBal.UPI + expBal.Card + expBal.Cash;
+      if(totalExpLiquid > 0) {
+          document.getElementById('barExpUPI').style.width = `${(expBal.UPI/totalExpLiquid)*100}%`;
+          document.getElementById('barExpCard').style.width = `${(expBal.Card/totalExpLiquid)*100}%`;
+          document.getElementById('barExpCash').style.width = `${(expBal.Cash/totalExpLiquid)*100}%`;
+      } else {
+          document.getElementById('barExpUPI').style.width = `33.3%`;
+          document.getElementById('barExpCard').style.width = `33.3%`;
+          document.getElementById('barExpCash').style.width = `33.3%`;
+      }
+      document.getElementById('barExpUPI').title = `UPI Spent: ₹${expBal.UPI.toLocaleString()}`;
+      document.getElementById('barExpCard').title = `Card Spent: ₹${expBal.Card.toLocaleString()}`;
+      document.getElementById('barExpCash').title = `Cash Spent: ₹${expBal.Cash.toLocaleString()}`;
 
       const filtered = transactions.filter(t => {
           if (selectedMonth !== 'all') { 

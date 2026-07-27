@@ -138,6 +138,35 @@ app.post('/api/jarvis-advice', async (req, res) => {
     } catch (error) { res.status(500).json({ error: 'Failed to generate' }); }
 });
 
+// DETAILED AI FULL REPORT ROUTE
+app.post('/api/jarvis-report', async (req, res) => {
+    try {
+        const { transactions, monthlyBudget, selectedMonth } = req.body;
+        const model = genAI.getGenerativeModel({ model: 'gemini-1.5-flash' });
+        const prompt = `You are a professional financial advisor AI. 
+        The user has requested a comprehensive detailed report.
+        Here is their data for the selected period (${selectedMonth}): ${JSON.stringify(transactions.monthly.slice(0, 40))} (showing top transactions).
+        Their monthly budget goal is ₹${monthlyBudget}.
+        
+        Write a structured HTML report (do NOT wrap in \`\`\`html, output raw HTML tags).
+        Use these exact Tailwind classes for styling your elements:
+        - Headers: <h2 class="text-lg font-black text-blue-400 mb-2 mt-4 uppercase tracking-widest">
+        - Paragraphs: <p class="mb-3 text-sm text-gray-300">
+        - Lists: <ul class="list-disc pl-5 mb-3 text-gray-300 space-y-1">
+        - Highlights: <strong class="text-white font-bold">
+        
+        Include:
+        1. Executive Summary of their overall health.
+        2. Analysis of the current selected period (Income vs Expense, Burn Rate).
+        3. Insights into their payment methods (UPI vs Card vs Cash) and specific categories (e.g. Investments, Dining).
+        4. 3 actionable, specific recommendations to improve savings and achieve their goal.`;
+
+        const result = await model.generateContent(prompt);
+        let htmlReport = result.response.text().replace(/```html/gi, '').replace(/```/g, '').trim();
+        res.status(200).json({ report: htmlReport });
+    } catch (error) { res.status(500).json({ error: 'Failed to generate report' }); }
+});
+
 // BULK SMS SYNC ROUTE
 app.post('/api/bulk-sms', async (req, res) => {
     try {
@@ -150,8 +179,8 @@ app.post('/api/bulk-sms', async (req, res) => {
         
         Extract EVERY valid transaction (income or expense) you can find. Ignore OTPs and non-financial spam.
         Rules for "category":
-        - Expense ONLY: 'Food & Dining', 'Groceries', 'Transport', 'Utilities', 'Electricity charges', 'Rent', 'Education', 'Travel', 'Shopping', 'Entertainment', 'Health', 'Subscriptions', 'Other'.
-        - Income ONLY: 'Salary', 'Freelance', 'Investments', 'Refund', 'Other'.
+        - Expense ONLY: 'Food & Dining', 'Groceries', 'Transport', 'Utilities', 'Electricity charges', 'Rent', 'Education', 'Travel', 'Shopping', 'Entertainment', 'Health', 'Subscriptions', 'Investments', 'Other'.
+        - Income ONLY: 'Salary', 'Freelance', 'Refund', 'Other'.
         
         Return ONLY a JSON array of objects. Format strictly like this:
         [
@@ -198,8 +227,8 @@ app.post('/api/sms-webhook', async (req, res) => {
         const prompt = `Analyze this bank SMS: "${rawText}". 
         Extract the amount, merchant, date, type (income/expense), and category.
         Rules for "category":
-        - For expense, choose from ONLY these: 'Food & Dining', 'Groceries', 'Transport', 'Utilities', 'Electricity charges', 'Rent', 'Education', 'Travel', 'Shopping', 'Entertainment', 'Health', 'Subscriptions', 'Other'.
-        - For income, choose from: 'Salary', 'Freelance', 'Investments', 'Refund', 'Other'.
+        - For expense, choose from ONLY these: 'Food & Dining', 'Groceries', 'Transport', 'Utilities', 'Electricity charges', 'Rent', 'Education', 'Travel', 'Shopping', 'Entertainment', 'Health', 'Subscriptions', 'Investments', 'Other'.
+        - For income, choose from: 'Salary', 'Freelance', 'Refund', 'Other'.
         Return ONLY a valid JSON object matching this structure exactly: 
         {"amount": number, "merchant": string, "date": "YYYY-MM-DD", "type": "income" | "expense", "category": string}. 
         If you cannot process it, return {"error":"invalid"}`;
@@ -306,7 +335,7 @@ app.post('/api/scrape-price', async (req, res) => {
         if (price === 0) {
             try {
                 const model = genAI.getGenerativeModel({ model: 'gemini-1.5-flash' });
-                const prompt = `Act as a web scraper. Predict the product title and approximate price from this URL: "${targetUrl}". Return ONLY JSON: {"title":"[predicted name]","price": 0}`;
+                const prompt = `Act as a web scraper. Predict the precise product name/title and approximate price from this URL: "${targetUrl}". Return ONLY JSON: {"title":"[predicted name]","price": 0}`;
                 const aiRes = await model.generateContent(prompt);
                 const aiJsonMatch = aiRes.response.text().match(/\{[\s\S]*\}/);
                 const aiJson = JSON.parse(aiJsonMatch ? aiJsonMatch[0] : "{}");
@@ -410,7 +439,7 @@ app.post('/api/scrape-media', async (req, res) => {
         console.log("⚠️ Fast fetch failed, falling back to Gemini AI scraper...");
         try {
             const model = genAI.getGenerativeModel({ model: 'gemini-1.5-flash' });
-            const prompt = `Act as a web scraper. I am giving you a URL: "${targetUrl}". Guess the movie or book name from the URL string itself. Return ONLY a JSON object predicting the metadata: {"title":"[guessed title]","imageUrl":"","mediaType":"Movie","genre":"Other","details":"","mediaRating":"5"}`;
+            const prompt = `Act as a web scraper. I am giving you a URL: "${targetUrl}". Guess the precise movie or book name from the URL string itself. Return ONLY a JSON object predicting the metadata: {"title":"[predicted name]","imageUrl":"","mediaType":"Movie","genre":"Other","details":"","mediaRating":"5"}`;
             const aiRes = await model.generateContent(prompt);
             const aiJsonMatch = aiRes.response.text().match(/\{[\s\S]*\}/);
             const aiJson = JSON.parse(aiJsonMatch ? aiJsonMatch[0] : "{}");
@@ -471,7 +500,7 @@ app.get('/api/bookmark', async (req, res) => {
                 <p style="color:#ef4444; font-size:12px; font-weight:bold; text-transform:uppercase; letter-spacing:1px; margin-bottom:15px;">⚠️ Enter Details Manually</p>
                 <input type="text" id="manualName" placeholder="Product Name" style="background: rgba(0,0,0,0.5); color: #fff; font-size: 16px; border: 1px solid rgba(255,255,255,0.2); border-radius: 12px; padding: 15px; width: 100%; outline: none; margin-bottom: 10px;">
                 <select id="manualCategory" style="background: rgba(0,0,0,0.5); color: #fff; border: 1px solid rgba(255,255,255,0.2); border-radius: 12px; padding: 12px; width: 100%; outline: none; margin-bottom: 12px;">
-                    <option value="Gadgets">💻 Gadgets</option><option value="Apparel">👕 Apparel</option><option value="Lifestyle">✨ Lifestyle</option><option value="Other">📦 Other</option>
+                    <option value="Gadgets">💻 Gadgets</option><option value="Apparel">👕 Apparel</option><option value="Lifestyle">✨ Lifestyle</option><option value="Books">📚 Books</option><option value="Electronics">🔌 Electronics</option><option value="Gaming">🎮 Gaming</option><option value="Furniture">🛋️ Furniture</option><option value="Travel">✈️ Travel</option><option value="Vehicles">🚗 Vehicles</option><option value="Health">⚕️ Health</option><option value="Other">📦 Other</option>
                 </select>
                 <input type="number" id="manualPrice" placeholder="Enter Price (₹)" style="background: rgba(0,0,0,0.5); color: #10b981; font-size: 24px; font-weight: bold; text-align: center; border: 1px solid rgba(255,255,255,0.2); border-radius: 12px; padding: 15px; width: 100%; outline: none; margin-bottom: 15px;" autofocus>
                 <button onclick="saveManualData()" style="background: #3b82f6; color: white; border: none; padding: 15px; width: 100%; border-radius: 12px; font-size: 16px; font-weight: bold; cursor: pointer; transition: 0.2s;">Save to Tracker</button>
