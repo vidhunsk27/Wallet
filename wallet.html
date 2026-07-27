@@ -186,7 +186,7 @@
           <h2 id="allTimeIncome" class="text-3xl lg:text-4xl xl:text-5xl font-black text-emerald-400 mt-2 truncate whitespace-nowrap">₹0</h2>
         </div>
 
-        <!-- Total Expenses & Target Progress Bar -->
+        <!-- Total Expenses & Target Progress Bar [FIXED] -->
         <div class="glass-panel rounded-3xl p-6 md:p-8 flex flex-col justify-center min-w-0 h-full">
           <div class="flex justify-between items-start gap-2">
             <div class="flex-1 min-w-0 pr-2">
@@ -196,9 +196,10 @@
             <button onclick="setGoal()" class="text-gray-400 hover:text-white transition-all hover:scale-110 p-2 flex-shrink-0 bg-white/5 rounded-xl border border-white/10 mt-1" title="Set Budget"><i data-lucide="settings-2" class="w-4 h-4"></i></button>
           </div>
           
+          <!-- Separated padding container so overflow-hidden doesn't eat the height -->
           <div class="mt-auto pt-4 md:pt-5 w-full flex-shrink-0">
-              <div class="w-full bg-black/60 rounded-full h-3.5 border border-white/10 overflow-hidden p-[1.5px] shadow-inner">
-                <div id="goalProgress" class="bg-gradient-to-r from-rose-500 via-orange-400 to-amber-400 h-full rounded-full transition-all duration-1000 shadow-[0_0_12px_rgba(244,63,94,0.6)]" style="width: 0%"></div>
+              <div class="w-full bg-[#0a0a0f] rounded-full h-4 border border-white/5 overflow-hidden p-[2px] shadow-inner relative">
+                <div id="goalProgress" class="bg-gradient-to-r from-rose-500 via-rose-400 to-rose-300 h-full rounded-full transition-all duration-1000 shadow-[0_0_10px_rgba(244,63,94,0.5)] absolute top-[2px] left-[2px] bottom-[2px]" style="width: 0%"></div>
               </div>
           </div>
           <p id="goalText" class="text-xs md:text-sm text-gray-300 mt-3 text-right font-bold truncate whitespace-nowrap">Target Threshold: ₹0 (0%)</p>
@@ -473,6 +474,7 @@
           <div class="glass-panel rounded-3xl p-5 md:p-6 sticky top-6">
             <h3 class="text-xs font-bold text-gray-400 mb-6 uppercase tracking-widest">Auto-Fetch Media</h3>
             <form id="mediaForm" class="space-y-4">
+              <!-- MEDIA AUTO-SCRAPER LINK INPUT -->
               <div class="relative">
                 <input type="url" id="mediaLink" placeholder="Paste link (IMDb, Goodreads, Netflix...)" class="w-full glass-input rounded-xl p-4 pr-10 text-sm text-white font-medium hover:border-purple-500/30 transition-colors" />
                 <i id="mediaLinkStatusIcon" data-lucide="link" class="absolute right-4 top-1/2 transform -translate-y-1/2 w-4 h-4 text-gray-500"></i>
@@ -1124,7 +1126,7 @@
       lucide.createIcons();
     }
 
-    // WATCH & READ AUTO-SCRAPER LISTENER
+    // WATCH & READ AUTO-SCRAPER LISTENER (FOR IMDB, GOODREADS, NETFLIX LINKS)
     const mediaLinkInput = document.getElementById('mediaLink');
     if (mediaLinkInput) {
       ['input', 'paste', 'change'].forEach(eventType => {
@@ -1151,6 +1153,7 @@
                       if(result.price && result.price > 0) document.getElementById('mediaPrice').value = result.price;
                       if(result.mediaRating) document.getElementById('mediaRating').value = String(result.mediaRating);
                       
+                      // Auto-select genre if returned by scraper
                       if(result.genre) {
                           const g = result.genre.toLowerCase();
                           const sel = document.getElementById('mediaGenre');

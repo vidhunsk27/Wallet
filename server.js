@@ -139,14 +139,17 @@ app.post('/api/jarvis-advice', async (req, res) => {
     } catch (error) { res.status(500).json({ error: 'Failed to generate' }); }
 });
 
+// -----------------------------------------------------
+// 🛡️ REWRITTEN BULLETPROOF SMS WEBHOOK
+// -----------------------------------------------------
 app.post('/api/sms-webhook', async (req, res) => {
     try {
-        const rawText = req.body.smsText || req.body.message;
+        const rawText = req.body.smsText || req.body.message || JSON.stringify(req.body);
         const sender = req.body.sender || 'Bank SMS';
 
         console.log("📲 INCOMING SMS RECEIVED:", { rawText, sender });
 
-        if (!rawText) {
+        if (!rawText || rawText === '{}') {
             console.log("❌ REJECTED: No raw text found in request body.");
             return res.status(400).json({ error: 'No SMS text provided' });
         }
@@ -163,28 +166,41 @@ app.post('/api/sms-webhook', async (req, res) => {
         If you cannot process it, return {"error":"invalid"}`;
 
         const result = await model.generateContent(prompt);
-        let cleanText = result.response.text().replace(/```json/gi, '').replace(/```/g, '').trim();
+        
+        // Bulletproof JSON extraction incase Gemini adds markdown
+        const jsonMatch = result.response.text().match(/\{[\s\S]*\}/);
+        const cleanText = jsonMatch ? jsonMatch[0] : "{}";
         
         console.log("🤖 GEMINI PARSED RESPONSE:", cleanText);
 
         const parsedData = JSON.parse(cleanText);
 
-        if (parsedData.error) {
-            console.log("⚠️ REJECTED BY GEMINI: Message was not a valid transaction.");
-            return res.status(400).json({ message: 'Invalid SMS format' });
-        }
-
         const txId = String(Date.now());
-        const txData = { 
-            id: txId, type: parsedData.type || 'expense', amount: parsedData.amount || 0, merchant: parsedData.merchant || 'Unknown Vendor', account: 'UPI', category: parsedData.category || 'Other', note: (parsedData.merchant || 'Transaction') + " (SMS)", timestamp: Date.now(), isRecurring: false, rawMessage: rawText, sender: sender
-        };
+        let txData;
+
+        if (parsedData.error || !parsedData.amount) {
+            console.log("⚠️ AI PARSING FAILED. Saving raw message to queue as backup.");
+            txData = { id: txId, type: 'expense', amount: 0, merchant: 'Parse Error', account: 'UPI', category: 'Other', note: 'AI failed to parse', timestamp: Date.now(), isRecurring: false, rawMessage: rawText, sender: sender };
+        } else {
+            txData = { id: txId, type: parsedData.type || 'expense', amount: parsedData.amount || 0, merchant: parsedData.merchant || 'Unknown Vendor', account: 'UPI', category: parsedData.category || 'Other', note: (parsedData.merchant || 'Transaction') + " (SMS)", timestamp: Date.now(), isRecurring: false, rawMessage: rawText, sender: sender };
+        }
         
         await db.collection('pending').doc(txId).set(txData);
         console.log("✅ SUCCESSFULLY SAVED TO FIRESTORE QUEUE:", txId);
         res.status(201).json({ message: 'Saved to pending firestore queue', data: txData });
+        
     } catch (error) { 
         console.error("💥 WEBHOOK EXCEPTION:", error);
-        res.status(500).json({ error: 'Webhook processing exception occurred.' }); 
+        
+        // ULTIMATE FALLBACK: If everything crashes, STILL save the raw message so it's not lost
+        try {
+            const txId = String(Date.now());
+            const failData = { id: txId, type: 'expense', amount: 0, merchant: 'System Error', account: 'UPI', category: 'Other', note: 'Webhook crashed', timestamp: Date.now(), isRecurring: false, rawMessage: req.body.smsText || 'Error', sender: 'System' };
+            await db.collection('pending').doc(txId).set(failData);
+            res.status(201).json({ message: 'Saved raw error to queue', data: failData });
+        } catch (dbErr) {
+            res.status(500).json({ error: 'Fatal webhook crash.' }); 
+        }
     }
 });
 
@@ -345,124 +361,114 @@ app.post('/api/scrape-price', async (req, res) => {
     }
 });
 
-// =======================================================
-//   REVISED & FIXED MEDIA / IMDB SCRAPER ROUTE
-// =======================================================
+// -----------------------------------------------------
+// 🛡️ REWRITTEN BULLETPROOF MEDIA SCRAPER (Proxy-Fetch for IMDb bypass)
+// -----------------------------------------------------
 app.post('/api/scrape-media', async (req, res) => {
     const targetUrl = req.body.url;
     if (!targetUrl) return res.status(400).json({ error: 'No URL provided' });
 
     console.log("🎬 SCRAPING MEDIA URL:", targetUrl);
 
-    let browser;
     try {
-        browser = await puppeteer.launch({ 
-            args: ['--no-sandbox', '--disable-setuid-sandbox', '--disable-dev-shm-usage', '--disable-blink-features=AutomationControlled'] 
-        });
-        const page = await browser.newPage();
-        
-        await page.setRequestInterception(true);
-        page.on('request', (req) => {
-            if (['image', 'stylesheet', 'font', 'media'].includes(req.resourceType())) req.abort();
-            else req.continue();
-        });
+        // Use an anonymous free proxy fetch to completely bypass IMDb / Cloudflare blocks
+        const proxyUrl = `https://api.allorigins.win/get?url=${encodeURIComponent(targetUrl)}`;
+        const fetchRes = await fetch(proxyUrl);
+        const proxyData = await fetchRes.json();
+        const html = proxyData.contents || '';
 
-        await page.setUserAgent('Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0.0.0 Safari/537.36');
-        await page.goto(targetUrl, { waitUntil: 'domcontentloaded', timeout: 15000 });
-        await new Promise(r => setTimeout(r, 1500));
+        let title = html.match(/<meta\s+property="og:title"\s+content="([^"]+)"/i)?.[1] || html.match(/<title[^>]*>([^<]+)<\/title>/i)?.[1] || '';
+        let imageUrl = html.match(/<meta\s+property="og:image"\s+content="([^"]+)"/i)?.[1] || '';
+        let description = html.match(/<meta\s+property="og:description"\s+content="([^"]+)"/i)?.[1] || html.match(/<meta\s+name="description"\s+content="([^"]+)"/i)?.[1] || '';
+        let jsonLdRawMatch = html.match(/<script\s+type="application\/ld\+json">([\s\S]*?)<\/script>/gi);
 
-        const scrapedData = await page.evaluate(() => {
-            let title = '';
-            let imageUrl = '';
-            let mediaType = 'Movie';
-            let details = '';
-            let price = 0;
-            let rating = 'Unrated';
-            let genre = 'Other';
+        let details = '';
+        let mediaType = 'Movie';
+        let rating = 'Unrated';
+        let genre = 'Other';
+        let price = 0;
 
-            // Try parsing JSON-LD Schema (IMDb, Goodreads, etc)
-            const jsonLdScripts = Array.from(document.querySelectorAll('script[type="application/ld+json"]'));
-            for (const script of jsonLdScripts) {
+        // Auto-detect Media Type
+        if (/book|goodreads|isbn|pages/i.test(targetUrl + title + description)) mediaType = 'Book';
+        else if (/series|tv|season|episode/i.test(targetUrl + title + description)) mediaType = 'Series';
+        if (/anime|myanimelist/i.test(targetUrl + title + description)) mediaType = 'Anime';
+
+        // Parse embedded JSON-LD blocks (Extracts rich data from IMDb, Amazon, Goodreads directly)
+        if (jsonLdRawMatch) {
+            for (let block of jsonLdRawMatch) {
                 try {
-                    const parsed = JSON.parse(script.innerText);
-                    const items = Array.isArray(parsed) ? parsed : [parsed];
+                    let inner = block.replace(/<script[^>]*>/i, '').replace(/<\/script>/i, '');
+                    let parsed = JSON.parse(inner);
+                    let items = Array.isArray(parsed) ? parsed : [parsed];
                     
-                    for (const item of items) {
-                        const nodes = item['@graph'] ? item['@graph'] : [item];
-                        for(const node of nodes) {
-                            const type = node['@type'] || '';
+                    for (let item of items) {
+                        if (item['@graph']) items.push(...item['@graph']);
+                        
+                        if (['Movie', 'TVSeries', 'Book', 'Product'].includes(item['@type']) || item.aggregateRating) {
+                            if (item.name && !title) title = item.name;
+                            if (item.image && !imageUrl) imageUrl = typeof item.image === 'string' ? item.image : item.image?.url;
                             
-                            if (['Movie', 'TVSeries', 'TVEpisode', 'Book', 'Product'].includes(type) || node.aggregateRating) {
-                                if (node.name) title = node.name;
-                                if (node.image) imageUrl = typeof node.image === 'string' ? node.image : node.image.url;
-                                
-                                if (type === 'TVSeries' || type === 'TVEpisode') mediaType = 'Series';
-                                else if (type === 'Book') mediaType = 'Book';
-
-                                if (node.aggregateRating?.ratingValue) {
-                                    const score = parseFloat(node.aggregateRating.ratingValue);
-                                    rating = score >= 8.5 ? '5' : score >= 7.5 ? '4' : score >= 6.5 ? '3' : score >= 5.0 ? '2' : '1';
-                                    details += `⭐ ${score}/10`;
+                            // IMDb Rating extraction
+                            if (item.aggregateRating?.ratingValue) {
+                                const s = parseFloat(item.aggregateRating.ratingValue);
+                                rating = s >= 8.5 ? '5' : s >= 7.5 ? '4' : s >= 6.5 ? '3' : s >= 5.0 ? '2' : '1';
+                                if (!details.includes('⭐')) details += `⭐ ${s}/10`;
+                            }
+                            
+                            // Duration extraction
+                            if (item.duration) {
+                                const durMatch = String(item.duration).match(/PT(?:(\d+)H)?(?:(\d+)M)?/i);
+                                if (durMatch) {
+                                    const h = durMatch[1] ? `${durMatch[1]}h` : '';
+                                    const m = durMatch[2] ? `${durMatch[2]}m` : '';
+                                    const dStr = `⏱️ ${h} ${m}`.trim();
+                                    if (!details.includes(dStr)) details += (details ? ` • ${dStr}` : dStr);
                                 }
+                            }
 
-                                if (node.duration) {
-                                    const durMatch = String(node.duration).match(/PT(?:(\d+)H)?(?:(\d+)M)?/i);
-                                    if (durMatch) {
-                                        const h = durMatch[1] ? `${durMatch[1]}h` : '';
-                                        const m = durMatch[2] ? `${durMatch[2]}m` : '';
-                                        const dStr = `⏱️ ${h} ${m}`.trim();
-                                        details += details ? ` • ${dStr}` : dStr;
-                                    }
-                                }
-
-                                if (node.genre) {
-                                    const gArr = Array.isArray(node.genre) ? node.genre : [node.genre];
-                                    genre = gArr[0].split(',')[0].trim();
-                                }
-                                break;
+                            // Genre extraction
+                            if (item.genre) {
+                                const gArr = Array.isArray(item.genre) ? item.genre : [item.genre];
+                                genre = gArr[0].split(',')[0].trim();
                             }
                         }
-                        if(title) break;
                     }
-                } catch(e) {}
+                } catch (e) {}
             }
+        }
 
-            // Fallbacks if JSON-LD missing
-            if (!title) {
-                const metaTitle = document.querySelector('meta[property="og:title"]')?.content || document.title || '';
-                title = metaTitle.replace(/\(TV Series.*?\)/gi, '').replace(/- IMDb/gi, '').split('|')[0].trim();
-            }
+        // Duration fallback
+        if (!details.includes('⏱️')) {
+            let durationMatch = html.match(/(\d{1,2}h\s*\d{1,2}m|\d{2,3} mins?)/i);
+            if (durationMatch) details += (details ? ` • ⏱️ ${durationMatch[1]}` : `⏱️ ${durationMatch[1]}`);
+        }
 
-            if (!imageUrl) {
-                imageUrl = document.querySelector('meta[property="og:image"]')?.content || '';
-            }
-            
-            if (mediaType === 'Movie' && /anime|myanimelist/i.test(document.title + document.body.innerText)) {
-                mediaType = 'Anime';
-            }
+        // Pages fallback
+        if (mediaType === 'Book' && !details.includes('pages')) {
+            let pagesMatch = html.match(/(\d{1,4})\s*pages/i);
+            if (pagesMatch) details += (details ? ` • 📖 ${pagesMatch[1]} pages` : `📖 ${pagesMatch[1]} pages`);
+        }
 
-            return { title, imageUrl, mediaType, details, price, mediaRating: rating, genre };
-        });
-
-        await browser.close();
-        console.log("✅ MEDIA SCRAPE COMPLETE:", scrapedData);
-        res.status(200).json(scrapedData);
-    } catch (error) {
-        if (browser) await browser.close();
-        
-        // Backup direct fetch scraper
-        try {
-            console.log("⚠️ Fallback to direct fetch scraping...");
-            const fetchRes = await fetch(targetUrl, { headers: { 'User-Agent': 'Mozilla/5.0' } });
-            const html = await fetchRes.text();
-            
-            let title = html.match(/<meta[^>]*property="og:title"[^>]*content="([^"]+)"/i)?.[1] || '';
-            let imageUrl = html.match(/<meta[^>]*property="og:image"[^>]*content="([^"]+)"/i)?.[1] || '';
+        if (title) {
             title = title.replace(/\(TV Series.*?\)/gi, '').replace(/- IMDb/gi, '').split('|')[0].trim();
-
-            res.status(200).json({ title: title || 'Saved Media', imageUrl, mediaType: 'Movie', details: 'Web Media', price: 0, mediaRating: '5', genre: 'Other' });
+            console.log("✅ SCRAPE SUCCESS:", title);
+            return res.status(200).json({ title, imageUrl, mediaType, details, genre, mediaRating: rating, price });
+        } else {
+            throw new Error("Proxy fetch successful but title was empty");
+        }
+    } catch(e) {
+        console.log("⚠️ Fast fetch failed, falling back to Gemini AI scraper...");
+        try {
+            const model = genAI.getGenerativeModel({ model: 'gemini-2.5-flash' });
+            const prompt = `Act as a web scraper. I am giving you a URL: "${targetUrl}". Guess the movie or book name from the URL string itself. Return ONLY a JSON object predicting the metadata: {"title":"[guessed title]","imageUrl":"","mediaType":"Movie","genre":"Other","details":"","mediaRating":"5"}`;
+            const aiRes = await model.generateContent(prompt);
+            const aiJsonMatch = aiRes.response.text().match(/\{[\s\S]*\}/);
+            const aiJson = JSON.parse(aiJsonMatch ? aiJsonMatch[0] : "{}");
+            
+            if (aiJson.title) return res.status(200).json(aiJson);
+            throw new Error("AI Fallback failed");
         } catch(fallbackErr) {
-            res.status(500).json({ error: 'Media scraping failed' });
+            res.status(500).json({ error: 'Media scraping completely failed' });
         }
     }
 });
