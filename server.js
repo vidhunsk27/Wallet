@@ -279,7 +279,7 @@ app.post('/api/receipt-ocr', upload.single('receipt'), async (req, res) => {
 });
 
 // =======================================================
-//   PROXY & AI SCRAPER (No Puppeteer - Never Crashes Render)
+//   PROXY & AI SCRAPER (No Puppeteer - Ultra Fast / No Render crashes)
 // =======================================================
 app.post('/api/scrape-price', async (req, res) => {
     const targetUrl = req.body.url;
