@@ -196,6 +196,12 @@
             <button onclick="setGoal()" class="text-gray-400 hover:text-white transition-all hover:scale-110 p-2 flex-shrink-0 bg-white/5 rounded-xl border border-white/10 mt-1" title="Set Budget"><i data-lucide="settings-2" class="w-4 h-4"></i></button>
           </div>
           
+          <div class="mt-3 grid grid-cols-3 gap-1 text-[10px] font-bold">
+            <div class="min-w-0"><p class="text-gray-500 mb-0.5 uppercase tracking-wider">UPI</p><p id="expUPI" class="text-rose-400/80 truncate">₹0</p></div>
+            <div class="min-w-0"><p class="text-gray-500 mb-0.5 uppercase tracking-wider">Card</p><p id="expCard" class="text-rose-400/80 truncate">₹0</p></div>
+            <div class="min-w-0"><p class="text-gray-500 mb-0.5 uppercase tracking-wider">Cash</p><p id="expCash" class="text-rose-400/80 truncate">₹0</p></div>
+          </div>
+
           <div class="mt-auto pt-4 md:pt-5 w-full flex-shrink-0">
               <div class="w-full bg-[#0a0a0f] rounded-full h-4 border border-white/5 overflow-hidden p-[2px] shadow-inner relative">
                 <div id="goalProgress" class="bg-gradient-to-r from-rose-500 via-rose-400 to-rose-300 h-full rounded-full transition-all duration-1000 shadow-[0_0_10px_rgba(244,63,94,0.5)] absolute top-[2px] left-[2px] bottom-[2px]" style="width: 0%"></div>
@@ -454,6 +460,12 @@
                   <option value="Apparel">👕 APPAREL</option>
                   <option value="Lifestyle">✨ LIFESTYLE</option>
                   <option value="Books">📚 BOOKS</option>
+                  <option value="Electronics">🔌 ELECTRONICS</option>
+                  <option value="Gaming">🎮 GAMING</option>
+                  <option value="Furniture">🛋️ FURNITURE</option>
+                  <option value="Travel">✈️ TRAVEL</option>
+                  <option value="Vehicles">🚗 VEHICLES</option>
+                  <option value="Health">⚕️ HEALTH</option>
                   <option value="Other">📦 OTHER</option>
                 </select>
               </div>
@@ -616,13 +628,34 @@
                   <label class="block text-[10px] font-bold text-gray-500 uppercase tracking-wider mb-1 pl-1">Title</label>
                   <input type="text" id="ewTitle" class="w-full glass-input rounded-xl p-3.5 text-sm text-white font-medium hover:border-blue-500/30 transition-colors shadow-inner">
               </div>
-              <div>
-                  <label class="block text-[10px] font-bold text-gray-500 uppercase tracking-wider mb-1 pl-1">Price (₹)</label>
-                  <input type="number" id="ewPrice" class="w-full glass-input rounded-xl p-3.5 text-sm text-white font-black hover:border-blue-500/30 transition-colors shadow-inner">
+              <div class="grid grid-cols-2 gap-4">
+                  <div>
+                      <label class="block text-[10px] font-bold text-gray-500 uppercase tracking-wider mb-1 pl-1">Price (₹)</label>
+                      <input type="number" id="ewPrice" class="w-full glass-input rounded-xl p-3.5 text-sm text-white font-black hover:border-blue-500/30 transition-colors shadow-inner">
+                  </div>
+                  <div>
+                      <label class="block text-[10px] font-bold text-gray-500 uppercase tracking-wider mb-1 pl-1">Store Name</label>
+                      <input type="text" id="ewStore" class="w-full glass-input rounded-xl p-3.5 text-sm text-white font-bold hover:border-blue-500/30 transition-colors shadow-inner uppercase tracking-wider" placeholder="e.g. AMAZON">
+                  </div>
               </div>
               <div>
-                  <label class="block text-[10px] font-bold text-gray-500 uppercase tracking-wider mb-1 pl-1">Category Label</label>
-                  <input type="text" id="ewCategory" class="w-full glass-input rounded-xl p-3.5 text-sm text-white font-medium hover:border-blue-500/30 transition-colors shadow-inner" placeholder="e.g. Amazon, Action, Gadgets">
+                  <label class="block text-[10px] font-bold text-gray-500 uppercase tracking-wider mb-1 pl-1">Wish Category</label>
+                  <select id="ewCategory" class="w-full glass-input rounded-xl p-3.5 text-sm text-white font-bold hover:border-blue-500/30 transition-colors shadow-inner uppercase tracking-wider">
+                      <option value="Gadgets">💻 GADGETS</option>
+                      <option value="Apparel">👕 APPAREL</option>
+                      <option value="Lifestyle">✨ LIFESTYLE</option>
+                      <option value="Books">📚 BOOKS</option>
+                      <option value="Electronics">🔌 ELECTRONICS</option>
+                      <option value="Gaming">🎮 GAMING</option>
+                      <option value="Furniture">🛋️ FURNITURE</option>
+                      <option value="Travel">✈️ TRAVEL</option>
+                      <option value="Vehicles">🚗 VEHICLES</option>
+                      <option value="Health">⚕️ HEALTH</option>
+                      <option value="Movie">🎬 MOVIE</option>
+                      <option value="Series">📺 SERIES</option>
+                      <option value="Anime">🎌 ANIME</option>
+                      <option value="Other">📦 OTHER</option>
+                  </select>
               </div>
               <div>
                   <label class="block text-[10px] font-bold text-gray-500 uppercase tracking-wider mb-1 pl-1">Image Link</label>
@@ -1086,7 +1119,7 @@
         } 
     }
 
-    // --- NEW: EDIT WISHLIST & MEDIA MODAL LOGIC ---
+    // --- EDIT WISHLIST & MEDIA MODAL LOGIC ---
     function openEditWishlistModal(id, isMedia = false) {
         const list = isMedia ? mediaItems : wishlistItems;
         const item = list.find(w => w.id === id);
@@ -1094,7 +1127,13 @@
         document.getElementById('ewId').value = id;
         document.getElementById('ewTitle').value = item.title || '';
         document.getElementById('ewPrice').value = item.price || 0;
-        document.getElementById('ewCategory').value = item.wishCategory || item.category || 'Other';
+        document.getElementById('ewStore').value = item.category || 'STORE NODE';
+        
+        const sel = document.getElementById('ewCategory');
+        let valToSet = item.wishCategory || 'Other';
+        let found = Array.from(sel.options).some(o => o.value === valToSet);
+        sel.value = found ? valToSet : 'Other';
+
         document.getElementById('ewImage').value = item.imageUrl || '';
         document.getElementById('editWishlistModal').classList.remove('hidden');
         lucide.createIcons();
@@ -1118,11 +1157,8 @@
 
         list[itemIndex].title = document.getElementById('ewTitle').value || 'Saved Item';
         list[itemIndex].price = parseFloat(document.getElementById('ewPrice').value) || 0;
-        
-        // Determine whether to update store category or type
-        if (isMedia) list[itemIndex].wishCategory = document.getElementById('ewCategory').value || 'Other';
-        else list[itemIndex].category = document.getElementById('ewCategory').value || 'Other';
-        
+        list[itemIndex].category = document.getElementById('ewStore').value.toUpperCase() || 'STORE NODE';
+        list[itemIndex].wishCategory = document.getElementById('ewCategory').value || 'Other';
         list[itemIndex].imageUrl = document.getElementById('ewImage').value || '';
         
         closeEditWishlistModal();
@@ -1548,10 +1584,18 @@
       
       let allTimeInc = 0, allTimeExp = 0; 
       let bal = { UPI: 0, Card: 0, Cash: 0 };
+      let expBal = { UPI: 0, Card: 0, Cash: 0 };
       
       transactions.forEach(t => { 
-          if (t.type === 'income') { allTimeInc += t.amount; if(bal[t.account]!==undefined) bal[t.account] += t.amount; } 
-          if (t.type === 'expense') { allTimeExp += t.amount; if(bal[t.account]!==undefined) bal[t.account] -= t.amount; } 
+          if (t.type === 'income') { 
+              allTimeInc += t.amount; 
+              if(bal[t.account]!==undefined) bal[t.account] += t.amount; 
+          } 
+          if (t.type === 'expense') { 
+              allTimeExp += t.amount; 
+              if(bal[t.account]!==undefined) bal[t.account] -= t.amount; 
+              if(expBal[t.account]!==undefined) expBal[t.account] += t.amount;
+          } 
       });
       
       document.getElementById('allTimeIncome').innerText = `₹${allTimeInc.toLocaleString()}`; 
@@ -1576,10 +1620,14 @@
           document.getElementById('barCash').style.width = `33.3%`;
       }
 
-      // Add exact Tooltips so user can hover over the progress bar and see the amounts
       document.getElementById('barUPI').title = `UPI: ₹${bal.UPI.toLocaleString()}`;
       document.getElementById('barCard').title = `Card: ₹${bal.Card.toLocaleString()}`;
       document.getElementById('barCash').title = `Cash: ₹${bal.Cash.toLocaleString()}`;
+
+      // Set Expense Breakdown
+      document.getElementById('expUPI').innerText = `₹${expBal.UPI.toLocaleString()}`;
+      document.getElementById('expCard').innerText = `₹${expBal.Card.toLocaleString()}`;
+      document.getElementById('expCash').innerText = `₹${expBal.Cash.toLocaleString()}`;
 
       const filtered = transactions.filter(t => {
           if (selectedMonth !== 'all') { 
@@ -1610,7 +1658,6 @@
       document.getElementById('currMonthNet').innerText = periodNet >= 0 ? `NET: + ₹${periodNet.toLocaleString()} SAVED` : `NET: - ₹${Math.abs(periodNet).toLocaleString()} DEFICIT`;
       document.getElementById('currMonthNet').className = periodNet >= 0 ? 'text-xs md:text-sm font-bold uppercase tracking-wider text-emerald-400 truncate whitespace-nowrap' : 'text-xs md:text-sm font-bold uppercase tracking-wider text-rose-400 truncate whitespace-nowrap';
 
-      // ENHANCED CURRENT DAY LOGIC (For 100% exact Monthly Daily Burn & Velocity)
       const currentDay = (() => {
           if (selectedMonth === 'all') {
               if (transactions.length === 0) return 30;
@@ -1622,7 +1669,7 @@
           const cm = `${now.getFullYear()}-${String(now.getMonth()+1).padStart(2,'0')}`;
           if (selectedMonth === cm) return Math.max(1, now.getDate());
           const [y, m] = selectedMonth.split('-');
-          return new Date(y, m, 0).getDate(); // Total days in selected historical month
+          return new Date(y, m, 0).getDate();
       })();
 
       const burnRate = periodExp / currentDay; 

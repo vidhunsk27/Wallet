@@ -303,6 +303,18 @@ app.post('/api/scrape-price', async (req, res) => {
             if (urlPath) title = urlPath.replace(/[-_]/g, ' ').replace(/\b\w/g, l => l.toUpperCase());
         }
 
+        if (price === 0) {
+            try {
+                const model = genAI.getGenerativeModel({ model: 'gemini-1.5-flash' });
+                const prompt = `Act as a web scraper. Predict the product title and approximate price from this URL: "${targetUrl}". Return ONLY JSON: {"title":"[predicted name]","price": 0}`;
+                const aiRes = await model.generateContent(prompt);
+                const aiJsonMatch = aiRes.response.text().match(/\{[\s\S]*\}/);
+                const aiJson = JSON.parse(aiJsonMatch ? aiJsonMatch[0] : "{}");
+                if (aiJson.title && title.length < 3) title = aiJson.title;
+                if (aiJson.price && price === 0) price = aiJson.price;
+            } catch(e) {}
+        }
+
         res.status(200).json({ title: title || 'Saved Product', price: price || 0, imageUrl: imageUrl });
     } catch (error) {
         res.status(500).json({ error: 'Scraping failed completely' });
@@ -313,6 +325,8 @@ app.post('/api/scrape-price', async (req, res) => {
 app.post('/api/scrape-media', async (req, res) => {
     const targetUrl = req.body.url;
     if (!targetUrl) return res.status(400).json({ error: 'No URL provided' });
+
+    console.log("🎬 SCRAPING MEDIA URL:", targetUrl);
 
     try {
         const proxyUrl = `https://api.allorigins.win/get?url=${encodeURIComponent(targetUrl)}`;
@@ -333,7 +347,7 @@ app.post('/api/scrape-media', async (req, res) => {
 
         if (/book|goodreads|isbn|pages/i.test(targetUrl + title + description)) mediaType = 'Book';
         else if (/series|tv|season|episode/i.test(targetUrl + title + description)) mediaType = 'Series';
-        if (/anime|myanimelist/i.test(targetUrl + title + description)) mediaType = 'Anime';
+        if (/anime|myanimelist|crunchyroll/i.test(targetUrl + title + description)) mediaType = 'Anime';
 
         if (jsonLdRawMatch) {
             for (let block of jsonLdRawMatch) {
@@ -387,11 +401,13 @@ app.post('/api/scrape-media', async (req, res) => {
 
         if (title) {
             title = title.replace(/\(TV Series.*?\)/gi, '').replace(/- IMDb/gi, '').split('|')[0].trim();
+            console.log("✅ SCRAPE SUCCESS:", title);
             return res.status(200).json({ title, imageUrl, mediaType, details, genre, mediaRating: rating, price });
         } else {
             throw new Error("Proxy fetch successful but title was empty");
         }
     } catch(e) {
+        console.log("⚠️ Fast fetch failed, falling back to Gemini AI scraper...");
         try {
             const model = genAI.getGenerativeModel({ model: 'gemini-1.5-flash' });
             const prompt = `Act as a web scraper. I am giving you a URL: "${targetUrl}". Guess the movie or book name from the URL string itself. Return ONLY a JSON object predicting the metadata: {"title":"[guessed title]","imageUrl":"","mediaType":"Movie","genre":"Other","details":"","mediaRating":"5"}`;
@@ -407,43 +423,7 @@ app.post('/api/scrape-media', async (req, res) => {
     }
 });
 
-// WATCH & READ BOOKMARKLET
-app.get('/api/bookmark-media', async (req, res) => {
-    const targetUrl = req.query.url;
-    if (!targetUrl) return res.send("No URL provided.");
-    res.send(`
-        <html style="background:#050505; color:#a855f7; font-family:sans-serif; text-align:center; padding:2rem;">
-            <h2 style="margin-top: 20px; color:#a855f7;">🎬 Media Vault</h2>
-            <div id="manualEntryBox" style="background: rgba(255,255,255,0.05); padding: 20px; border-radius: 16px; margin-top: 20px; border: 1px solid rgba(255,255,255,0.1);">
-                <input type="text" id="manualName" placeholder="Movie / Book Name" style="background: rgba(0,0,0,0.5); color: #fff; font-size: 16px; border: 1px solid rgba(255,255,255,0.2); border-radius: 12px; padding: 15px; width: 100%; outline: none; margin-bottom: 10px;">
-                <select id="mediaType" style="background: rgba(0,0,0,0.5); color: #fff; border: 1px solid rgba(255,255,255,0.2); border-radius: 12px; padding: 12px; width: 100%; outline: none; margin-bottom: 10px;">
-                    <option value="Movie">🎬 Movie</option><option value="Book">📚 Book</option><option value="Series">📺 Series</option><option value="Anime">🎌 Anime</option>
-                </select>
-                <select id="mediaGenre" style="background: rgba(0,0,0,0.5); color: #fff; border: 1px solid rgba(255,255,255,0.2); border-radius: 12px; padding: 12px; width: 100%; outline: none; margin-bottom: 15px;">
-                    <option value="Action">Action</option><option value="Comedy">Comedy</option><option value="Drama">Drama</option><option value="Sci-Fi">Sci-Fi</option><option value="Romance">Romance</option><option value="Shounen">Shounen</option><option value="Isekai">Isekai</option><option value="Other">Other</option>
-                </select>
-                <button onclick="saveManualData()" style="background: #9333ea; color: white; border: none; padding: 15px; width: 100%; border-radius: 12px; font-size: 16px; font-weight: bold; cursor: pointer; transition: 0.2s;">Save to Vault</button>
-            </div>
-            <script>
-                function saveManualData() {
-                    const btn = document.querySelector('button');
-                    const nameInput = document.getElementById('manualName').value || 'Saved Media';
-                    const typeInput = document.getElementById('mediaType').value;
-                    const genreInput = document.getElementById('mediaGenre').value;
-                    btn.innerText = "Syncing to Cloud..."; btn.style.background = "#10b981";
-                    fetch('https://wallet-y7yv.onrender.com/api/add-wishlist', {
-                        method: 'POST', headers: { 'Content-Type': 'application/json' },
-                        body: JSON.stringify({ id: String(Date.now()), title: nameInput, price: 0, link: '${targetUrl}', imageUrl: '', category: 'MEDIA NODE', wishCategory: typeInput, mediaGenre: genreInput, mediaStatus: 'Planned', isMedia: true, timestamp: Date.now() })
-                    }).then(() => {
-                        document.getElementById('manualEntryBox').innerHTML = '<h1 style="color:#10b981; font-size: 30px; margin: 30px 0;">Saved! 🎬</h1>';
-                        setTimeout(() => window.close(), 1500);
-                    });
-                }
-            </script>
-        </html>
-    `);
-});
-
+// FAST FIREWALL BYPASS ROUTE
 app.get('/api/bookmark-auto', async (req, res) => {
     const { title, price, link, img, cat } = req.query;
     if (!link || !price) return res.send("Error: Missing parameters.");
@@ -454,19 +434,45 @@ app.get('/api/bookmark-auto', async (req, res) => {
     const safeImg = img ? decodeURIComponent(img) : '';
     const safeCat = cat ? decodeURIComponent(cat) : hostname;
 
-    const item = { id: String(Date.now()), title: safeTitle, price: parseFloat(price) || 0, link: decodeURIComponent(link), imageUrl: safeImg, category: safeCat, wishCategory: 'Other', timestamp: Date.now() };
+    const item = { 
+        id: String(Date.now()), title: safeTitle, price: parseFloat(price) || 0, link: decodeURIComponent(link), imageUrl: safeImg, category: safeCat, wishCategory: 'Other', timestamp: Date.now()
+    };
+    
     try {
         await db.collection('wishlist').doc(item.id).set(item);
-        res.send(`<script>window.close();</script>`);
-    } catch(err) { res.send("Database error."); }
+        res.send(`
+            <html style="background:#050505; color:#10b981; font-family:sans-serif; padding:2rem; display:flex; justify-content:center; align-items:center; height:100vh; overflow:hidden;">
+                <div style="background:rgba(255,255,255,0.05); padding:30px; border-radius:24px; text-align:center; max-width:400px; border:1px solid rgba(255,255,255,0.1); box-shadow:0 10px 40px rgba(0,0,0,0.5);">
+                    <h2 style="margin-top:0; color:#3b82f6; font-size:24px;">🎯 Wishlist Added</h2>
+                    ${safeImg ? `<img src="${safeImg}" style="width:100%; height:180px; object-fit:cover; border-radius:12px; margin:15px 0;">` : ''}
+                    <div style="margin: 10px 0;"><span style="background:rgba(59,130,246,0.15); color:#60a5fa; padding:4px 10px; border-radius:8px; font-size:11px; font-weight:bold; text-transform:uppercase;">${safeCat}</span></div>
+                    <p style="color:#f3f4f6; margin: 15px 0; font-size: 14px; line-height: 1.4; font-weight:bold;">${safeTitle}</p>
+                    <h1 style="color:#10b981; font-size: 40px; margin: 10px 0;">₹${item.price.toLocaleString()}</h1>
+                    <p style="color:#10b981; font-weight:bold;">Saved to Database Successfully!</p>
+                    <p style="color:#6b7280; font-size:12px; margin-top:20px;">Closing window...</p>
+                </div>
+                <script>setTimeout(() => window.close(), 2500);</script>
+            </html>
+        `);
+    } catch(err) {
+        res.send("<h2 style='color:#ef4444; text-align:center;'>Database sync failed.</h2>");
+    }
 });
 
+// MANUAL FALLBACK BOOKMARKLET ROUTE
 app.get('/api/bookmark', async (req, res) => {
     const targetUrl = req.query.url;
+    if (!targetUrl) return res.send("No URL provided.");
+    
     res.send(`
         <html style="background:#050505; color:#10b981; font-family:sans-serif; text-align:center; padding:2rem;">
+            <h2 style="margin-top: 20px; color:#3b82f6;">🎯 Wallet V2.0</h2>
             <div id="manualEntryBox" style="background: rgba(255,255,255,0.05); padding: 20px; border-radius: 16px; margin-top: 20px; border: 1px solid rgba(255,255,255,0.1);">
+                <p style="color:#ef4444; font-size:12px; font-weight:bold; text-transform:uppercase; letter-spacing:1px; margin-bottom:15px;">⚠️ Enter Details Manually</p>
                 <input type="text" id="manualName" placeholder="Product Name" style="background: rgba(0,0,0,0.5); color: #fff; font-size: 16px; border: 1px solid rgba(255,255,255,0.2); border-radius: 12px; padding: 15px; width: 100%; outline: none; margin-bottom: 10px;">
+                <select id="manualCategory" style="background: rgba(0,0,0,0.5); color: #fff; border: 1px solid rgba(255,255,255,0.2); border-radius: 12px; padding: 12px; width: 100%; outline: none; margin-bottom: 12px;">
+                    <option value="Gadgets">💻 Gadgets</option><option value="Apparel">👕 Apparel</option><option value="Lifestyle">✨ Lifestyle</option><option value="Other">📦 Other</option>
+                </select>
                 <input type="number" id="manualPrice" placeholder="Enter Price (₹)" style="background: rgba(0,0,0,0.5); color: #10b981; font-size: 24px; font-weight: bold; text-align: center; border: 1px solid rgba(255,255,255,0.2); border-radius: 12px; padding: 15px; width: 100%; outline: none; margin-bottom: 15px;" autofocus>
                 <button onclick="saveManualData()" style="background: #3b82f6; color: white; border: none; padding: 15px; width: 100%; border-radius: 12px; font-size: 16px; font-weight: bold; cursor: pointer; transition: 0.2s;">Save to Tracker</button>
             </div>
@@ -475,12 +481,16 @@ app.get('/api/bookmark', async (req, res) => {
                     const btn = document.querySelector('button');
                     const priceInput = document.getElementById('manualPrice').value;
                     const nameInput = document.getElementById('manualName').value || 'Saved Item';
+                    const catInput = document.getElementById('manualCategory').value;
                     if (!priceInput || priceInput <= 0) return;
-                    btn.innerText = "Syncing..."; btn.style.background = "#10b981";
+                    btn.innerText = "Syncing to Cloud..."; btn.style.background = "#10b981";
                     fetch('https://wallet-y7yv.onrender.com/api/add-wishlist', {
                         method: 'POST', headers: { 'Content-Type': 'application/json' },
-                        body: JSON.stringify({ id: String(Date.now()), title: nameInput, price: parseFloat(priceInput), link: '${targetUrl}', imageUrl: '', category: 'MANUAL', wishCategory: 'Other', timestamp: Date.now() })
-                    }).then(() => { document.getElementById('manualEntryBox').innerHTML = '<h2>Saved!</h2>'; setTimeout(() => window.close(), 1500); });
+                        body: JSON.stringify({ id: String(Date.now()), title: nameInput, price: parseFloat(priceInput), link: '${targetUrl}', imageUrl: '', category: 'MANUAL', wishCategory: catInput, timestamp: Date.now() })
+                    }).then(() => {
+                        document.getElementById('manualEntryBox').innerHTML = '<h1 style="color:#10b981; font-size: 30px; margin: 30px 0;">Saved! 🎯</h1>';
+                        setTimeout(() => window.close(), 1500);
+                    });
                 }
             </script>
         </html>
