@@ -476,7 +476,7 @@ app.post('/api/scrape-media', async (req, res) => {
             const model = genAI.getGenerativeModel({ model: 'gemini-2.5-flash' });
             const prompt = `Extract movie/book details for URL: "${targetUrl}". The known IMDb ID is: ${imdbId || 'Unknown'}.
             HTML snippet context: "${html.substring(0, 3000).replace(/"/g, "'")}".
-            Return strictly valid JSON: {"title":"[Name]","imageUrl":"[Poster URL if found else empty]","mediaType":"Movie|Book|Series|Anime","genre":"Action|Comedy|Drama|Sci-Fi|Isekai|Shounen|Other","details":"[e.g. 2h 15m or 320 pages]","mediaRating":"5"}`;
+            Return strictly valid JSON: {"title":"[Name]","imageUrl":"[Poster URL if found else empty]","mediaType":"Movie|Book|Series|Anime","genre":"Action|Comedy|Drama|Sci-Fi|Other","details":"[e.g. 2h 15m or 320 pages]","mediaRating":"5"}`;
             
             const aiRes = await model.generateContent(prompt);
             const jsonMatch = aiRes.response.text().match(/\{[\s\S]*\}/);
@@ -516,7 +516,7 @@ app.get('/api/bookmark-media', async (req, res) => {
                     <option value="Movie">🎬 Movie</option><option value="Book">📚 Book</option><option value="Series">📺 Series</option><option value="Anime">🎌 Anime</option>
                 </select>
                 <select id="mediaGenre" style="background: rgba(0,0,0,0.5); color: #fff; border: 1px solid rgba(255,255,255,0.2); border-radius: 12px; padding: 12px; width: 100%; outline: none; margin-bottom: 15px;">
-                    <option value="Action">Action</option><option value="Comedy">Comedy</option><option value="Drama">Drama</option><option value="Sci-Fi">Sci-Fi</option><option value="Romance">Romance</option><option value="Shounen">Shounen</option><option value="Isekai">Isekai</option><option value="Other">Other</option>
+                    <option value="Action">Action</option><option value="Comedy">Comedy</option><option value="Drama">Drama</option><option value="Sci-Fi">Sci-Fi</option><option value="Romance">Romance</option><option value="Other">Other</option>
                 </select>
                 <button onclick="saveManualData()" style="background: #9333ea; color: white; border: none; padding: 15px; width: 100%; border-radius: 12px; font-size: 16px; font-weight: bold; cursor: pointer; transition: 0.2s;">Save to Vault</button>
             </div>

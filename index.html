@@ -74,6 +74,9 @@
     .ledger-item:hover { transform: translateY(-2px); box-shadow: 0 10px 25px rgba(0,0,0,0.3); border-color: rgba(255,255,255,0.05); background-color: rgba(255,255,255,0.03); }
     .ledger-item .action-btn { opacity: 1; transform: scale(1); transition: all 0.2s; }
     @media (min-width: 768px) { .ledger-item .action-btn { opacity: 0; transform: scale(0.8); } .ledger-item:hover .action-btn { opacity: 1; transform: scale(1); } }
+    
+    /* Notion Kanban Style Columns */
+    .kanban-col { min-height: 200px; background: rgba(0,0,0,0.2); border-radius: 16px; padding: 12px; border: 1px solid rgba(255,255,255,0.05); }
   </style>
 </head>
 <body class="p-3 md:p-8 pb-24 relative overflow-x-hidden">
@@ -466,6 +469,7 @@
             <form id="wishlistForm" class="space-y-4">
               <div class="relative">
                 <input type="url" id="wishLink" placeholder="Paste product URL link..." class="w-full glass-input rounded-xl p-4 pr-10 text-sm text-white font-medium hover:border-blue-500/30 transition-colors" />
+                <button type="button" id="cancelWishScrapeBtn" onclick="cancelWishScrape()" class="hidden absolute right-10 top-1/2 transform -translate-y-1/2 text-rose-500 hover:text-rose-400 z-20" title="Cancel Scraper"><i data-lucide="x-circle" class="w-5 h-5"></i></button>
                 <i id="linkStatusIcon" data-lucide="link" class="absolute right-4 top-1/2 transform -translate-y-1/2 w-4 h-4 text-gray-500"></i>
               </div>
               <input type="text" id="wishName" placeholder="Product Name Target" required class="w-full glass-input rounded-xl p-4 text-sm text-white font-medium hover:border-blue-500/30 transition-colors tracking-wider" />
@@ -499,6 +503,11 @@
     <div id="viewMedia" class="view-hidden space-y-4 md:space-y-6">
       <div class="glass-panel rounded-3xl p-6 md:p-8 flex flex-col md:flex-row justify-between items-center gap-4">
         <div><h2 class="text-3xl font-black text-white flex items-center tracking-wider uppercase"><i data-lucide="clapperboard" class="text-purple-400 mr-4 w-7 h-7 drop-shadow-[0_0_10px_rgba(168,85,247,0.5)]"></i> Watch & Read Library</h2><p class="text-gray-400 text-xs mt-1.5 font-medium tracking-widest uppercase">Movies, Books, Anime & Shows to explore.</p></div>
+        
+        <!-- KANBAN / GRID TOGGLE -->
+        <button onclick="toggleMediaView()" class="bg-white/5 hover:bg-white/10 text-gray-300 hover:text-white px-4 py-2 rounded-xl text-xs font-bold border border-white/10 transition-all flex items-center shadow-sm uppercase tracking-wider">
+            <i id="mediaViewIcon" data-lucide="kanban" class="w-4 h-4 mr-2"></i> <span id="mediaViewText">Board View</span>
+        </button>
       </div>
       <div class="grid grid-cols-1 lg:grid-cols-3 gap-4 md:gap-6">
         <div class="lg:col-span-1">
@@ -507,6 +516,7 @@
             <form id="mediaForm" class="space-y-4">
               <div class="relative">
                 <input type="url" id="mediaLink" placeholder="Paste link (IMDb, Goodreads, Netflix...)" class="w-full glass-input rounded-xl p-4 pr-10 text-sm text-white font-medium hover:border-purple-500/30 transition-colors" />
+                <button type="button" id="cancelMediaScrapeBtn" onclick="cancelMediaScrape()" class="hidden absolute right-10 top-1/2 transform -translate-y-1/2 text-rose-500 hover:text-rose-400 z-20" title="Cancel Scraper"><i data-lucide="x-circle" class="w-5 h-5"></i></button>
                 <i id="mediaLinkStatusIcon" data-lucide="link" class="absolute right-4 top-1/2 transform -translate-y-1/2 w-4 h-4 text-gray-500"></i>
               </div>
               <input type="text" id="mediaName" placeholder="Title (e.g. Inception)" required class="w-full glass-input rounded-xl p-4 text-sm text-white font-medium hover:border-blue-500/30 transition-colors tracking-wider" />
@@ -535,42 +545,34 @@
                         <option value="Romance">❤️ Romance</option>
                         <option value="Sci-Fi">🚀 Sci-Fi</option>
                         <option value="Thriller">🔪 Thriller</option>
-                        <option disabled>──────────</option>
-                        <option value="Shounen">⚔️ Shounen</option>
-                        <option value="Shoujo">🌸 Shoujo</option>
-                        <option value="Isekai">🌀 Isekai</option>
-                        <option value="Harem">💕 Harem</option>
-                        <option value="Mecha">🤖 Mecha</option>
-                        <option value="Slice of Life">☕ Slice of Life</option>
-                        <option value="Seinen">🔥 Seinen</option>
-                        <option disabled>──────────</option>
                         <option value="Non-Fiction">📘 Non-Fiction</option>
                         <option value="Other">📦 Other</option>
                     </select>
                   </div>
               </div>
 
-              <div class="grid grid-cols-2 gap-4">
-                  <div>
-                      <label class="block text-[10px] font-bold text-gray-500 uppercase tracking-wider mb-1.5 pl-1">Status</label>
-                      <select id="mediaStatus" class="w-full glass-input rounded-xl p-4 text-xs text-white font-bold hover:border-blue-500/30 transition-colors uppercase tracking-wider">
-                        <option value="Planned">📌 PLANNED</option>
-                        <option value="In Progress">⏳ PROGRESS</option>
-                        <option value="Completed">✅ DONE</option>
-                      </select>
-                  </div>
-                  <div>
-                      <label class="block text-[10px] font-bold text-gray-500 uppercase tracking-wider mb-1.5 pl-1">Rating</label>
-                      <select id="mediaRating" class="w-full glass-input rounded-xl p-4 text-xs text-white font-bold hover:border-blue-500/30 transition-colors uppercase tracking-wider">
-                        <option value="Unrated">UNRATED</option>
-                        <option value="5">⭐⭐⭐⭐⭐</option>
-                        <option value="4">⭐⭐⭐⭐</option>
-                        <option value="3">⭐⭐⭐</option>
-                        <option value="2">⭐⭐</option>
-                        <option value="1">⭐</option>
-                      </select>
-                  </div>
+              <div>
+                  <label class="block text-[10px] font-bold text-gray-500 uppercase tracking-wider mb-1.5 pl-1">Status</label>
+                  <select id="mediaStatus" class="w-full glass-input rounded-xl p-4 text-xs text-white font-bold hover:border-blue-500/30 transition-colors uppercase tracking-wider">
+                    <option value="Planned">📌 PLANNED</option>
+                    <option value="In Progress">⏳ IN PROGRESS</option>
+                    <option value="Completed">✅ VIEWED</option>
+                  </select>
               </div>
+              
+              <!-- RATING CONTAINER (HIDDEN UNLESS COMPLETED) -->
+              <div id="ratingContainer" style="display:none;">
+                  <label class="block text-[10px] font-bold text-gray-500 uppercase tracking-wider mb-1.5 pl-1">Rating</label>
+                  <select id="mediaRating" class="w-full glass-input rounded-xl p-4 text-xs text-white font-bold hover:border-blue-500/30 transition-colors uppercase tracking-wider">
+                    <option value="Unrated">UNRATED</option>
+                    <option value="5">⭐⭐⭐⭐⭐</option>
+                    <option value="4">⭐⭐⭐⭐</option>
+                    <option value="3">⭐⭐⭐</option>
+                    <option value="2">⭐⭐</option>
+                    <option value="1">⭐</option>
+                  </select>
+              </div>
+
               <input type="text" id="mediaDetails" placeholder="Extracted Info (e.g. 2h 28m, Action, Sci-Fi)" class="w-full glass-input rounded-xl p-4 text-xs text-gray-300 font-medium hover:border-purple-500/30 transition-colors" />
               <input type="number" id="mediaPrice" placeholder="Book / Buy Price (₹) - Optional" class="w-full glass-input rounded-xl p-4 text-xs font-bold text-emerald-400 hover:border-purple-500/30 transition-colors" />
               <input type="url" id="mediaImage" placeholder="Image Poster URL" class="w-full glass-input rounded-xl p-4 text-sm text-white font-medium hover:border-blue-500/30 transition-colors" />
@@ -578,7 +580,25 @@
             </form>
           </div>
         </div>
-        <div class="lg:col-span-2"><div id="mediaGrid" class="grid grid-cols-1 md:grid-cols-2 gap-4 md:gap-6"></div></div>
+        <div class="lg:col-span-2">
+            <!-- DEFAULT GRID VIEW -->
+            <div id="mediaGrid" class="grid grid-cols-1 md:grid-cols-2 gap-4 md:gap-6"></div>
+            <!-- NOTION KANBAN BOARD VIEW -->
+            <div id="mediaBoard" class="hidden grid grid-cols-1 md:grid-cols-3 gap-4">
+                <div class="kanban-col">
+                    <h3 class="text-xs font-black text-blue-400 uppercase tracking-widest mb-4 flex items-center border-b border-white/5 pb-2"><i data-lucide="bookmark" class="w-4 h-4 mr-2"></i> Planned</h3>
+                    <div id="kb-planned" class="space-y-4"></div>
+                </div>
+                <div class="kanban-col">
+                    <h3 class="text-xs font-black text-orange-400 uppercase tracking-widest mb-4 flex items-center border-b border-white/5 pb-2"><i data-lucide="clock" class="w-4 h-4 mr-2"></i> In Progress</h3>
+                    <div id="kb-progress" class="space-y-4"></div>
+                </div>
+                <div class="kanban-col">
+                    <h3 class="text-xs font-black text-emerald-400 uppercase tracking-widest mb-4 flex items-center border-b border-white/5 pb-2"><i data-lucide="check-circle" class="w-4 h-4 mr-2"></i> Viewed</h3>
+                    <div id="kb-completed" class="space-y-4"></div>
+                </div>
+            </div>
+        </div>
       </div>
     </div>
 
@@ -686,6 +706,7 @@
              <button onclick="closeEditWishlistModal()" class="text-gray-500 hover:text-white transition-colors bg-white/5 hover:bg-white/10 p-1.5 rounded-lg border border-white/5"><i data-lucide="x" class="w-4 h-4"></i></button>
           </div>
           <input type="hidden" id="ewId">
+          <input type="hidden" id="ewIsMedia" value="false">
           <div class="space-y-4 relative z-10">
               <div>
                   <label class="block text-[10px] font-bold text-gray-500 uppercase tracking-wider mb-1 pl-1">Title</label>
@@ -697,29 +718,40 @@
                       <input type="number" id="ewPrice" class="w-full glass-input rounded-xl p-3.5 text-sm text-white font-black hover:border-blue-500/30 transition-colors shadow-inner">
                   </div>
                   <div>
-                      <label class="block text-[10px] font-bold text-gray-500 uppercase tracking-wider mb-1 pl-1">Store Name</label>
+                      <label class="block text-[10px] font-bold text-gray-500 uppercase tracking-wider mb-1 pl-1" id="ewStoreLabel">Store Name</label>
                       <input type="text" id="ewStore" class="w-full glass-input rounded-xl p-3.5 text-sm text-white font-bold hover:border-blue-500/30 transition-colors shadow-inner uppercase tracking-wider" placeholder="e.g. AMAZON">
                   </div>
               </div>
               <div>
-                  <label class="block text-[10px] font-bold text-gray-500 uppercase tracking-wider mb-1 pl-1">Wish Category</label>
+                  <label class="block text-[10px] font-bold text-gray-500 uppercase tracking-wider mb-1 pl-1">Category</label>
                   <select id="ewCategory" class="w-full glass-input rounded-xl p-3.5 text-sm text-white font-bold hover:border-blue-500/30 transition-colors shadow-inner uppercase tracking-wider">
-                      <option value="Gadgets">💻 GADGETS</option>
-                      <option value="Apparel">👕 APPAREL</option>
-                      <option value="Lifestyle">✨ LIFESTYLE</option>
-                      <option value="Books">📚 BOOKS</option>
-                      <option value="Electronics">🔌 ELECTRONICS</option>
-                      <option value="Gaming">🎮 GAMING</option>
-                      <option value="Furniture">🛋️ FURNITURE</option>
-                      <option value="Travel">✈️ TRAVEL</option>
-                      <option value="Vehicles">🚗 VEHICLES</option>
-                      <option value="Health">⚕️ HEALTH</option>
-                      <option value="Movie">🎬 MOVIE</option>
-                      <option value="Series">📺 SERIES</option>
-                      <option value="Anime">🎌 ANIME</option>
-                      <option value="Other">📦 OTHER</option>
+                      <!-- Populated dynamically via JS based on type -->
                   </select>
               </div>
+
+              <!-- STATUS & RATING FOR MEDIA ONLY -->
+              <div id="ewMediaExtras" class="hidden space-y-4">
+                  <div>
+                      <label class="block text-[10px] font-bold text-gray-500 uppercase tracking-wider mb-1 pl-1">Status</label>
+                      <select id="ewStatus" class="w-full glass-input rounded-xl p-3.5 text-sm text-white font-bold hover:border-blue-500/30 transition-colors shadow-inner uppercase tracking-wider">
+                        <option value="Planned">📌 PLANNED</option>
+                        <option value="In Progress">⏳ IN PROGRESS</option>
+                        <option value="Completed">✅ VIEWED</option>
+                      </select>
+                  </div>
+                  <div id="ewRatingContainer" class="hidden">
+                      <label class="block text-[10px] font-bold text-gray-500 uppercase tracking-wider mb-1 pl-1">Rating</label>
+                      <select id="ewRating" class="w-full glass-input rounded-xl p-3.5 text-sm text-white font-bold hover:border-blue-500/30 transition-colors shadow-inner uppercase tracking-wider">
+                        <option value="Unrated">UNRATED</option>
+                        <option value="5">⭐⭐⭐⭐⭐</option>
+                        <option value="4">⭐⭐⭐⭐</option>
+                        <option value="3">⭐⭐⭐</option>
+                        <option value="2">⭐⭐</option>
+                        <option value="1">⭐</option>
+                      </select>
+                  </div>
+              </div>
+
               <div>
                   <label class="block text-[10px] font-bold text-gray-500 uppercase tracking-wider mb-1 pl-1">Image Link</label>
                   <input type="url" id="ewImage" class="w-full glass-input rounded-xl p-3.5 text-sm text-white font-medium hover:border-blue-500/30 transition-colors shadow-inner">
@@ -749,6 +781,11 @@
     let aiTypingTimer; 
     let allTimeChartObj = null;
     let reportCharts = {};
+    let mediaViewMode = 'grid'; // 'grid' or 'board'
+    
+    // Scraper Abort Controllers
+    let wishScrapeController = null;
+    let mediaScrapeController = null;
 
     document.getElementById('wishlistSavingsInput').value = monthlyWishlistSavings || '';
 
@@ -788,6 +825,46 @@
     function applyFilter(f) {
         currentFilter = f;
         updateUI();
+    }
+
+    // --- Dynamic Status/Rating Logic ---
+    document.getElementById('mediaStatus').addEventListener('change', function(e) {
+        const rContainer = document.getElementById('ratingContainer');
+        if (e.target.value === 'Completed') {
+            rContainer.style.display = 'block';
+        } else {
+            rContainer.style.display = 'none';
+            document.getElementById('mediaRating').value = 'Unrated';
+        }
+    });
+
+    document.getElementById('ewStatus').addEventListener('change', function(e) {
+        const rContainer = document.getElementById('ewRatingContainer');
+        if (e.target.value === 'Completed') {
+            rContainer.classList.remove('hidden');
+        } else {
+            rContainer.classList.add('hidden');
+            document.getElementById('ewRating').value = 'Unrated';
+        }
+    });
+
+    // --- Quick Toggle Status Feature ---
+    async function toggleMediaStatus(id) {
+        const index = mediaItems.findIndex(m => m.id === id);
+        if (index === -1) return;
+        
+        let currentStatus = mediaItems[index].mediaStatus || 'Planned';
+        let newStatus = 'Planned';
+        
+        if (currentStatus === 'Planned') newStatus = 'In Progress';
+        else if (currentStatus === 'In Progress') newStatus = 'Completed';
+        else newStatus = 'Planned';
+
+        mediaItems[index].mediaStatus = newStatus;
+        if (newStatus !== 'Completed') mediaItems[index].mediaRating = 'Unrated';
+        
+        renderMedia();
+        try { await fetch(`${API_BASE}/add-wishlist`, { method: 'POST', headers: apiHeaders, body: JSON.stringify(mediaItems[index]) }); } catch(err){}
     }
 
     async function loadPendingTransactions() {
@@ -1131,7 +1208,7 @@
     async function openAIReport() {
         document.getElementById('aiReportModal').classList.remove('hidden');
         const content = document.getElementById('aiReportContent');
-        content.innerHTML = '<div class="flex items-center text-blue-400 animate-pulse font-bold"><i data-lucide="loader-2" class="w-5 h-5 mr-2 animate-spin"></i> Jarvis is compiling Vidhun\'s comprehensive report...</div>';
+        content.innerHTML = '<div class="flex items-center text-blue-400 animate-pulse font-bold"><i data-lucide="loader-2" class="w-5 h-5 mr-2 animate-spin"></i> Jarvis is compiling your multi-month historical report...</div>';
         lucide.createIcons();
 
         Object.values(reportCharts).forEach(c => c.destroy());
@@ -1393,14 +1470,49 @@
         const item = list.find(w => w.id === id);
         if(!item) return;
         document.getElementById('ewId').value = id;
+        document.getElementById('ewIsMedia').value = isMedia ? "true" : "false";
         document.getElementById('ewTitle').value = item.title || '';
         document.getElementById('ewPrice').value = item.price || 0;
-        document.getElementById('ewStore').value = item.category || 'STORE NODE';
+
+        const selCat = document.getElementById('ewCategory');
+        selCat.innerHTML = '';
         
-        const sel = document.getElementById('ewCategory');
-        let valToSet = item.wishCategory || 'Other';
-        let found = Array.from(sel.options).some(o => o.value === valToSet);
-        sel.value = found ? valToSet : 'Other';
+        if (isMedia) {
+            document.getElementById('ewStore').value = item.wishCategory || 'Movie';
+            document.getElementById('ewStoreLabel').innerText = "Media Type";
+            
+            // Populate genres for media
+            const genres = ["Action", "Comedy", "Drama", "Sci-Fi", "Romance", "Fantasy", "Horror", "Mystery", "Thriller", "Non-Fiction", "Other"];
+            genres.forEach(g => { selCat.innerHTML += `<option value="${g}">${g.toUpperCase()}</option>`; });
+            
+            let valToSet = item.mediaGenre || 'Other';
+            let found = Array.from(selCat.options).some(o => o.value === valToSet);
+            selCat.value = found ? valToSet : 'Other';
+
+            // Extras for Media
+            document.getElementById('ewMediaExtras').classList.remove('hidden');
+            document.getElementById('ewStatus').value = item.mediaStatus || 'Planned';
+            if (item.mediaStatus === 'Completed') {
+                document.getElementById('ewRatingContainer').classList.remove('hidden');
+                document.getElementById('ewRating').value = item.mediaRating || 'Unrated';
+            } else {
+                document.getElementById('ewRatingContainer').classList.add('hidden');
+                document.getElementById('ewRating').value = 'Unrated';
+            }
+
+        } else {
+            document.getElementById('ewStore').value = item.category || 'STORE NODE';
+            document.getElementById('ewStoreLabel').innerText = "Store Name";
+            
+            const wCats = ["Gadgets", "Apparel", "Lifestyle", "Books", "Electronics", "Gaming", "Furniture", "Travel", "Vehicles", "Health", "Other"];
+            wCats.forEach(c => { selCat.innerHTML += `<option value="${c}">💻 ${c.toUpperCase()}</option>`; });
+            
+            let valToSet = item.wishCategory || 'Other';
+            let found = Array.from(selCat.options).some(o => o.value === valToSet);
+            selCat.value = found ? valToSet : 'Other';
+
+            document.getElementById('ewMediaExtras').classList.add('hidden');
+        }
 
         document.getElementById('ewImage').value = item.imageUrl || '';
         document.getElementById('editWishlistModal').classList.remove('hidden');
@@ -1413,20 +1525,24 @@
 
     async function saveEditWishlist() {
         const id = document.getElementById('ewId').value;
-        let itemIndex = wishlistItems.findIndex(w => w.id === id);
-        let isMedia = false;
-        let list = wishlistItems;
-        
-        if (itemIndex === -1) {
-            itemIndex = mediaItems.findIndex(w => w.id === id);
-            if (itemIndex !== -1) { isMedia = true; list = mediaItems; }
-        }
+        const isMedia = document.getElementById('ewIsMedia').value === "true";
+        const list = isMedia ? mediaItems : wishlistItems;
+        const itemIndex = list.findIndex(w => w.id === id);
         if (itemIndex === -1) return;
 
         list[itemIndex].title = document.getElementById('ewTitle').value || 'Saved Item';
         list[itemIndex].price = parseFloat(document.getElementById('ewPrice').value) || 0;
-        list[itemIndex].category = document.getElementById('ewStore').value.toUpperCase() || 'STORE NODE';
-        list[itemIndex].wishCategory = document.getElementById('ewCategory').value || 'Other';
+        
+        if (isMedia) {
+            list[itemIndex].wishCategory = document.getElementById('ewStore').value || 'Movie';
+            list[itemIndex].mediaGenre = document.getElementById('ewCategory').value || 'Other';
+            list[itemIndex].mediaStatus = document.getElementById('ewStatus').value || 'Planned';
+            list[itemIndex].mediaRating = document.getElementById('ewStatus').value === 'Completed' ? document.getElementById('ewRating').value : 'Unrated';
+        } else {
+            list[itemIndex].category = document.getElementById('ewStore').value.toUpperCase() || 'STORE NODE';
+            list[itemIndex].wishCategory = document.getElementById('ewCategory').value || 'Other';
+        }
+
         list[itemIndex].imageUrl = document.getElementById('ewImage').value || '';
         
         closeEditWishlistModal();
@@ -1441,6 +1557,29 @@
         if(confirm("Remove tracking index from database?")) { wishlistItems = wishlistItems.filter(w => w.id !== id); renderWishlist(); try { await fetch(`${API_BASE}/delete-wishlist/${id}`, { method: 'DELETE' }); } catch(err){} } 
     }
 
+    // --- SCRAPER ABORT FUNCTIONS ---
+    function cancelWishScrape() {
+        if(wishScrapeController) {
+            wishScrapeController.abort();
+            wishScrapeController = null;
+            document.getElementById('linkStatusIcon').setAttribute('data-lucide', 'link');
+            document.getElementById('linkStatusIcon').classList.remove('animate-spin', 'text-blue-400');
+            document.getElementById('cancelWishScrapeBtn').classList.add('hidden');
+            lucide.createIcons();
+        }
+    }
+
+    function cancelMediaScrape() {
+        if(mediaScrapeController) {
+            mediaScrapeController.abort();
+            mediaScrapeController = null;
+            document.getElementById('mediaLinkStatusIcon').setAttribute('data-lucide', 'link');
+            document.getElementById('mediaLinkStatusIcon').classList.remove('animate-spin', 'text-purple-400');
+            document.getElementById('cancelMediaScrapeBtn').classList.add('hidden');
+            lucide.createIcons();
+        }
+    }
+
     // WISHLIST SCRAPER LISTENER
     const wishLinkInput = document.getElementById('wishLink');
     ['input', 'paste', 'change'].forEach(eventType => {
@@ -1448,20 +1587,35 @@
             setTimeout(async () => {
                 const url = wishLinkInput.value.trim();
                 const icn = document.getElementById('linkStatusIcon'); 
+                const cancelBtn = document.getElementById('cancelWishScrapeBtn');
                 if(!url || !url.startsWith('http')) return;
                 
-                icn.setAttribute('data-lucide', 'loader-2'); icn.classList.add('animate-spin', 'text-blue-400'); lucide.createIcons();
+                if(wishScrapeController) wishScrapeController.abort();
+                wishScrapeController = new AbortController();
+
+                icn.setAttribute('data-lucide', 'loader-2'); 
+                icn.classList.add('animate-spin', 'text-blue-400'); 
+                cancelBtn.classList.remove('hidden');
+                lucide.createIcons();
                 
                 try {
-                    const res = await fetch(`${API_BASE}/scrape-price`, { method: 'POST', headers: apiHeaders, body: JSON.stringify({url}) });
+                    const res = await fetch(`${API_BASE}/scrape-price`, { 
+                        method: 'POST', headers: apiHeaders, 
+                        body: JSON.stringify({url}),
+                        signal: wishScrapeController.signal 
+                    });
                     const result = await res.json();
                     
                     if(result.title && result.title !== 'Saved Product') document.getElementById('wishName').value = result.title;
                     if(result.price && result.price > 0) document.getElementById('wishPrice').value = result.price;
                     if(result.imageUrl) document.getElementById('wishImage').value = result.imageUrl;
                 } catch(err) {
+                    if(err.name === 'AbortError') console.log("Wishlist scrape cancelled.");
                 } finally { 
-                    icn.setAttribute('data-lucide', 'link'); icn.classList.remove('animate-spin', 'text-blue-400'); lucide.createIcons(); 
+                    icn.setAttribute('data-lucide', 'link'); 
+                    icn.classList.remove('animate-spin', 'text-blue-400'); 
+                    cancelBtn.classList.add('hidden');
+                    lucide.createIcons(); 
                 }
             }, 100);
         });
@@ -1552,16 +1706,25 @@
               setTimeout(async () => {
                   const url = mediaLinkInput.value.trim();
                   const icn = document.getElementById('mediaLinkStatusIcon'); 
+                  const cancelBtn = document.getElementById('cancelMediaScrapeBtn');
                   if(!url || !url.startsWith('http')) return;
                   
+                  if(mediaScrapeController) mediaScrapeController.abort();
+                  mediaScrapeController = new AbortController();
+
                   if (icn) {
                     icn.setAttribute('data-lucide', 'loader-2'); 
                     icn.classList.add('animate-spin', 'text-purple-400'); 
+                    cancelBtn.classList.remove('hidden');
                     lucide.createIcons();
                   }
                   
                   try {
-                      const res = await fetch(`${API_BASE}/scrape-media`, { method: 'POST', headers: apiHeaders, body: JSON.stringify({url}) });
+                      const res = await fetch(`${API_BASE}/scrape-media`, { 
+                          method: 'POST', headers: apiHeaders, 
+                          body: JSON.stringify({url}),
+                          signal: mediaScrapeController.signal 
+                      });
                       const result = await res.json();
                       
                       if(result.title) document.getElementById('mediaName').value = result.title;
@@ -1569,7 +1732,6 @@
                       if(result.mediaType) document.getElementById('mediaType').value = result.mediaType;
                       if(result.details) document.getElementById('mediaDetails').value = result.details;
                       if(result.price && result.price > 0) document.getElementById('mediaPrice').value = result.price;
-                      if(result.mediaRating) document.getElementById('mediaRating').value = String(result.mediaRating);
                       
                       if(result.genre) {
                           const g = result.genre.toLowerCase();
@@ -1583,10 +1745,12 @@
                           if(!found) sel.value = "Other";
                       }
                   } catch(err) {
+                      if(err.name === 'AbortError') console.log("Media scrape cancelled.");
                   } finally { 
                       if (icn) {
                         icn.setAttribute('data-lucide', 'link'); 
                         icn.classList.remove('animate-spin', 'text-purple-400'); 
+                        cancelBtn.classList.add('hidden');
                         lucide.createIcons(); 
                       }
                   }
@@ -1612,13 +1776,15 @@
             wishCategory: document.getElementById('mediaType').value, 
             mediaGenre: document.getElementById('mediaGenre').value,
             mediaStatus: document.getElementById('mediaStatus').value,
-            mediaRating: document.getElementById('mediaRating').value,
+            mediaRating: document.getElementById('mediaStatus').value === 'Completed' ? document.getElementById('mediaRating').value : 'Unrated',
             mediaDetails: document.getElementById('mediaDetails').value || '',
             isMedia: true,
             timestamp: Date.now()
         };
         
-        mediaItems.push(newItem); e.target.reset(); renderMedia();
+        mediaItems.push(newItem); e.target.reset(); 
+        document.getElementById('ratingContainer').style.display = 'none';
+        renderMedia();
         
         try { await fetch(`${API_BASE}/add-wishlist`, { method: 'POST', headers: apiHeaders, body: JSON.stringify(newItem) }); } catch (error) {} finally { btn.innerText = orig; btn.disabled = false; }
     });
@@ -1660,14 +1826,23 @@
         if(confirm("Remove this entry from database?")) { mediaItems = mediaItems.filter(w => w.id !== id); renderMedia(); try { await fetch(`${API_BASE}/delete-wishlist/${id}`, { method: 'DELETE' }); } catch(err){} } 
     }
 
-    function renderMedia() {
-      const grid = document.getElementById('mediaGrid');
-      
-      if (!mediaItems.length) { 
-          grid.innerHTML = `<p class="text-gray-500 text-sm py-4 font-bold uppercase tracking-widest text-center col-span-full">No movies or books stored in database frame.</p>`; return; 
-      }
-      
-      grid.innerHTML = [...mediaItems].sort((a,b)=>b.timestamp-a.timestamp).map(item => {
+    // --- TOGGLE KANBAN BOARD VIEW ---
+    function toggleMediaView() {
+        mediaViewMode = mediaViewMode === 'grid' ? 'board' : 'grid';
+        const vIcon = document.getElementById('mediaViewIcon');
+        const vText = document.getElementById('mediaViewText');
+        if (mediaViewMode === 'board') {
+            vIcon.setAttribute('data-lucide', 'grid');
+            vText.innerText = 'List View';
+        } else {
+            vIcon.setAttribute('data-lucide', 'kanban');
+            vText.innerText = 'Board View';
+        }
+        lucide.createIcons();
+        renderMedia();
+    }
+
+    function generateMediaCard(item) {
         const img = item.imageUrl ? 
             `<img src="${item.imageUrl}" class="w-full h-56 object-cover rounded-xl mb-4 bg-black/50 border border-white/5 shadow-inner">` : 
             `<div class="w-full h-56 rounded-xl mb-4 bg-gradient-to-br from-purple-900/20 to-pink-900/10 border border-white/5 flex flex-col items-center justify-center text-gray-500 shadow-inner"><i data-lucide="film" class="w-8 h-8 mb-2 text-purple-500/40"></i><span class="text-[10px] uppercase font-bold tracking-widest text-gray-400/60">No Poster Asset</span></div>`;
@@ -1677,12 +1852,17 @@
         
         const statusColors = { 'Planned': 'bg-blue-500/10 text-blue-400 border-blue-500/20', 'In Progress': 'bg-orange-500/10 text-orange-400 border-orange-500/20', 'Completed': 'bg-emerald-500/10 text-emerald-400 border-emerald-500/20' };
         const sColor = statusColors[item.mediaStatus || 'Planned'] || statusColors['Planned'];
+        const dispStatus = item.mediaStatus === 'Completed' ? 'VIEWED' : item.mediaStatus;
 
         const detailsPill = item.mediaDetails ? `<p class="text-[11px] text-gray-300 font-medium bg-black/40 px-2.5 py-1 rounded-lg border border-white/5 flex items-center mt-2 shadow-inner"><i data-lucide="info" class="w-3 h-3 text-purple-400 mr-1.5 flex-shrink-0"></i>${item.mediaDetails}</p>` : '';
         const priceTag = item.price > 0 ? `<p class="text-sm font-black text-emerald-400 mt-1">₹${item.price.toLocaleString()}</p>` : '';
         const genreBadge = item.mediaGenre && item.mediaGenre !== 'Other' ? `<span class="px-2 py-0.5 bg-blue-500/10 text-blue-400 border border-blue-500/20 rounded text-[9px] font-black uppercase tracking-wider shadow-sm">${item.mediaGenre}</span>` : '';
 
-        const wishlistBtn = `<button onclick="linkMediaToWishlist('${item.id}')" class="w-full text-center mt-2 bg-blue-500/10 hover:bg-blue-500/20 text-blue-400 py-2.5 rounded-xl text-xs font-bold transition-all border border-blue-500/20 flex items-center justify-center shadow-sm uppercase tracking-wider"><i data-lucide="shopping-cart" class="w-3.5 h-3.5 mr-1.5"></i> Add to Wishlist</button>`;
+        // Notion-like fast toggle button
+        const toggleIcon = item.mediaStatus === 'Completed' ? 'check-circle' : 'circle';
+        const toggleClass = item.mediaStatus === 'Completed' ? 'text-emerald-400 hover:text-gray-400' : 'text-gray-400 hover:text-emerald-400';
+        
+        const wishlistBtn = `<button onclick="linkMediaToWishlist('${item.id}')" class="flex-1 text-center bg-blue-500/10 hover:bg-blue-500/20 text-blue-400 py-2.5 rounded-xl text-xs font-bold transition-all border border-blue-500/20 flex items-center justify-center shadow-sm uppercase tracking-wider"><i data-lucide="shopping-cart" class="w-3.5 h-3.5 mr-1.5"></i> Add to Wish</button>`;
 
         return `<div class="glass-panel rounded-3xl p-5 relative group border border-white/5 flex flex-col justify-between hover:-translate-y-1.5 transition-transform shadow-[0_8px_30px_rgba(0,0,0,0.4)]">
             <div class="absolute top-3 right-3 flex space-x-2 opacity-100 md:opacity-0 group-hover:opacity-100 transition-all z-20">
@@ -1698,20 +1878,59 @@
                     </div>
                     <span class="text-[9px] text-gray-500 font-bold uppercase tracking-widest flex-shrink-0">${formattedDate}</span>
                 </div>
-                <h3 class="font-bold text-white leading-tight line-clamp-2 pt-1 text-lg tracking-wider">${item.title}</h3>
+                
+                <div class="flex items-start justify-between gap-2 pt-1">
+                    <h3 class="font-bold text-white leading-tight line-clamp-2 text-lg tracking-wider">${item.title}</h3>
+                    <button onclick="toggleMediaStatus('${item.id}')" class="${toggleClass} transition-colors flex-shrink-0 mt-1" title="Mark Viewed"><i data-lucide="${toggleIcon}" class="w-5 h-5"></i></button>
+                </div>
+                
                 ${priceTag}
                 ${detailsPill}
                 <div class="flex items-center justify-between pt-1">
-                    <span class="px-2 py-1 ${sColor} border rounded text-[9px] font-black uppercase tracking-wider shadow-sm">${item.mediaStatus || 'Planned'}</span>
+                    <span class="px-2 py-1 ${sColor} border rounded text-[9px] font-black uppercase tracking-wider shadow-sm">${dispStatus}</span>
                     ${ratingBadge}
                 </div>
             </div>
-            <div class="space-y-1.5 mt-2">
+            <div class="flex gap-2 mt-3">
               ${wishlistBtn}
-              ${item.link ? `<a href="${item.link}" target="_blank" class="block w-full text-center bg-white/5 hover:bg-white/10 hover:text-purple-300 py-2.5 rounded-xl text-xs font-bold transition-all border border-white/10 text-white shadow-sm hover:border-purple-500/30 tracking-wide uppercase">View Source Link</a>` : ''}
+              ${item.link ? `<a href="${item.link}" target="_blank" class="flex-1 text-center bg-white/5 hover:bg-white/10 hover:text-purple-300 py-2.5 rounded-xl text-xs font-bold transition-all border border-white/10 text-white shadow-sm hover:border-purple-500/30 tracking-wide uppercase">Open Link</a>` : ''}
             </div>
         </div>`;
-      }).join(''); 
+    }
+
+    function renderMedia() {
+      const grid = document.getElementById('mediaGrid');
+      const board = document.getElementById('mediaBoard');
+      
+      if (!mediaItems.length) { 
+          grid.innerHTML = `<p class="text-gray-500 text-sm py-4 font-bold uppercase tracking-widest text-center col-span-full">No movies or books stored in database frame.</p>`; 
+          grid.classList.remove('hidden');
+          board.classList.add('hidden');
+          return; 
+      }
+      
+      const sortedItems = [...mediaItems].sort((a,b)=>b.timestamp-a.timestamp);
+
+      if (mediaViewMode === 'grid') {
+          grid.classList.remove('hidden');
+          board.classList.add('hidden');
+          grid.innerHTML = sortedItems.map(item => generateMediaCard(item)).join(''); 
+      } else {
+          grid.classList.add('hidden');
+          board.classList.remove('hidden');
+          
+          const colP = document.getElementById('kb-planned');
+          const colI = document.getElementById('kb-progress');
+          const colC = document.getElementById('kb-completed');
+          colP.innerHTML = ''; colI.innerHTML = ''; colC.innerHTML = '';
+
+          sortedItems.forEach(item => {
+              const cardHTML = generateMediaCard(item);
+              if (item.mediaStatus === 'Completed') colC.innerHTML += cardHTML;
+              else if (item.mediaStatus === 'In Progress') colI.innerHTML += cardHTML;
+              else colP.innerHTML += cardHTML;
+          });
+      }
       lucide.createIcons();
     }
 
