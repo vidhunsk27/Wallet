@@ -43,6 +43,19 @@ try {
 
 const db = getFirestore();
 
+// HELPER FOR DIRECT FETCHING WITH REAL DESKTOP BROWSER HEADERS
+async function fetchPageHtml(targetUrl) {
+    const headers = {
+        'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/125.0.0.0 Safari/537.36',
+        'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,image/apng,*/*;q=0.8',
+        'Accept-Language': 'en-US,en;q=0.9',
+        'Cache-Control': 'no-cache',
+        'Pragma': 'no-cache'
+    };
+    const response = await fetch(targetUrl, { headers, redirect: 'follow', signal: AbortSignal.timeout(10000) });
+    return await response.text();
+}
+
 app.get('/api/ping', (req, res) => res.status(200).send('OK'));
 
 // ==========================================
@@ -138,28 +151,29 @@ app.post('/api/jarvis-advice', async (req, res) => {
     } catch (error) { res.status(500).json({ error: 'Failed to generate' }); }
 });
 
-// DETAILED AI FULL REPORT ROUTE
+// DETAILED AI FULL MULTI-MONTH REPORT ROUTE
 app.post('/api/jarvis-report', async (req, res) => {
     try {
-        const { transactions, monthlyBudget, selectedMonth } = req.body;
+        const { compiledMonths, totalLedger, monthlyBudget, selectedMonth } = req.body;
         const model = genAI.getGenerativeModel({ model: 'gemini-1.5-flash' });
         const prompt = `You are a professional financial advisor AI. 
-        The user has requested a comprehensive detailed report.
-        Here is their data for the selected period (${selectedMonth}): ${JSON.stringify(transactions.monthly.slice(0, 40))} (showing top transactions).
-        Their monthly budget goal is ₹${monthlyBudget}.
+        Analyze the user's entire multi-month financial ledger data:
+        Month-by-Month breakdown: ${JSON.stringify(compiledMonths)}
+        Current selected filter month: ${selectedMonth}
+        Monthly budget target: ₹${monthlyBudget}
         
         Write a structured HTML report (do NOT wrap in \`\`\`html, output raw HTML tags).
-        Use these exact Tailwind classes for styling your elements:
+        Use these exact Tailwind classes for styling:
         - Headers: <h2 class="text-lg font-black text-blue-400 mb-2 mt-4 uppercase tracking-widest">
         - Paragraphs: <p class="mb-3 text-sm text-gray-300">
         - Lists: <ul class="list-disc pl-5 mb-3 text-gray-300 space-y-1">
         - Highlights: <strong class="text-white font-bold">
         
-        Include:
-        1. Executive Summary of their overall health.
-        2. Analysis of the current selected period (Income vs Expense, Burn Rate).
-        3. Insights into their payment methods (UPI vs Card vs Cash) and specific categories (e.g. Investments, Dining).
-        4. 3 actionable, specific recommendations to improve savings and achieve their goal.`;
+        Structure:
+        1. Multi-Month Performance Overview (Compare current period against past months).
+        2. Key Spend Drivers & Investment Deductions.
+        3. Payment Method Analysis & Daily Burn Velocity.
+        4. 3 Actionable Strategic Recommendations to optimize savings.`;
 
         const result = await model.generateContent(prompt);
         let htmlReport = result.response.text().replace(/```html/gi, '').replace(/```/g, '').trim();
@@ -308,39 +322,47 @@ app.post('/api/receipt-ocr', upload.single('receipt'), async (req, res) => {
 });
 
 // =======================================================
-//   PROXY & AI SCRAPER (No Puppeteer - Ultra Fast / No Render crashes)
+//   REWRITTEN BLAZING PRODUCT SCRAPER (FOR WISHLIST)
 // =======================================================
 app.post('/api/scrape-price', async (req, res) => {
     const targetUrl = req.body.url;
     if (!targetUrl) return res.status(400).json({ error: 'No URL provided' });
 
     try {
-        const proxyUrl = `https://api.allorigins.win/get?url=${encodeURIComponent(targetUrl)}`;
-        const fetchRes = await fetch(proxyUrl);
-        const proxyData = await fetchRes.json();
-        const html = proxyData.contents || '';
+        let html = "";
+        try {
+            html = await fetchPageHtml(targetUrl);
+        } catch(e) {
+            const proxyRes = await fetch(`https://api.allorigins.win/get?url=${encodeURIComponent(targetUrl)}`);
+            const pData = await proxyRes.json();
+            html = pData.contents || "";
+        }
 
-        let title = html.match(/<meta[^>]*property="og:title"[^>]*content="([^"]+)"/i)?.[1] || html.match(/<title[^>]*>([^<]+)<\/title>/i)?.[1] || '';
-        let imageUrl = html.match(/<meta[^>]*property="og:image"[^>]*content="([^"]+)"/i)?.[1] || html.match(/<img[^>]*id="landingImage"[^>]*src="([^"]+)"/i)?.[1] || '';
+        let title = html.match(/<meta[^>]*property="og:title"[^>]*content="([^"]+)"/i)?.[1] || 
+                    html.match(/<title[^>]*>([^<]+)<\/title>/i)?.[1] || "";
+        let imageUrl = html.match(/<meta[^>]*property="og:image"[^>]*content="([^"]+)"/i)?.[1] || 
+                       html.match(/<img[^>]*id="landingImage"[^>]*src="([^"]+)"/i)?.[1] || "";
         let priceMatch = html.match(/(?:₹|Rs\.?|INR)\s*([0-9,]{2,}(?:\.[0-9]{2})?)/i);
         let price = priceMatch ? parseFloat(priceMatch[1].replace(/,/g, '')) : 0;
 
         title = title.replace(/Product summary presents key product information/gi, '').split('|')[0].split('- Buy')[0].split('- Price')[0].split(': Amazon')[0].trim();
 
-        if (title.length < 3 || title.includes("Amazon.in") || title.includes("Online Shopping")) {
+        if (title.length < 3 || title.includes("Amazon.in") || title.includes("Online Shopping") || title.includes("Access Denied")) {
             const urlPath = new URL(targetUrl).pathname.split('/').filter(p => p.length > 2)[0];
             if (urlPath) title = urlPath.replace(/[-_]/g, ' ').replace(/\b\w/g, l => l.toUpperCase());
         }
 
-        if (price === 0) {
+        if (price === 0 || !title || title.length < 3) {
             try {
                 const model = genAI.getGenerativeModel({ model: 'gemini-1.5-flash' });
-                const prompt = `Act as a web scraper. Predict the precise product name/title and approximate price from this URL: "${targetUrl}". Return ONLY JSON: {"title":"[predicted name]","price": 0}`;
+                const prompt = `Extract product title and price from URL: "${targetUrl}". Snippet: "${html.substring(0, 2000).replace(/"/g, "'")}". Return strictly JSON: {"title":"[Title]","price": [number]}`;
                 const aiRes = await model.generateContent(prompt);
-                const aiJsonMatch = aiRes.response.text().match(/\{[\s\S]*\}/);
-                const aiJson = JSON.parse(aiJsonMatch ? aiJsonMatch[0] : "{}");
-                if (aiJson.title && title.length < 3) title = aiJson.title;
-                if (aiJson.price && price === 0) price = aiJson.price;
+                const jsonMatch = aiRes.response.text().match(/\{[\s\S]*\}/);
+                if (jsonMatch) {
+                    const aiJson = JSON.parse(jsonMatch[0]);
+                    if (aiJson.title && (title.length < 3 || title.includes("Amazon"))) title = aiJson.title;
+                    if (aiJson.price && price === 0) price = parseFloat(aiJson.price);
+                }
             } catch(e) {}
         }
 
@@ -350,7 +372,9 @@ app.post('/api/scrape-price', async (req, res) => {
     }
 });
 
-// MEDIA SCRAPER (IMDb/Amazon/Goodreads)
+// =======================================================
+//   REWRITTEN BLAZING MEDIA SCRAPER (IMDb/Amazon/Goodreads)
+// =======================================================
 app.post('/api/scrape-media', async (req, res) => {
     const targetUrl = req.body.url;
     if (!targetUrl) return res.status(400).json({ error: 'No URL provided' });
@@ -358,101 +382,156 @@ app.post('/api/scrape-media', async (req, res) => {
     console.log("🎬 SCRAPING MEDIA URL:", targetUrl);
 
     try {
-        const proxyUrl = `https://api.allorigins.win/get?url=${encodeURIComponent(targetUrl)}`;
-        const fetchRes = await fetch(proxyUrl);
-        const proxyData = await fetchRes.json();
-        const html = proxyData.contents || '';
+        let html = "";
+        try {
+            html = await fetchPageHtml(targetUrl);
+        } catch(e) {
+            const proxyRes = await fetch(`https://api.allorigins.win/get?url=${encodeURIComponent(targetUrl)}`);
+            const pData = await proxyRes.json();
+            html = pData.contents || "";
+        }
 
-        let title = html.match(/<meta\s+property="og:title"\s+content="([^"]+)"/i)?.[1] || html.match(/<title[^>]*>([^<]+)<\/title>/i)?.[1] || '';
-        let imageUrl = html.match(/<meta\s+property="og:image"\s+content="([^"]+)"/i)?.[1] || '';
-        let description = html.match(/<meta\s+property="og:description"\s+content="([^"]+)"/i)?.[1] || html.match(/<meta\s+name="description"\s+content="([^"]+)"/i)?.[1] || '';
-        let jsonLdRawMatch = html.match(/<script\s+type="application\/ld\+json">([\s\S]*?)<\/script>/gi);
-
-        let details = '';
-        let mediaType = 'Movie';
-        let rating = 'Unrated';
-        let genre = 'Other';
+        let title = "";
+        let imageUrl = "";
+        let description = "";
+        let details = "";
+        let mediaType = "Movie";
+        let rating = "5";
+        let genre = "Other";
         let price = 0;
 
-        if (/book|goodreads|isbn|pages/i.test(targetUrl + title + description)) mediaType = 'Book';
+        const ogTitle = html.match(/<meta\s+(?:property|name)="og:title"\s+content="([^"]+)"/i)?.[1] || 
+                        html.match(/<title[^>]*>([^<]+)<\/title>/i)?.[1] || "";
+        const ogImage = html.match(/<meta\s+(?:property|name)="og:image"\s+content="([^"]+)"/i)?.[1] || "";
+        const ogDesc = html.match(/<meta\s+(?:property|name)="og:description"\s+content="([^"]+)"/i)?.[1] || 
+                       html.match(/<meta\s+name="description"\s+content="([^"]+)"/i)?.[1] || "";
+
+        title = ogTitle;
+        imageUrl = ogImage;
+        description = ogDesc;
+
+        if (/book|goodreads|isbn|author|pages/i.test(targetUrl + title + description)) mediaType = 'Book';
         else if (/series|tv|season|episode/i.test(targetUrl + title + description)) mediaType = 'Series';
         if (/anime|myanimelist|crunchyroll/i.test(targetUrl + title + description)) mediaType = 'Anime';
 
-        if (jsonLdRawMatch) {
-            for (let block of jsonLdRawMatch) {
+        const jsonLdMatches = html.match(/<script\s+type="application\/ld\+json">([\s\S]*?)<\/script>/gi);
+        if (jsonLdMatches) {
+            for (let block of jsonLdMatches) {
                 try {
-                    let inner = block.replace(/<script[^>]*>/i, '').replace(/<\/script>/i, '');
-                    let parsed = JSON.parse(inner);
+                    let cleanBlock = block.replace(/<script[^>]*>/i, '').replace(/<\/script>/i, '').trim();
+                    let parsed = JSON.parse(cleanBlock);
                     let items = Array.isArray(parsed) ? parsed : [parsed];
                     
                     for (let item of items) {
-                        if (item['@graph']) items.push(...item['@graph']);
-                        
-                        if (['Movie', 'TVSeries', 'Book', 'Product'].includes(item['@type']) || item.aggregateRating) {
-                            if (item.name && !title) title = item.name;
-                            if (item.image && !imageUrl) imageUrl = typeof item.image === 'string' ? item.image : item.image?.url;
-                            
-                            if (item.aggregateRating?.ratingValue) {
-                                const s = parseFloat(item.aggregateRating.ratingValue);
-                                rating = s >= 8.5 ? '5' : s >= 7.5 ? '4' : s >= 6.5 ? '3' : s >= 5.0 ? '2' : '1';
-                                if (!details.includes('⭐')) details += `⭐ ${s}/10`;
-                            }
-                            
-                            if (item.duration) {
-                                const durMatch = String(item.duration).match(/PT(?:(\d+)H)?(?:(\d+)M)?/i);
-                                if (durMatch) {
-                                    const h = durMatch[1] ? `${durMatch[1]}h` : '';
-                                    const m = durMatch[2] ? `${durMatch[2]}m` : '';
-                                    const dStr = `⏱️ ${h} ${m}`.trim();
-                                    if (!details.includes(dStr)) details += (details ? ` • ${dStr}` : dStr);
+                        const nodes = item['@graph'] ? item['@graph'] : [item];
+                        for (let node of nodes) {
+                            const type = node['@type'] || '';
+                            if (['Movie', 'TVSeries', 'TVEpisode', 'Book', 'Product', 'CreativeWork'].includes(type) || node.name) {
+                                if (node.name) title = node.name;
+                                if (node.image) imageUrl = typeof node.image === 'string' ? node.image : (node.image.url || node.image[0] || imageUrl);
+                                
+                                if (node.aggregateRating?.ratingValue) {
+                                    const s = parseFloat(node.aggregateRating.ratingValue);
+                                    rating = s >= 8.5 ? '5' : s >= 7.5 ? '4' : s >= 6.5 ? '3' : s >= 5.0 ? '2' : '1';
+                                    details += `⭐ ${s}/10`;
                                 }
-                            }
 
-                            if (item.genre) {
-                                const gArr = Array.isArray(item.genre) ? item.genre : [item.genre];
-                                genre = gArr[0].split(',')[0].trim();
+                                if (node.duration) {
+                                    const durMatch = String(node.duration).match(/PT(?:(\d+)H)?(?:(\d+)M)?/i);
+                                    if (durMatch) {
+                                        const h = durMatch[1] ? `${durMatch[1]}h` : '';
+                                        const m = durMatch[2] ? `${durMatch[2]}m` : '';
+                                        const dStr = `⏱️ ${h} ${m}`.trim();
+                                        details += details ? ` • ${dStr}` : dStr;
+                                    }
+                                }
+
+                                if (node.genre) {
+                                    const gArr = Array.isArray(node.genre) ? node.genre : [node.genre];
+                                    genre = gArr[0].split(',')[0].trim();
+                                }
+
+                                if (node.numberOfPages) {
+                                    details += details ? ` • 📖 ${node.numberOfPages} pages` : `📖 ${node.numberOfPages} pages`;
+                                }
                             }
                         }
                     }
-                } catch (e) {}
+                } catch(e) {}
             }
         }
 
-        if (!details.includes('⏱️')) {
-            let durationMatch = html.match(/(\d{1,2}h\s*\d{1,2}m|\d{2,3} mins?)/i);
-            if (durationMatch) details += (details ? ` • ⏱️ ${durationMatch[1]}` : `⏱️ ${durationMatch[1]}`);
+        title = title.replace(/\(TV Series.*?\)/gi, '').replace(/\(Movie.*?\)/gi, '').replace(/- IMDb/gi, '').split('|')[0].trim();
+
+        if (!title || title.length < 2 || title.includes("Access Denied") || title.includes("Robot Check")) {
+            console.log("Extracting media with Gemini AI fallback...");
+            const model = genAI.getGenerativeModel({ model: 'gemini-1.5-flash' });
+            const prompt = `Extract movie/book details for URL: "${targetUrl}". 
+            HTML snippet context: "${html.substring(0, 3000).replace(/"/g, "'")}".
+            Return strictly valid JSON: {"title":"[Name]","imageUrl":"[Poster URL if found else empty]","mediaType":"Movie|Book|Series|Anime","genre":"Action|Comedy|Drama|Sci-Fi|Isekai|Shounen|Other","details":"[e.g. 2h 15m or 320 pages]","mediaRating":"5"}`;
+            
+            const aiRes = await model.generateContent(prompt);
+            const jsonMatch = aiRes.response.text().match(/\{[\s\S]*\}/);
+            if (jsonMatch) {
+                const aiData = JSON.parse(jsonMatch[0]);
+                return res.status(200).json(aiData);
+            }
         }
 
-        if (mediaType === 'Book' && !details.includes('pages')) {
-            let pagesMatch = html.match(/(\d{1,4})\s*pages/i);
-            if (pagesMatch) details += (details ? ` • 📖 ${pagesMatch[1]} pages` : `📖 ${pagesMatch[1]} pages`);
-        }
+        return res.status(200).json({ title: title || 'Saved Media', imageUrl, mediaType, details, genre, mediaRating: rating, price });
 
-        if (title) {
-            title = title.replace(/\(TV Series.*?\)/gi, '').replace(/- IMDb/gi, '').split('|')[0].trim();
-            console.log("✅ SCRAPE SUCCESS:", title);
-            return res.status(200).json({ title, imageUrl, mediaType, details, genre, mediaRating: rating, price });
-        } else {
-            throw new Error("Proxy fetch successful but title was empty");
-        }
-    } catch(e) {
-        console.log("⚠️ Fast fetch failed, falling back to Gemini AI scraper...");
+    } catch (error) {
+        console.error("Media Scraper Error:", error);
         try {
             const model = genAI.getGenerativeModel({ model: 'gemini-1.5-flash' });
-            const prompt = `Act as a web scraper. I am giving you a URL: "${targetUrl}". Guess the precise movie or book name from the URL string itself. Return ONLY a JSON object predicting the metadata: {"title":"[predicted name]","imageUrl":"","mediaType":"Movie","genre":"Other","details":"","mediaRating":"5"}`;
+            const prompt = `Guess the movie/series/book title and genre directly from this URL: "${targetUrl}". Return JSON: {"title":"[Title]","imageUrl":"","mediaType":"Movie","genre":"Other","details":"","mediaRating":"5"}`;
             const aiRes = await model.generateContent(prompt);
-            const aiJsonMatch = aiRes.response.text().match(/\{[\s\S]*\}/);
-            const aiJson = JSON.parse(aiJsonMatch ? aiJsonMatch[0] : "{}");
-            
-            if (aiJson.title) return res.status(200).json(aiJson);
-            throw new Error("AI Fallback failed");
-        } catch(fallbackErr) {
-            res.status(500).json({ error: 'Media scraping completely failed' });
-        }
+            const jsonMatch = aiRes.response.text().match(/\{[\s\S]*\}/);
+            if (jsonMatch) {
+                return res.status(200).json(JSON.parse(jsonMatch[0]));
+            }
+        } catch(aiErr) {}
+        res.status(500).json({ error: 'Media scraping completely failed' });
     }
 });
 
-// FAST FIREWALL BYPASS ROUTE
+// WATCH & READ BOOKMARKLET
+app.get('/api/bookmark-media', async (req, res) => {
+    const targetUrl = req.query.url;
+    if (!targetUrl) return res.send("No URL provided.");
+    res.send(`
+        <html style="background:#050505; color:#a855f7; font-family:sans-serif; text-align:center; padding:2rem;">
+            <h2 style="margin-top: 20px; color:#a855f7;">🎬 Media Vault</h2>
+            <div id="manualEntryBox" style="background: rgba(255,255,255,0.05); padding: 20px; border-radius: 16px; margin-top: 20px; border: 1px solid rgba(255,255,255,0.1);">
+                <input type="text" id="manualName" placeholder="Movie / Book Name" style="background: rgba(0,0,0,0.5); color: #fff; font-size: 16px; border: 1px solid rgba(255,255,255,0.2); border-radius: 12px; padding: 15px; width: 100%; outline: none; margin-bottom: 10px;">
+                <select id="mediaType" style="background: rgba(0,0,0,0.5); color: #fff; border: 1px solid rgba(255,255,255,0.2); border-radius: 12px; padding: 12px; width: 100%; outline: none; margin-bottom: 10px;">
+                    <option value="Movie">🎬 Movie</option><option value="Book">📚 Book</option><option value="Series">📺 Series</option><option value="Anime">🎌 Anime</option>
+                </select>
+                <select id="mediaGenre" style="background: rgba(0,0,0,0.5); color: #fff; border: 1px solid rgba(255,255,255,0.2); border-radius: 12px; padding: 12px; width: 100%; outline: none; margin-bottom: 15px;">
+                    <option value="Action">Action</option><option value="Comedy">Comedy</option><option value="Drama">Drama</option><option value="Sci-Fi">Sci-Fi</option><option value="Romance">Romance</option><option value="Shounen">Shounen</option><option value="Isekai">Isekai</option><option value="Other">Other</option>
+                </select>
+                <button onclick="saveManualData()" style="background: #9333ea; color: white; border: none; padding: 15px; width: 100%; border-radius: 12px; font-size: 16px; font-weight: bold; cursor: pointer; transition: 0.2s;">Save to Vault</button>
+            </div>
+            <script>
+                function saveManualData() {
+                    const btn = document.querySelector('button');
+                    const nameInput = document.getElementById('manualName').value || 'Saved Media';
+                    const typeInput = document.getElementById('mediaType').value;
+                    const genreInput = document.getElementById('mediaGenre').value;
+                    btn.innerText = "Syncing to Cloud..."; btn.style.background = "#10b981";
+                    fetch('https://wallet-y7yv.onrender.com/api/add-wishlist', {
+                        method: 'POST', headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ id: String(Date.now()), title: nameInput, price: 0, link: '${targetUrl}', imageUrl: '', category: 'MEDIA NODE', wishCategory: typeInput, mediaGenre: genreInput, mediaStatus: 'Planned', isMedia: true, timestamp: Date.now() })
+                    }).then(() => {
+                        document.getElementById('manualEntryBox').innerHTML = '<h1 style="color:#10b981; font-size: 30px; margin: 30px 0;">Saved! 🎬</h1>';
+                        setTimeout(() => window.close(), 1500);
+                    });
+                }
+            </script>
+        </html>
+    `);
+});
+
 app.get('/api/bookmark-auto', async (req, res) => {
     const { title, price, link, img, cat } = req.query;
     if (!link || !price) return res.send("Error: Missing parameters.");
@@ -463,45 +542,19 @@ app.get('/api/bookmark-auto', async (req, res) => {
     const safeImg = img ? decodeURIComponent(img) : '';
     const safeCat = cat ? decodeURIComponent(cat) : hostname;
 
-    const item = { 
-        id: String(Date.now()), title: safeTitle, price: parseFloat(price) || 0, link: decodeURIComponent(link), imageUrl: safeImg, category: safeCat, wishCategory: 'Other', timestamp: Date.now()
-    };
-    
+    const item = { id: String(Date.now()), title: safeTitle, price: parseFloat(price) || 0, link: decodeURIComponent(link), imageUrl: safeImg, category: safeCat, wishCategory: 'Other', timestamp: Date.now() };
     try {
         await db.collection('wishlist').doc(item.id).set(item);
-        res.send(`
-            <html style="background:#050505; color:#10b981; font-family:sans-serif; padding:2rem; display:flex; justify-content:center; align-items:center; height:100vh; overflow:hidden;">
-                <div style="background:rgba(255,255,255,0.05); padding:30px; border-radius:24px; text-align:center; max-width:400px; border:1px solid rgba(255,255,255,0.1); box-shadow:0 10px 40px rgba(0,0,0,0.5);">
-                    <h2 style="margin-top:0; color:#3b82f6; font-size:24px;">🎯 Wishlist Added</h2>
-                    ${safeImg ? `<img src="${safeImg}" style="width:100%; height:180px; object-fit:cover; border-radius:12px; margin:15px 0;">` : ''}
-                    <div style="margin: 10px 0;"><span style="background:rgba(59,130,246,0.15); color:#60a5fa; padding:4px 10px; border-radius:8px; font-size:11px; font-weight:bold; text-transform:uppercase;">${safeCat}</span></div>
-                    <p style="color:#f3f4f6; margin: 15px 0; font-size: 14px; line-height: 1.4; font-weight:bold;">${safeTitle}</p>
-                    <h1 style="color:#10b981; font-size: 40px; margin: 10px 0;">₹${item.price.toLocaleString()}</h1>
-                    <p style="color:#10b981; font-weight:bold;">Saved to Database Successfully!</p>
-                    <p style="color:#6b7280; font-size:12px; margin-top:20px;">Closing window...</p>
-                </div>
-                <script>setTimeout(() => window.close(), 2500);</script>
-            </html>
-        `);
-    } catch(err) {
-        res.send("<h2 style='color:#ef4444; text-align:center;'>Database sync failed.</h2>");
-    }
+        res.send(`<script>window.close();</script>`);
+    } catch(err) { res.send("Database error."); }
 });
 
-// MANUAL FALLBACK BOOKMARKLET ROUTE
 app.get('/api/bookmark', async (req, res) => {
     const targetUrl = req.query.url;
-    if (!targetUrl) return res.send("No URL provided.");
-    
     res.send(`
         <html style="background:#050505; color:#10b981; font-family:sans-serif; text-align:center; padding:2rem;">
-            <h2 style="margin-top: 20px; color:#3b82f6;">🎯 Wallet V2.0</h2>
             <div id="manualEntryBox" style="background: rgba(255,255,255,0.05); padding: 20px; border-radius: 16px; margin-top: 20px; border: 1px solid rgba(255,255,255,0.1);">
-                <p style="color:#ef4444; font-size:12px; font-weight:bold; text-transform:uppercase; letter-spacing:1px; margin-bottom:15px;">⚠️ Enter Details Manually</p>
                 <input type="text" id="manualName" placeholder="Product Name" style="background: rgba(0,0,0,0.5); color: #fff; font-size: 16px; border: 1px solid rgba(255,255,255,0.2); border-radius: 12px; padding: 15px; width: 100%; outline: none; margin-bottom: 10px;">
-                <select id="manualCategory" style="background: rgba(0,0,0,0.5); color: #fff; border: 1px solid rgba(255,255,255,0.2); border-radius: 12px; padding: 12px; width: 100%; outline: none; margin-bottom: 12px;">
-                    <option value="Gadgets">💻 Gadgets</option><option value="Apparel">👕 Apparel</option><option value="Lifestyle">✨ Lifestyle</option><option value="Books">📚 Books</option><option value="Electronics">🔌 Electronics</option><option value="Gaming">🎮 Gaming</option><option value="Furniture">🛋️ Furniture</option><option value="Travel">✈️ Travel</option><option value="Vehicles">🚗 Vehicles</option><option value="Health">⚕️ Health</option><option value="Other">📦 Other</option>
-                </select>
                 <input type="number" id="manualPrice" placeholder="Enter Price (₹)" style="background: rgba(0,0,0,0.5); color: #10b981; font-size: 24px; font-weight: bold; text-align: center; border: 1px solid rgba(255,255,255,0.2); border-radius: 12px; padding: 15px; width: 100%; outline: none; margin-bottom: 15px;" autofocus>
                 <button onclick="saveManualData()" style="background: #3b82f6; color: white; border: none; padding: 15px; width: 100%; border-radius: 12px; font-size: 16px; font-weight: bold; cursor: pointer; transition: 0.2s;">Save to Tracker</button>
             </div>
@@ -510,16 +563,12 @@ app.get('/api/bookmark', async (req, res) => {
                     const btn = document.querySelector('button');
                     const priceInput = document.getElementById('manualPrice').value;
                     const nameInput = document.getElementById('manualName').value || 'Saved Item';
-                    const catInput = document.getElementById('manualCategory').value;
                     if (!priceInput || priceInput <= 0) return;
-                    btn.innerText = "Syncing to Cloud..."; btn.style.background = "#10b981";
+                    btn.innerText = "Syncing..."; btn.style.background = "#10b981";
                     fetch('https://wallet-y7yv.onrender.com/api/add-wishlist', {
                         method: 'POST', headers: { 'Content-Type': 'application/json' },
-                        body: JSON.stringify({ id: String(Date.now()), title: nameInput, price: parseFloat(priceInput), link: '${targetUrl}', imageUrl: '', category: 'MANUAL', wishCategory: catInput, timestamp: Date.now() })
-                    }).then(() => {
-                        document.getElementById('manualEntryBox').innerHTML = '<h1 style="color:#10b981; font-size: 30px; margin: 30px 0;">Saved! 🎯</h1>';
-                        setTimeout(() => window.close(), 1500);
-                    });
+                        body: JSON.stringify({ id: String(Date.now()), title: nameInput, price: parseFloat(priceInput), link: '${targetUrl}', imageUrl: '', category: 'MANUAL', wishCategory: 'Other', timestamp: Date.now() })
+                    }).then(() => { document.getElementById('manualEntryBox').innerHTML = '<h2>Saved!</h2>'; setTimeout(() => window.close(), 1500); });
                 }
             </script>
         </html>
