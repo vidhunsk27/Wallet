@@ -156,8 +156,9 @@ app.post('/api/jarvis-report', async (req, res) => {
     try {
         const { compiledMonths, totalLedger, monthlyBudget, selectedMonth } = req.body;
         const model = genAI.getGenerativeModel({ model: 'gemini-1.5-flash' });
-        const prompt = `You are a professional financial advisor AI. 
-        Analyze the user's entire multi-month financial ledger data:
+        const prompt = `You are a professional financial advisor AI for Vidhun. 
+        Vidhun has requested a comprehensive detailed financial report.
+        Analyze their entire multi-month financial ledger data to provide a point of view based on their overall trends:
         Month-by-Month breakdown: ${JSON.stringify(compiledMonths)}
         Current selected filter month: ${selectedMonth}
         Monthly budget target: ₹${monthlyBudget}
@@ -322,7 +323,7 @@ app.post('/api/receipt-ocr', upload.single('receipt'), async (req, res) => {
 });
 
 // =======================================================
-//   REWRITTEN BLAZING PRODUCT SCRAPER (FOR WISHLIST)
+//   PROXY & AI SCRAPER (No Puppeteer - Ultra Fast / No Render crashes)
 // =======================================================
 app.post('/api/scrape-price', async (req, res) => {
     const targetUrl = req.body.url;
@@ -381,6 +382,10 @@ app.post('/api/scrape-media', async (req, res) => {
 
     console.log("🎬 SCRAPING MEDIA URL:", targetUrl);
 
+    // Extract exact IMDb ID if present
+    const imdbIdMatch = targetUrl.match(/tt\d+/i);
+    const imdbId = imdbIdMatch ? imdbIdMatch[0] : null;
+
     try {
         let html = "";
         try {
@@ -426,6 +431,9 @@ app.post('/api/scrape-media', async (req, res) => {
                         const nodes = item['@graph'] ? item['@graph'] : [item];
                         for (let node of nodes) {
                             const type = node['@type'] || '';
+                            // Strictly check if node represents the exact IMDB ID to pull correct data
+                            if (imdbId && node.url && !node.url.includes(imdbId)) continue; 
+
                             if (['Movie', 'TVSeries', 'TVEpisode', 'Book', 'Product', 'CreativeWork'].includes(type) || node.name) {
                                 if (node.name) title = node.name;
                                 if (node.image) imageUrl = typeof node.image === 'string' ? node.image : (node.image.url || node.image[0] || imageUrl);
@@ -466,7 +474,7 @@ app.post('/api/scrape-media', async (req, res) => {
         if (!title || title.length < 2 || title.includes("Access Denied") || title.includes("Robot Check")) {
             console.log("Extracting media with Gemini AI fallback...");
             const model = genAI.getGenerativeModel({ model: 'gemini-1.5-flash' });
-            const prompt = `Extract movie/book details for URL: "${targetUrl}". 
+            const prompt = `Extract movie/book details for URL: "${targetUrl}". The known IMDb ID is: ${imdbId || 'Unknown'}.
             HTML snippet context: "${html.substring(0, 3000).replace(/"/g, "'")}".
             Return strictly valid JSON: {"title":"[Name]","imageUrl":"[Poster URL if found else empty]","mediaType":"Movie|Book|Series|Anime","genre":"Action|Comedy|Drama|Sci-Fi|Isekai|Shounen|Other","details":"[e.g. 2h 15m or 320 pages]","mediaRating":"5"}`;
             
@@ -484,7 +492,7 @@ app.post('/api/scrape-media', async (req, res) => {
         console.error("Media Scraper Error:", error);
         try {
             const model = genAI.getGenerativeModel({ model: 'gemini-1.5-flash' });
-            const prompt = `Guess the movie/series/book title and genre directly from this URL: "${targetUrl}". Return JSON: {"title":"[Title]","imageUrl":"","mediaType":"Movie","genre":"Other","details":"","mediaRating":"5"}`;
+            const prompt = `Guess the movie/series/book title and genre directly from this URL: "${targetUrl}" (IMDb ID: ${imdbId || 'N/A'}). Return JSON: {"title":"[Title]","imageUrl":"","mediaType":"Movie","genre":"Other","details":"","mediaRating":"5"}`;
             const aiRes = await model.generateContent(prompt);
             const jsonMatch = aiRes.response.text().match(/\{[\s\S]*\}/);
             if (jsonMatch) {

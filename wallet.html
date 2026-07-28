@@ -278,12 +278,10 @@
                 <h3 class="text-xs font-bold text-gray-400 uppercase tracking-widest flex-shrink-0">Analytics</h3>
                 
                 <div class="flex items-center gap-2 min-w-0">
-                    <!-- PIE CHART DEDICATED MONTH DROPDOWN -->
                     <select id="pieChartMonthFilter" onchange="updatePieChart(this.value)" class="bg-black/40 text-[10px] md:text-xs font-bold text-white uppercase rounded-xl px-2.5 py-1.5 border border-white/10 outline-none hover:border-blue-500/50 cursor-pointer max-w-[130px] md:max-w-[160px] truncate">
                       <option value="current">SELECTED PERIOD</option>
                       <option value="all">ALL TIME TOTAL</option>
                     </select>
-
                     <button onclick="getAIInsights()" id="aiButton" class="bg-blue-600/20 text-blue-400 hover:bg-blue-600 hover:text-white px-2.5 py-1.5 rounded-xl text-[10px] md:text-xs font-bold transition-all border border-blue-500/30 flex items-center shadow-[0_0_15px_rgba(59,130,246,0.2)] whitespace-nowrap">
                       <i data-lucide="sparkles" class="w-3 h-3 mr-1"></i> Quick AI
                     </button>
@@ -353,11 +351,10 @@
                  <h3 class="text-xs font-bold text-gray-400 uppercase tracking-widest flex items-center">Ledger<span id="recordCount" class="ml-3 px-2.5 py-0.5 bg-black/40 border border-white/10 rounded-md text-[10px] font-bold text-white shadow-inner">0</span></h3>
                  
                  <div class="flex items-center space-x-1.5">
-                   <!-- MOVED FULL AI REPORT BUTTON HERE NEXT TO EXPORT BUTTONS -->
-                   <button onclick="openAIReport()" class="bg-purple-600/20 hover:bg-purple-600 text-purple-300 hover:text-white px-3 py-2 rounded-xl text-xs font-bold border border-purple-500/30 transition-all flex items-center shadow-sm uppercase tracking-wider mr-1" title="Generate AI Full Report"><i data-lucide="sparkles" class="w-3.5 h-3.5 mr-1.5 text-purple-400"></i> Full AI Report</button>
-                   <button onclick="exportPDF()" class="bg-red-500/10 hover:bg-red-500/20 text-red-400 p-2 rounded-xl border border-red-500/20 transition-colors" title="Export PDF"><i data-lucide="file-text" class="w-4 h-4"></i></button>
-                   <button onclick="exportExcel()" class="bg-emerald-500/10 hover:bg-emerald-500/20 text-emerald-400 p-2 rounded-xl border border-emerald-500/20 transition-colors" title="Export Excel"><i data-lucide="file-spreadsheet" class="w-4 h-4"></i></button>
-                   <label class="bg-white/5 hover:bg-white/10 text-gray-300 p-2 rounded-xl border border-white/5 cursor-pointer transition-colors" title="Restore (JSON)"><i data-lucide="upload" class="w-4 h-4"></i><input type="file" id="importFile" accept=".json" class="hidden" onchange="importData(event)"></label>
+                   <button onclick="openAIReport()" class="bg-purple-600/20 hover:bg-purple-600 text-purple-300 hover:text-white px-3 py-2 rounded-xl text-xs font-bold border border-purple-500/30 transition-all flex items-center shadow-sm uppercase tracking-wider mr-1" title="Generate AI Full Report"><i data-lucide="sparkles" class="w-3.5 h-3.5 mr-1.5 text-purple-400"></i> Full Report</button>
+                   <button onclick="exportPDF()" class="bg-red-500/10 hover:bg-red-500/20 text-red-400 p-2 rounded-xl border border-red-500/20 transition-colors" title="Export Dashboard PDF"><i data-lucide="file-text" class="w-4 h-4"></i></button>
+                   <button onclick="exportExcel()" class="bg-emerald-500/10 hover:bg-emerald-500/20 text-emerald-400 p-2 rounded-xl border border-emerald-500/20 transition-colors" title="Export Ledger Excel"><i data-lucide="file-spreadsheet" class="w-4 h-4"></i></button>
+                   <label class="bg-white/5 hover:bg-white/10 text-gray-300 p-2 rounded-xl border border-white/5 cursor-pointer transition-colors" title="Restore Backup (JSON)"><i data-lucide="upload" class="w-4 h-4"></i><input type="file" id="importFile" accept=".json" class="hidden" onchange="importData(event)"></label>
                  </div>
                </div>
                <div class="flex space-x-2">
@@ -589,38 +586,46 @@
 
   <!-- AI COMPREHENSIVE REPORT MODAL -->
   <div id="aiReportModal" class="hidden fixed inset-0 bg-black/90 backdrop-blur-md z-[100] flex items-center justify-center p-4 transition-opacity overflow-y-auto">
-      <div class="glass-panel modal-active rounded-3xl w-full max-w-5xl my-auto border border-white/10 shadow-[0_0_60px_rgba(59,130,246,0.15)] relative flex flex-col max-h-[90vh]">
+      <div class="glass-panel modal-active rounded-3xl w-full max-w-6xl my-auto border border-white/10 shadow-[0_0_60px_rgba(59,130,246,0.15)] relative flex flex-col max-h-[95vh]">
           <div class="absolute inset-0 bg-gradient-to-br from-blue-500/5 to-transparent pointer-events-none rounded-3xl"></div>
           <div class="flex justify-between items-center p-6 border-b border-white/5 relative z-10 flex-shrink-0">
              <h3 class="text-white font-black uppercase tracking-widest text-sm flex items-center drop-shadow-sm"><i data-lucide="file-text" class="w-5 h-5 mr-2 text-blue-400"></i> AI Comprehensive Financial Report</h3>
-             <button onclick="closeAIReport()" class="text-gray-500 hover:text-white transition-colors bg-white/5 hover:bg-white/10 p-2 rounded-lg border border-white/5"><i data-lucide="x" class="w-5 h-5"></i></button>
+             <div class="flex items-center gap-2">
+                 <button onclick="exportReportPDF()" class="bg-red-500/20 text-red-400 p-2 rounded-lg hover:bg-red-500 hover:text-white transition-all shadow-sm" title="Export as PDF Document"><i data-lucide="file-text" class="w-4 h-4"></i></button>
+                 <button onclick="exportReportExcel()" class="bg-emerald-500/20 text-emerald-400 p-2 rounded-lg hover:bg-emerald-500 hover:text-white transition-all shadow-sm mr-2" title="Export as Excel Workbook"><i data-lucide="file-spreadsheet" class="w-4 h-4"></i></button>
+                 <button onclick="closeAIReport()" class="text-gray-500 hover:text-white transition-colors bg-white/5 hover:bg-white/10 p-2 rounded-lg border border-white/5"><i data-lucide="x" class="w-5 h-5"></i></button>
+             </div>
           </div>
           
           <div class="p-6 overflow-y-auto relative z-10 w-full space-y-8 flex-grow">
               
               <!-- AI Narrative Text Section -->
               <div id="aiReportContent" class="text-sm text-gray-300 leading-relaxed space-y-4 tracking-wide">
-                  <div class="flex items-center text-blue-400 animate-pulse font-bold"><i data-lucide="loader-2" class="w-5 h-5 mr-2 animate-spin"></i> Jarvis is compiling your comprehensive report...</div>
+                  <div class="flex items-center text-blue-400 animate-pulse font-bold"><i data-lucide="loader-2" class="w-5 h-5 mr-2 animate-spin"></i> Jarvis is compiling Vidhun's comprehensive report...</div>
               </div>
 
-              <!-- Selected Month Graphical Breakdown -->
-              <div class="border-t border-white/10 pt-6">
-                  <h4 class="text-xs font-bold text-gray-400 uppercase tracking-widest mb-4">Current Selected Period Breakdown</h4>
-                  <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                      <div class="h-64 bg-black/40 rounded-xl p-4 border border-white/5 shadow-inner"><canvas id="reportPieMonth"></canvas></div>
-                      <div class="h-64 bg-black/40 rounded-xl p-4 border border-white/5 shadow-inner"><canvas id="reportBarMonth"></canvas></div>
+              <!-- Graphs Section -->
+              <div class="grid grid-cols-1 xl:grid-cols-2 gap-8 border-t border-white/10 pt-6">
+                  
+                  <!-- Selected Month Graphs -->
+                  <div class="space-y-4">
+                      <h4 class="text-xs font-black text-blue-400 uppercase tracking-widest text-center bg-blue-500/10 py-2 rounded-lg border border-blue-500/20">Selected Month Metrics</h4>
+                      <div class="h-56 bg-black/40 rounded-xl p-4 border border-white/5 shadow-inner"><canvas id="reportPieMonth"></canvas></div>
+                      <div class="h-56 bg-black/40 rounded-xl p-4 border border-white/5 shadow-inner"><canvas id="reportBarMonth"></canvas></div>
+                      <div class="h-56 bg-black/40 rounded-xl p-4 border border-white/5 shadow-inner"><canvas id="reportRadarMonth"></canvas></div>
+                      <div class="h-56 bg-black/40 rounded-xl p-4 border border-white/5 shadow-inner"><canvas id="reportTrendMonth"></canvas></div>
                   </div>
-              </div>
 
-              <!-- All-Time Graphical Breakdown -->
-              <div class="border-t border-white/10 pt-6">
-                  <h4 class="text-xs font-bold text-gray-400 uppercase tracking-widest mb-4">All-Time Overall Metrics</h4>
-                  <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                      <div class="h-64 bg-black/40 rounded-xl p-4 border border-white/5 shadow-inner"><canvas id="reportPieAll"></canvas></div>
-                      <div class="h-64 bg-black/40 rounded-xl p-4 border border-white/5 shadow-inner"><canvas id="reportBarAll"></canvas></div>
+                  <!-- All-Time Graphs -->
+                  <div class="space-y-4">
+                      <h4 class="text-xs font-black text-purple-400 uppercase tracking-widest text-center bg-purple-500/10 py-2 rounded-lg border border-purple-500/20">All-Time Metrics</h4>
+                      <div class="h-56 bg-black/40 rounded-xl p-4 border border-white/5 shadow-inner"><canvas id="reportPieAll"></canvas></div>
+                      <div class="h-56 bg-black/40 rounded-xl p-4 border border-white/5 shadow-inner"><canvas id="reportBarAll"></canvas></div>
+                      <div class="h-56 bg-black/40 rounded-xl p-4 border border-white/5 shadow-inner"><canvas id="reportRadarAll"></canvas></div>
+                      <div class="h-56 bg-black/40 rounded-xl p-4 border border-white/5 shadow-inner"><canvas id="reportTrendAll"></canvas></div>
                   </div>
-              </div>
 
+              </div>
           </div>
       </div>
   </div>
@@ -1126,7 +1131,7 @@
     async function openAIReport() {
         document.getElementById('aiReportModal').classList.remove('hidden');
         const content = document.getElementById('aiReportContent');
-        content.innerHTML = '<div class="flex items-center text-blue-400 animate-pulse font-bold"><i data-lucide="loader-2" class="w-5 h-5 mr-2 animate-spin"></i> Jarvis is compiling your multi-month historical report...</div>';
+        content.innerHTML = '<div class="flex items-center text-blue-400 animate-pulse font-bold"><i data-lucide="loader-2" class="w-5 h-5 mr-2 animate-spin"></i> Jarvis is compiling Vidhun\'s comprehensive report...</div>';
         lucide.createIcons();
 
         Object.values(reportCharts).forEach(c => c.destroy());
@@ -1162,27 +1167,57 @@
 
         // Current Period Breakdown
         const monthCats = getCatData(filtered);
+        
+        const chartOptions = { responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false } } };
+        const pieOptions = { responsive: true, maintainAspectRatio: false, plugins: { legend: { position: 'right', labels:{color:'#9ca3af', font:{family:'Fredoka', size: 9}} } } };
+
         reportCharts.pieMonth = new Chart(document.getElementById('reportPieMonth').getContext('2d'), {
             type: 'doughnut', data: { labels: monthCats.map(c=>c[0]), datasets: [{ data: monthCats.map(c=>c[1]), backgroundColor: monthCats.map(c=>getColor(c[0])), borderWidth: 2, borderColor: '#08080a' }] },
-            options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { position: 'right', labels:{color:'#9ca3af', font:{family:'Fredoka'}} } } }
+            options: pieOptions
         });
 
         reportCharts.barMonth = new Chart(document.getElementById('reportBarMonth').getContext('2d'), {
             type: 'bar', data: { labels: monthCats.slice(0,7).map(c=>c[0]), datasets: [{ label: 'Top Expenses', data: monthCats.slice(0,7).map(c=>c[1]), backgroundColor: '#f43f5e', borderRadius:4 }] },
-            options: { responsive: true, maintainAspectRatio: false, scales: { x:{ticks:{color:'#9ca3af'}}, y:{ticks:{color:'#9ca3af'}} }, plugins: { legend:{display:false} } }
+            options: { ...chartOptions, scales: { x:{ticks:{color:'#9ca3af', font:{size:9}}}, y:{ticks:{color:'#9ca3af', font:{size:9}}} } }
         });
 
         // All-Time Breakdown
         const allCats = getCatData(transactions);
         reportCharts.pieAll = new Chart(document.getElementById('reportPieAll').getContext('2d'), {
             type: 'doughnut', data: { labels: allCats.map(c=>c[0]), datasets: [{ data: allCats.map(c=>c[1]), backgroundColor: allCats.map(c=>getColor(c[0])), borderWidth: 2, borderColor: '#08080a' }] },
-            options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { position: 'right', labels:{color:'#9ca3af', font:{family:'Fredoka'}} } } }
+            options: pieOptions
         });
 
         const allTime = getTimelineData(transactions);
         reportCharts.barAll = new Chart(document.getElementById('reportBarAll').getContext('2d'), {
             type: 'bar', data: { labels: allTime.labels, datasets: [ { label:'Income', data:allTime.inc, backgroundColor:'#10b981', borderRadius:4 }, { label:'Expense', data:allTime.exp, backgroundColor:'#f43f5e', borderRadius:4 } ] },
-            options: { responsive: true, maintainAspectRatio: false, scales: { x:{ticks:{color:'#9ca3af'}}, y:{ticks:{color:'#9ca3af'}} } }
+            options: { ...chartOptions, scales: { x:{ticks:{color:'#9ca3af', font:{size:9}}}, y:{ticks:{color:'#9ca3af', font:{size:9}}} } }
+        });
+        
+        // Radar Charts
+        const radarCategories = ['Food & Dining', 'Transport', 'Shopping', 'Utilities', 'Subscriptions'];
+        const monthRadarData = radarCategories.map(c => monthCats.find(m => m[0] === c)?.[1] || 0);
+        reportCharts.radarMonth = new Chart(document.getElementById('reportRadarMonth').getContext('2d'), {
+            type: 'radar', data: { labels: radarCategories, datasets: [{ data: monthRadarData, backgroundColor: 'rgba(59, 130, 246, 0.2)', borderColor: '#3b82f6', pointBackgroundColor: '#60a5fa', borderWidth: 2 }] },
+            options: { ...chartOptions, scales: { r: { angleLines: { color: 'rgba(255,255,255,0.05)' }, grid: { color: 'rgba(255,255,255,0.05)' }, pointLabels: { color: '#9ca3af', font: { size: 9 } }, ticks: { display: false } } } }
+        });
+
+        const allRadarData = radarCategories.map(c => allCats.find(m => m[0] === c)?.[1] || 0);
+        reportCharts.radarAll = new Chart(document.getElementById('reportRadarAll').getContext('2d'), {
+            type: 'radar', data: { labels: radarCategories, datasets: [{ data: allRadarData, backgroundColor: 'rgba(168, 85, 247, 0.2)', borderColor: '#a855f7', pointBackgroundColor: '#c084fc', borderWidth: 2 }] },
+            options: { ...chartOptions, scales: { r: { angleLines: { color: 'rgba(255,255,255,0.05)' }, grid: { color: 'rgba(255,255,255,0.05)' }, pointLabels: { color: '#9ca3af', font: { size: 9 } }, ticks: { display: false } } } }
+        });
+
+        // Trend Charts
+        const monthTime = getTimelineData(filtered);
+        reportCharts.trendMonth = new Chart(document.getElementById('reportTrendMonth').getContext('2d'), {
+            type: 'line', data: { labels: monthTime.labels, datasets: [ { label:'Income', data:monthTime.inc, borderColor:'#10b981', fill:false, tension:0.4 }, { label:'Expense', data:monthTime.exp, borderColor:'#f43f5e', fill:false, tension:0.4 } ] },
+            options: { ...chartOptions, scales: { x:{ticks:{color:'#9ca3af', font:{size:9}}}, y:{ticks:{color:'#9ca3af', font:{size:9}}} } }
+        });
+
+        reportCharts.trendAll = new Chart(document.getElementById('reportTrendAll').getContext('2d'), {
+            type: 'line', data: { labels: allTime.labels, datasets: [ { label:'Income', data:allTime.inc, borderColor:'#10b981', fill:true, backgroundColor:'rgba(16, 185, 129, 0.1)', tension:0.4 }, { label:'Expense', data:allTime.exp, borderColor:'#f43f5e', fill:true, backgroundColor:'rgba(244, 63, 94, 0.1)', tension:0.4 } ] },
+            options: { ...chartOptions, scales: { x:{ticks:{color:'#9ca3af', font:{size:9}}}, y:{ticks:{color:'#9ca3af', font:{size:9}}} } }
         });
 
         // Build compiled month-by-month summary for AI
@@ -1209,7 +1244,86 @@
             content.innerHTML = '<span class="text-red-400">Failed to generate AI report. Connect to server.</span>';
         }
     }
+    
     function closeAIReport() { document.getElementById('aiReportModal').classList.add('hidden'); }
+    
+    // EXPORT PDF REPORT (For Detailed AI Modal)
+    function exportReportPDF() {
+        const { jsPDF } = window.jspdf;
+        const doc = new jsPDF('p', 'mm', 'a4');
+        let y = 15;
+        
+        doc.setFontSize(16);
+        doc.text("AI Financial Report for Vidhun", 14, y);
+        y += 10;
+        
+        doc.setFontSize(10);
+        const rawText = document.getElementById('aiReportContent').innerText;
+        const splitText = doc.splitTextToSize(rawText, 180);
+        doc.text(splitText, 14, y);
+        
+        y += (splitText.length * 5) + 10;
+        
+        const addChart = (id, title, isRight) => {
+            try {
+                const canvas = document.getElementById(id);
+                if(y > 250) { doc.addPage(); y = 15; }
+                const x = isRight ? 110 : 14;
+                doc.text(title, x, y);
+                const imgData = canvas.toDataURL('image/png');
+                doc.addImage(imgData, 'PNG', x, y + 5, 80, 60);
+            } catch(e){}
+        };
+        
+        addChart('reportPieMonth', 'Monthly Distribution', false);
+        addChart('reportPieAll', 'All-Time Distribution', true);
+        y += 75;
+        
+        addChart('reportBarMonth', 'Monthly Top Expenses', false);
+        addChart('reportBarAll', 'All-Time Top Expenses', true);
+        y += 75;
+        
+        addChart('reportRadarMonth', 'Monthly Radar', false);
+        addChart('reportRadarAll', 'All-Time Radar', true);
+        y += 75;
+        
+        addChart('reportTrendMonth', 'Monthly Trend', false);
+        addChart('reportTrendAll', 'All-Time Trend', true);
+        
+        doc.save('Vidhun_AI_Financial_Report.pdf');
+    }
+
+    // EXPORT EXCEL REPORT (For Detailed AI Modal)
+    function exportReportExcel() {
+        const wb = XLSX.utils.book_new();
+        
+        const rawText = document.getElementById('aiReportContent').innerText.split('\n').filter(t => t.trim().length > 0);
+        const aiData = rawText.map(text => ({ "AI Insight for Vidhun": text }));
+        const wsAI = XLSX.utils.json_to_sheet(aiData);
+        XLSX.utils.book_append_sheet(wb, wsAI, "AI Analysis");
+        
+        const filtered = transactions.filter(t => {
+            if (selectedMonth !== 'all') { 
+                const d = new Date(t.timestamp); 
+                return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}` === selectedMonth; 
+            }
+            return true;
+        });
+        
+        const getCat = (txs) => {
+            const data = {};
+            txs.filter(t=>t.type==='expense').forEach(t => data[t.category] = (data[t.category]||0)+t.amount);
+            return Object.entries(data).sort((a,b)=>b[1]-a[1]).map(e => ({ Category: e[0], Amount: e[1] }));
+        };
+        
+        const wsMonth = XLSX.utils.json_to_sheet(getCat(filtered));
+        XLSX.utils.book_append_sheet(wb, wsMonth, "Monthly Expenses");
+        
+        const wsAll = XLSX.utils.json_to_sheet(getCat(transactions));
+        XLSX.utils.book_append_sheet(wb, wsAll, "All-Time Expenses");
+        
+        XLSX.writeFile(wb, "Vidhun_AI_Financial_Report.xlsx");
+    }
 
     document.getElementById('transactionForm').addEventListener('submit', async (e) => {
         e.preventDefault(); 
@@ -1733,7 +1847,6 @@
         document.getElementById('allTimeModal').classList.add('hidden');
     }
 
-    // --- PIE CHART SPECIFIC MONTH UPDATER ---
     function updatePieChart(val) {
         let pieFiltered = [];
         let periodExpTotal = 0;
@@ -1961,7 +2074,6 @@
           document.getElementById('statTopExpenseAmount').innerText = `₹0`;
       }
 
-      // Trigger Pie Chart render using pieChartMonthFilter selection
       const pieVal = document.getElementById('pieChartMonthFilter')?.value || 'current';
       updatePieChart(pieVal);
 
