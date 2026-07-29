@@ -139,7 +139,7 @@ app.post('/api/sync-wishlist', async (req, res) => {
 app.post('/api/jarvis-advice', async (req, res) => {
     try {
         const { transactions, monthlyBudget } = req.body;
-        const model = genAI.getGenerativeModel({ model: 'gemini-2.5-flash' });
+        const model = genAI.getGenerativeModel({ model: 'gemini-1.5-flash' });
         const prompt = `You are a sharp, highly intelligent personal financial assistant. 
         Analyze these transactions (with pre-calculated totals): ${JSON.stringify(transactions)}. 
         The user's monthly budget is ₹${monthlyBudget}. 
@@ -155,7 +155,7 @@ app.post('/api/jarvis-advice', async (req, res) => {
 app.post('/api/jarvis-report', async (req, res) => {
     try {
         const { compiledMonths, totalLedger, monthlyBudget, selectedMonth } = req.body;
-        const model = genAI.getGenerativeModel({ model: 'gemini-2.5-flash' });
+        const model = genAI.getGenerativeModel({ model: 'gemini-1.5-flash' });
         const prompt = `You are a professional financial advisor AI for Vidhun. 
         Vidhun has requested a comprehensive detailed financial report.
         Analyze their entire multi-month financial ledger data to provide a point of view based on their overall trends:
@@ -188,7 +188,7 @@ app.post('/api/bulk-sms', async (req, res) => {
         const { bulkText } = req.body;
         if (!bulkText) return res.status(400).json({ error: 'No text provided' });
 
-        const model = genAI.getGenerativeModel({ model: 'gemini-2.5-flash' });
+        const model = genAI.getGenerativeModel({ model: 'gemini-1.5-flash' });
         const prompt = `Analyze this large block of text which contains multiple historical bank SMS messages:
         "${bulkText}"
         
@@ -238,7 +238,7 @@ app.post('/api/sms-webhook', async (req, res) => {
             return res.status(400).json({ error: 'No SMS text provided' });
         }
 
-        const model = genAI.getGenerativeModel({ model: 'gemini-2.5-flash' });
+        const model = genAI.getGenerativeModel({ model: 'gemini-1.5-flash' });
         const prompt = `Analyze this bank SMS: "${rawText}". 
         Extract the amount, merchant, date, type (income/expense), and category.
         Rules for "category":
@@ -312,7 +312,7 @@ app.post('/api/reject', async (req, res) => {
 app.post('/api/receipt-ocr', upload.single('receipt'), async (req, res) => {
     try {
         if (!req.file) return res.status(400).json({ error: 'No image element payload detected.' });
-        const model = genAI.getGenerativeModel({ model: 'gemini-2.5-flash' });
+        const model = genAI.getGenerativeModel({ model: 'gemini-1.5-flash' });
         const receiptImageBufferPart = { inlineData: { data: req.file.buffer.toString("base64"), mimeType: req.file.mimetype } };
         const prompt = `Analyze this complex receipt/bill image closely. Even if it is blurry, itemized, or layout-dense, extract the overall Grand Total amount paid. Return ONLY a valid JSON object in this format: { "total": number }. If no numbers are decipherable, return { "total": 0 }. Do not write markdown wrapping.`;
 
@@ -355,7 +355,7 @@ app.post('/api/scrape-price', async (req, res) => {
 
         if (price === 0 || !title || title.length < 3) {
             try {
-                const model = genAI.getGenerativeModel({ model: 'gemini-2.5-flash' });
+                const model = genAI.getGenerativeModel({ model: 'gemini-1.5-flash' });
                 const prompt = `Extract product title and price from URL: "${targetUrl}". Snippet: "${html.substring(0, 2000).replace(/"/g, "'")}". Return strictly JSON: {"title":"[Title]","price": [number]}`;
                 const aiRes = await model.generateContent(prompt);
                 const jsonMatch = aiRes.response.text().match(/\{[\s\S]*\}/);
@@ -473,7 +473,7 @@ app.post('/api/scrape-media', async (req, res) => {
 
         if (!title || title.length < 2 || title.includes("Access Denied") || title.includes("Robot Check")) {
             console.log("Extracting media with Gemini AI fallback...");
-            const model = genAI.getGenerativeModel({ model: 'gemini-2.5-flash' });
+            const model = genAI.getGenerativeModel({ model: 'gemini-1.5-flash' });
             const prompt = `Extract movie/book details for URL: "${targetUrl}". The known IMDb ID is: ${imdbId || 'Unknown'}.
             HTML snippet context: "${html.substring(0, 3000).replace(/"/g, "'")}".
             Return strictly valid JSON: {"title":"[Name]","imageUrl":"[Poster URL if found else empty]","mediaType":"Movie|Book|Series|Anime","genre":"Action|Comedy|Drama|Sci-Fi|Other","details":"[e.g. 2h 15m or 320 pages]","mediaRating":"5"}`;
@@ -491,7 +491,7 @@ app.post('/api/scrape-media', async (req, res) => {
     } catch (error) {
         console.error("Media Scraper Error:", error);
         try {
-            const model = genAI.getGenerativeModel({ model: 'gemini-2.5-flash' });
+            const model = genAI.getGenerativeModel({ model: 'gemini-1.5-flash' });
             const prompt = `Guess the movie/series/book title and genre directly from this URL: "${targetUrl}" (IMDb ID: ${imdbId || 'N/A'}). Return JSON: {"title":"[Title]","imageUrl":"","mediaType":"Movie","genre":"Other","details":"","mediaRating":"5"}`;
             const aiRes = await model.generateContent(prompt);
             const jsonMatch = aiRes.response.text().match(/\{[\s\S]*\}/);
