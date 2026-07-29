@@ -75,14 +75,24 @@
     .ledger-item .action-btn { opacity: 1; transform: scale(1); transition: all 0.2s; }
     @media (min-width: 768px) { .ledger-item .action-btn { opacity: 0; transform: scale(0.8); } .ledger-item:hover .action-btn { opacity: 1; transform: scale(1); } }
     
+    /* Kanban Styles */
     .kanban-col { min-height: 200px; background: rgba(0,0,0,0.2); border-radius: 16px; padding: 12px; border: 1px solid rgba(255,255,255,0.05); }
-
-    /* Notion-like Editor Styles */
-    #workspaceNotes[contenteditable="true"]:empty:before { content: "Type '/' for commands or start writing..."; color: #6b7280; display: block; }
-    #workspaceNotes h1 { font-size: 1.5rem; font-weight: 900; color: #fff; margin-top: 1rem; margin-bottom: 0.5rem; }
+    
+    /* Enhanced Notion-like Editor Styles */
+    #workspaceNotes[contenteditable="true"]:empty:before { content: "Type notes, tasks, or start writing..."; color: #6b7280; display: block; }
+    #workspaceNotes h1 { font-size: 1.75rem; font-weight: 900; color: #fff; margin-top: 1rem; margin-bottom: 0.5rem; }
     #workspaceNotes h2 { font-size: 1.25rem; font-weight: 700; color: #e5e7eb; margin-top: 0.75rem; margin-bottom: 0.25rem; }
     #workspaceNotes ul { list-style-type: disc; margin-left: 1.5rem; margin-bottom: 0.5rem; }
-    #workspaceNotes input[type="checkbox"] { accent-color: #10b981; width: 14px; height: 14px; cursor: pointer; margin-right: 6px; position: relative; top: 2px; }
+    #workspaceNotes b, #workspaceNotes strong { font-weight: 800; color: #60a5fa; }
+    #workspaceNotes i, #workspaceNotes em { font-style: italic; color: #a855f7; }
+    #workspaceNotes u { text-decoration: underline; text-decoration-color: #3b82f6; text-underline-offset: 4px; }
+    
+    /* Interactive Checklist Styles */
+    .chk-item { display: flex; align-items: flex-start; margin-bottom: 6px; padding: 4px; border-radius: 6px; transition: background 0.2s; }
+    .chk-item:hover { background: rgba(255,255,255,0.05); }
+    .chk-item input[type="checkbox"] { accent-color: #10b981; width: 16px; height: 16px; cursor: pointer; margin-right: 10px; margin-top: 3px; border-radius: 4px; }
+    .chk-item label { flex-grow: 1; outline: none; min-width: 50px; cursor: text; line-height: 1.5; }
+    .chk-item input[type="checkbox"]:checked + label { text-decoration: line-through; color: #6b7280; opacity: 0.7; }
   </style>
 </head>
 <body class="p-3 md:p-8 pb-24 relative overflow-x-hidden">
@@ -346,10 +356,13 @@
                   <div class="h-52 md:h-64 relative flex justify-center"><canvas id="cashflowChart"></canvas></div>
               </div>
 
+              <!-- DYNAMIC HISTORICAL MONTHLY FLOW -->
               <div class="glass-panel rounded-3xl p-5 md:p-6 border border-white/5 bg-gradient-to-b from-transparent to-white/5">
                   <div class="flex justify-between items-center mb-4">
-                      <h3 class="text-xs font-bold text-gray-400 uppercase tracking-widest">Historical Monthly Flow</h3>
-                      <i data-lucide="bar-chart-2" class="text-emerald-500 w-5 h-5 opacity-80"></i>
+                      <h3 class="text-xs font-bold text-gray-400 uppercase tracking-widest">Historical Flow</h3>
+                      <select id="historyChartFilter" onchange="updateHistoryChart(this.value)" class="bg-black/40 text-[9px] md:text-[10px] font-bold text-white uppercase rounded-lg px-2 py-1 border border-white/10 outline-none hover:border-emerald-500/50 cursor-pointer max-w-[100px] truncate">
+                         <!-- Dynamically populated -->
+                      </select>
                   </div>
                   <div class="h-52 md:h-64 relative flex justify-center"><canvas id="allMonthsChart"></canvas></div>
               </div>
@@ -616,28 +629,49 @@
       </div>
       
       <div class="grid grid-cols-1 lg:grid-cols-2 gap-4 md:gap-6 h-auto lg:h-[600px]">
-          <!-- Notes Area -->
+          <!-- Notes Area (Notion style) -->
           <div class="glass-panel rounded-3xl p-5 md:p-6 flex flex-col h-[500px] lg:h-full">
-              <div class="flex flex-wrap gap-2 mb-4 border-b border-white/10 pb-4">
+              <!-- Rich Text Toolbar -->
+              <div class="flex flex-wrap gap-2 mb-4 border-b border-white/10 pb-4 items-center">
+                  <button onclick="document.execCommand('bold', false, null)" class="px-2 py-1 bg-white/5 rounded hover:bg-white/10 text-xs font-bold text-gray-300 transition-colors">B</button>
+                  <button onclick="document.execCommand('italic', false, null)" class="px-2 py-1 bg-white/5 rounded hover:bg-white/10 text-xs font-bold text-gray-300 transition-colors italic">I</button>
+                  <button onclick="document.execCommand('underline', false, null)" class="px-2 py-1 bg-white/5 rounded hover:bg-white/10 text-xs font-bold text-gray-300 transition-colors underline">U</button>
+                  <div class="h-4 w-px bg-white/20 mx-1"></div>
                   <button onclick="document.execCommand('formatBlock', false, 'H1')" class="px-2 py-1 bg-white/5 rounded hover:bg-white/10 text-xs font-bold text-gray-300 transition-colors">H1</button>
                   <button onclick="document.execCommand('formatBlock', false, 'H2')" class="px-2 py-1 bg-white/5 rounded hover:bg-white/10 text-xs font-bold text-gray-300 transition-colors">H2</button>
-                  <button onclick="document.execCommand('insertUnorderedList')" class="px-2 py-1 bg-white/5 rounded hover:bg-white/10 text-xs font-bold text-gray-300 transition-colors flex items-center"><i data-lucide="list" class="w-3 h-3 mr-1"></i> List</button>
-                  <button onclick="insertChecklist()" class="px-2 py-1 bg-emerald-500/20 text-emerald-400 rounded hover:bg-emerald-500/30 text-xs font-bold flex items-center transition-colors"><i data-lucide="check-square" class="w-3 h-3 mr-1"></i> Task</button>
+                  <div class="h-4 w-px bg-white/20 mx-1"></div>
+                  <button onclick="document.execCommand('insertUnorderedList')" class="px-2 py-1 bg-white/5 rounded hover:bg-white/10 text-xs font-bold text-gray-300 transition-colors flex items-center" title="Bullet List"><i data-lucide="list" class="w-3 h-3"></i></button>
+                  <button onclick="insertChecklist()" class="px-2 py-1 bg-emerald-500/20 text-emerald-400 rounded hover:bg-emerald-500/30 text-xs font-bold flex items-center transition-colors" title="Checklist Task"><i data-lucide="check-square" class="w-3 h-3"></i></button>
+                  <div class="h-4 w-px bg-white/20 mx-1"></div>
+                  <!-- Color and Font Size -->
+                  <input type="color" onchange="document.execCommand('foreColor', false, this.value)" class="w-6 h-6 rounded cursor-pointer bg-transparent border-0 p-0" title="Text Color">
+                  <select onchange="document.execCommand('fontSize', false, this.value)" class="bg-black/40 text-[10px] font-bold text-gray-300 uppercase tracking-widest rounded px-2 py-1 border border-white/10 outline-none">
+                      <option value="3">Normal</option>
+                      <option value="5">Large</option>
+                      <option value="7">Huge</option>
+                  </select>
                   <button onclick="saveWorkspace()" class="ml-auto px-3 py-1 bg-blue-600/20 text-blue-400 rounded hover:bg-blue-600 hover:text-white text-xs font-bold flex items-center transition-all shadow-sm"><i data-lucide="save" class="w-3 h-3 mr-1"></i> Save Local</button>
               </div>
               <div id="workspaceNotes" contenteditable="true" class="flex-grow outline-none overflow-y-auto text-gray-300 text-sm space-y-2 p-1"></div>
           </div>
           <!-- Whiteboard Area -->
           <div class="glass-panel rounded-3xl p-5 md:p-6 flex flex-col h-[500px] lg:h-full">
-              <div class="flex justify-between items-center mb-4 border-b border-white/10 pb-4">
-                  <div class="flex gap-2 items-center">
-                     <span class="text-[10px] font-bold text-gray-500 uppercase tracking-widest mr-2">Color:</span>
-                     <button onclick="setPenColor('#ffffff')" class="w-6 h-6 rounded-full bg-white border-2 border-transparent focus:border-blue-500 transition-all"></button>
-                     <button onclick="setPenColor('#ef4444')" class="w-6 h-6 rounded-full bg-red-500 border-2 border-transparent focus:border-blue-500 transition-all"></button>
-                     <button onclick="setPenColor('#3b82f6')" class="w-6 h-6 rounded-full bg-blue-500 border-2 border-transparent focus:border-blue-500 transition-all"></button>
-                     <button onclick="setPenColor('#10b981')" class="w-6 h-6 rounded-full bg-emerald-500 border-2 border-transparent focus:border-blue-500 transition-all"></button>
+              <div class="flex justify-between items-center mb-4 border-b border-white/10 pb-4 flex-wrap gap-2">
+                  <div class="flex gap-1.5 items-center">
+                     <button onclick="setPenStyle('#ffffff', false)" class="w-5 h-5 rounded-full bg-white border-2 border-transparent focus:border-blue-500 transition-all"></button>
+                     <button onclick="setPenStyle('#ef4444', false)" class="w-5 h-5 rounded-full bg-red-500 border-2 border-transparent focus:border-blue-500 transition-all"></button>
+                     <button onclick="setPenStyle('#3b82f6', false)" class="w-5 h-5 rounded-full bg-blue-500 border-2 border-transparent focus:border-blue-500 transition-all"></button>
+                     <button onclick="setPenStyle('#10b981', false)" class="w-5 h-5 rounded-full bg-emerald-500 border-2 border-transparent focus:border-blue-500 transition-all"></button>
+                     <button onclick="setPenStyle('#eab308', false)" class="w-5 h-5 rounded-full bg-yellow-500 border-2 border-transparent focus:border-blue-500 transition-all"></button>
+                     <button onclick="setPenStyle('#a855f7', false)" class="w-5 h-5 rounded-full bg-purple-500 border-2 border-transparent focus:border-blue-500 transition-all"></button>
                   </div>
-                  <button onclick="clearWhiteboard()" class="px-3 py-1 bg-rose-500/20 text-rose-400 rounded hover:bg-rose-500/30 text-xs font-bold flex items-center transition-colors"><i data-lucide="trash-2" class="w-3 h-3 mr-1"></i> Clear</button>
+                  <div class="flex gap-2 items-center bg-black/40 px-2 py-1 rounded-lg border border-white/5">
+                     <button onclick="setPenStyle(null, false, 2)" class="text-[10px] text-gray-400 hover:text-white font-bold" title="Thin Pen"><i data-lucide="pen-tool" class="w-3 h-3"></i></button>
+                     <button onclick="setPenStyle(null, false, 6)" class="text-[10px] text-gray-400 hover:text-white font-bold" title="Medium Marker"><i data-lucide="edit-3" class="w-4 h-4"></i></button>
+                     <button onclick="setPenStyle('rgba(234, 179, 8, 0.4)', true, 15)" class="text-yellow-400 hover:text-yellow-300 font-bold ml-1" title="Highlighter"><i data-lucide="highlighter" class="w-4 h-4"></i></button>
+                     <button onclick="setEraser()" class="text-gray-400 hover:text-white font-bold ml-1" title="Eraser"><i data-lucide="eraser" class="w-4 h-4"></i></button>
+                  </div>
+                  <button onclick="clearWhiteboard()" class="px-3 py-1 bg-rose-500/20 text-rose-400 rounded hover:bg-rose-500/30 text-xs font-bold flex items-center transition-colors ml-auto"><i data-lucide="trash-2" class="w-3 h-3 mr-1"></i> Clear</button>
               </div>
               <div class="flex-grow relative bg-black/40 rounded-xl overflow-hidden shadow-inner border border-white/5">
                   <canvas id="whiteboardCanvas" class="absolute inset-0 w-full h-full cursor-crosshair touch-none"></canvas>
@@ -914,17 +948,40 @@
     // --- Workspace Logic ---
     function insertChecklist() {
         const id = 'chk_' + Date.now();
-        const html = `<div style="display:flex; align-items:center; margin-bottom:4px;"><input type="checkbox" id="${id}"><label for="${id}" style="margin-left:8px; outline:none;" contenteditable="true">New Task</label></div>`;
+        const html = `<div class="chk-item"><input type="checkbox" id="${id}"><label for="${id}" contenteditable="true">New Task...</label></div>`;
         document.execCommand('insertHTML', false, html);
     }
+
+    // Track checklist interactions in contenteditable
+    document.getElementById('workspaceNotes').addEventListener('change', function(e) {
+        if(e.target.type === 'checkbox') {
+            saveWorkspace();
+        }
+    });
+
     function saveWorkspace() {
-        const notes = document.getElementById('workspaceNotes').innerHTML;
+        // Save inputs state
+        const notesEl = document.getElementById('workspaceNotes');
+        const checkboxes = notesEl.querySelectorAll('input[type="checkbox"]');
+        checkboxes.forEach(cb => {
+            if(cb.checked) cb.setAttribute('checked', 'checked');
+            else cb.removeAttribute('checked');
+        });
+
+        const notes = notesEl.innerHTML;
         localStorage.setItem('walletNotes', notes);
         // Save whiteboard image
         const canvas = document.getElementById('whiteboardCanvas');
         localStorage.setItem('walletWhiteboard', canvas.toDataURL());
-        alert("Workspace Saved Locally!");
+        
+        // Brief visual flash to show saved
+        const saveBtn = document.querySelector('button[onclick="saveWorkspace()"]');
+        const origText = saveBtn.innerHTML;
+        saveBtn.innerHTML = '<i data-lucide="check" class="w-3 h-3 mr-1"></i> Saved!';
+        lucide.createIcons();
+        setTimeout(() => { saveBtn.innerHTML = origText; lucide.createIcons(); }, 1500);
     }
+    
     function loadWorkspace() {
         const savedNotes = localStorage.getItem('walletNotes');
         if(savedNotes) document.getElementById('workspaceNotes').innerHTML = savedNotes;
@@ -942,20 +999,37 @@
     // --- Whiteboard Drawing Logic ---
     let isDrawing = false;
     let penColor = '#ffffff';
+    let penWidth = 2;
+    let isEraser = false;
+    let isHighlighter = false;
+
     function initWhiteboard() {
         const canvas = document.getElementById('whiteboardCanvas');
         const ctx = canvas.getContext('2d');
         
-        // Resize canvas to parent container on mount
         const rect = canvas.parentElement.getBoundingClientRect();
-        canvas.width = rect.width;
-        canvas.height = rect.height;
+        if(canvas.width !== rect.width) {
+            canvas.width = rect.width;
+            canvas.height = rect.height;
+            // reload drawing if resized
+            const savedWB = localStorage.getItem('walletWhiteboard');
+            if(savedWB) {
+                const img = new Image();
+                img.onload = () => { ctx.drawImage(img, 0, 0); };
+                img.src = savedWB;
+            }
+        }
+
+        canvas.removeEventListener('mousedown', startPos);
+        canvas.removeEventListener('mousemove', draw);
+        canvas.removeEventListener('mouseup', endPos);
+        canvas.removeEventListener('mouseout', endPos);
 
         canvas.addEventListener('mousedown', startPos);
         canvas.addEventListener('mousemove', draw);
         canvas.addEventListener('mouseup', endPos);
         canvas.addEventListener('mouseout', endPos);
-        // Touch support
+        
         canvas.addEventListener('touchstart', (e) => { e.preventDefault(); startPos(e.touches[0]); }, {passive:false});
         canvas.addEventListener('touchmove', (e) => { e.preventDefault(); draw(e.touches[0]); }, {passive:false});
         canvas.addEventListener('touchend', endPos);
@@ -970,22 +1044,47 @@
         }
         function draw(e) {
             if (!isDrawing) return;
-            const rect = canvas.getBoundingClientRect();
-            const x = e.clientX - rect.left;
-            const y = e.clientY - rect.top;
-            ctx.lineWidth = 2;
+            const bcr = canvas.getBoundingClientRect();
+            const x = e.clientX - bcr.left;
+            const y = e.clientY - bcr.top;
+            
+            ctx.lineWidth = penWidth;
             ctx.lineCap = 'round';
-            ctx.strokeStyle = penColor;
+            ctx.lineJoin = 'round';
+            
+            if (isEraser) {
+                ctx.globalCompositeOperation = 'destination-out';
+                ctx.strokeStyle = 'rgba(0,0,0,1)';
+            } else {
+                ctx.globalCompositeOperation = 'source-over';
+                ctx.strokeStyle = penColor;
+            }
+
             ctx.lineTo(x, y);
             ctx.stroke();
             ctx.beginPath();
             ctx.moveTo(x, y);
         }
     }
-    function setPenColor(color) { penColor = color; }
+
+    function setPenStyle(color, highlighter = false, width = null) {
+        if(color) penColor = color;
+        if(width) penWidth = width;
+        isHighlighter = highlighter;
+        isEraser = false;
+    }
+    
+    function setEraser() {
+        isEraser = true;
+        penWidth = 20; // Fat eraser
+    }
+
     function clearWhiteboard() {
-        const canvas = document.getElementById('whiteboardCanvas');
-        canvas.getContext('2d').clearRect(0, 0, canvas.width, canvas.height);
+        if(confirm("Clear entire whiteboard?")) {
+            const canvas = document.getElementById('whiteboardCanvas');
+            canvas.getContext('2d').clearRect(0, 0, canvas.width, canvas.height);
+            saveWorkspace();
+        }
     }
 
     async function loadPendingTransactions() {
@@ -1134,7 +1233,7 @@
       document.getElementById('navWorkspace').className = view === 'workspace' ? activeCls : inactiveCls;
       
       if(view === 'workspace') {
-          setTimeout(initWhiteboard, 100);
+          setTimeout(initWhiteboard, 100); // Give CSS time to render block to get accurate canvas size
       }
     }
 
@@ -1169,6 +1268,7 @@
       const filter = document.getElementById('monthFilter'); 
       const cardFilter = document.getElementById('cardMonthFilter'); 
       const pieFilter = document.getElementById('pieChartMonthFilter');
+      const histFilter = document.getElementById('historyChartFilter');
       const months = new Set();
       transactions.forEach(t => { 
           const d = new Date(t.timestamp); 
@@ -1183,6 +1283,7 @@
       cardFilter.innerHTML = '<option value="all">ALL TIME</option>';
       
       let pOpts = '<option value="current">SELECTED PERIOD</option><option value="all">ALL TIME TOTAL</option>';
+      let hOpts = '<option value="all">ALL MONTHS</option>';
 
       sortedMonths.forEach(m => { 
           const [y, mo] = m.split('-'); 
@@ -1190,9 +1291,15 @@
           filter.innerHTML += `<option value="${m}">${text}</option>`; 
           cardFilter.innerHTML += `<option value="${m}">${text}</option>`; 
           pOpts += `<option value="${m}">${text}</option>`;
+          hOpts += `<option value="${m}">${text}</option>`;
       });
 
       if (pieFilter) pieFilter.innerHTML = pOpts;
+      if (histFilter) {
+          const oldHVal = histFilter.value;
+          histFilter.innerHTML = hOpts;
+          if (Array.from(histFilter.options).some(o => o.value === oldHVal)) histFilter.value = oldHVal;
+      }
 
       if (Array.from(filter.options).some(o => o.value === selectedMonth)) {
           filter.value = selectedMonth;
@@ -2239,6 +2346,30 @@
         }
     }
 
+    function updateHistoryChart(filterVal) {
+        const monthMap = {};
+        transactions.forEach(t => {
+            const d = new Date(t.timestamp);
+            const mKey = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}`;
+            if (!monthMap[mKey]) monthMap[mKey] = { i: 0, e: 0 };
+            if (t.type === 'income') monthMap[mKey].i += t.amount;
+            else monthMap[mKey].e += t.amount;
+        });
+        
+        let sortedMKeys = Object.keys(monthMap).sort();
+        if (filterVal && filterVal !== 'all') {
+            sortedMKeys = sortedMKeys.filter(k => k === filterVal);
+        }
+        
+        allMonthsChart.data.labels = sortedMKeys.map(m => {
+            const [y, mo] = m.split('-');
+            return new Date(y, mo - 1).toLocaleDateString('en-GB', { month: 'short', year: '2-digit' }).toUpperCase();
+        });
+        allMonthsChart.data.datasets[0].data = sortedMKeys.map(k => monthMap[k].i);
+        allMonthsChart.data.datasets[1].data = sortedMKeys.map(k => monthMap[k].e);
+        allMonthsChart.update();
+    }
+
     function updateUI() {
       populateMonthFilter(); 
       
@@ -2434,7 +2565,7 @@
       weeklyRhythmChart.data.datasets[0].data = dayTotals;
       weeklyRhythmChart.update();
 
-      // CUMULATIVE NET WORTH TREND (NEW BEHAVIOR)
+      // CUMULATIVE NET WORTH TREND
       const sortedFiltered = [...filtered].sort((a,b)=>a.timestamp-b.timestamp);
       const netWorthLabels = [];
       const netWorthData = [];
@@ -2449,14 +2580,13 @@
           });
       }
       
-      // Limit to last 30 data points so line chart is legible
       lineChart.data = { 
           labels: netWorthLabels.slice(-30), 
           datasets: [ { label: 'Net Worth', data: netWorthData.slice(-30), borderColor: '#3b82f6', fill: true, backgroundColor: 'rgba(59,130,246,0.1)', tension: 0.4 } ]
       }; 
       lineChart.update();
 
-      // 7-DAY CASHFLOW (REMAINS BAR CHART)
+      // 7-DAY CASHFLOW 
       const dates7 = {};
       if(sortedFiltered.length > 0) {
           const endNode = new Date(sortedFiltered[sortedFiltered.length-1].timestamp); 
@@ -2479,23 +2609,9 @@
       cashflowChart.data.datasets[1].data = labels7.map(l => dates7[l].e);
       cashflowChart.update();
 
-      // DYNAMIC ALL-MONTHS CHART
-      const monthMap = {};
-      transactions.forEach(t => {
-          const d = new Date(t.timestamp);
-          const mKey = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}`;
-          if (!monthMap[mKey]) monthMap[mKey] = { i: 0, e: 0 };
-          if (t.type === 'income') monthMap[mKey].i += t.amount;
-          else monthMap[mKey].e += t.amount;
-      });
-      const sortedMKeys = Object.keys(monthMap).sort();
-      allMonthsChart.data.labels = sortedMKeys.map(m => {
-          const [y, mo] = m.split('-');
-          return new Date(y, mo - 1).toLocaleDateString('en-GB', { month: 'short', year: '2-digit' }).toUpperCase();
-      });
-      allMonthsChart.data.datasets[0].data = sortedMKeys.map(k => monthMap[k].i);
-      allMonthsChart.data.datasets[1].data = sortedMKeys.map(k => monthMap[k].e);
-      allMonthsChart.update();
+      // DYNAMIC ALL-MONTHS CHART WITH FILTER
+      const histVal = document.getElementById('historyChartFilter')?.value || 'all';
+      updateHistoryChart(histVal);
 
       const list = document.getElementById('ledgerList');
       if(!filtered.length) {
