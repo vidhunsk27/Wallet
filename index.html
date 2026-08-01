@@ -633,60 +633,71 @@
           <div class="glass-panel rounded-3xl p-5 md:p-6 flex flex-col h-[500px] lg:h-full">
               <!-- Rich Text Toolbar -->
               <div class="flex flex-wrap gap-2 mb-4 border-b border-white/10 pb-4 items-center">
-                  <button onclick="document.execCommand('bold', false, null)" class="px-2 py-1 bg-white/5 rounded hover:bg-white/10 text-xs font-bold text-gray-300 transition-colors">B</button>
-                  <button onclick="document.execCommand('italic', false, null)" class="px-2 py-1 bg-white/5 rounded hover:bg-white/10 text-xs font-bold text-gray-300 transition-colors italic">I</button>
-                  <button onclick="document.execCommand('underline', false, null)" class="px-2 py-1 bg-white/5 rounded hover:bg-white/10 text-xs font-bold text-gray-300 transition-colors underline">U</button>
+                  <button onclick="document.execCommand('bold', false, null)" class="px-2 py-1 bg-white/5 rounded hover:bg-white/10 text-xs font-bold text-gray-300 transition-colors" title="Bold">B</button>
+                  <button onclick="document.execCommand('italic', false, null)" class="px-2 py-1 bg-white/5 rounded hover:bg-white/10 text-xs font-bold text-gray-300 transition-colors italic" title="Italic">I</button>
+                  <button onclick="document.execCommand('underline', false, null)" class="px-2 py-1 bg-white/5 rounded hover:bg-white/10 text-xs font-bold text-gray-300 transition-colors underline" title="Underline">U</button>
+                  
                   <div class="h-4 w-px bg-white/20 mx-1"></div>
-                  <button onclick="document.execCommand('formatBlock', false, 'H1')" class="px-2 py-1 bg-white/5 rounded hover:bg-white/10 text-xs font-bold text-gray-300 transition-colors">H1</button>
-                  <button onclick="document.execCommand('formatBlock', false, 'H2')" class="px-2 py-1 bg-white/5 rounded hover:bg-white/10 text-xs font-bold text-gray-300 transition-colors">H2</button>
+                  
+                  <select onchange="document.execCommand('fontName', false, this.value)" class="bg-black/40 text-[10px] font-bold text-gray-300 rounded px-2 py-1 border border-white/10 outline-none w-[90px]">
+                      <option value="Fredoka">Fredoka</option>
+                      <option value="Arial">Arial</option>
+                      <option value="Courier New">Courier</option>
+                      <option value="Georgia">Georgia</option>
+                      <option value="Times New Roman">Times</option>
+                  </select>
+                  
+                  <div class="flex items-center gap-1 bg-black/40 px-2 py-1 rounded border border-white/10">
+                      <input type="number" id="fontSizeInput" value="16" min="8" max="72" class="w-8 bg-transparent text-xs text-white outline-none text-center" onchange="applyFontSize(this.value)">
+                      <span class="text-[10px] text-gray-400 font-bold">px</span>
+                  </div>
+
                   <div class="h-4 w-px bg-white/20 mx-1"></div>
+
+                  <button onclick="document.execCommand('formatBlock', false, 'H1')" class="px-2 py-1 bg-white/5 rounded hover:bg-white/10 text-xs font-bold text-gray-300 transition-colors" title="Heading 1">H1</button>
+                  <button onclick="document.execCommand('formatBlock', false, 'H2')" class="px-2 py-1 bg-white/5 rounded hover:bg-white/10 text-xs font-bold text-gray-300 transition-colors" title="Heading 2">H2</button>
+                  
+                  <div class="h-4 w-px bg-white/20 mx-1"></div>
+                  
                   <button onclick="document.execCommand('insertUnorderedList')" class="px-2 py-1 bg-white/5 rounded hover:bg-white/10 text-xs font-bold text-gray-300 transition-colors flex items-center" title="Bullet List"><i data-lucide="list" class="w-3 h-3"></i></button>
                   <button onclick="insertChecklist()" class="px-2 py-1 bg-emerald-500/20 text-emerald-400 rounded hover:bg-emerald-500/30 text-xs font-bold flex items-center transition-colors" title="Checklist Task"><i data-lucide="check-square" class="w-3 h-3"></i></button>
-                  <div class="h-4 w-px bg-white/20 mx-1"></div>
-                  <!-- Exact Font Size and Style -->
-                  <select id="wsFontFamily" class="bg-black/50 border border-white/10 rounded text-xs text-gray-300 outline-none p-1 font-bold">
-                      <option value="Fredoka">Fredoka</option>
-                      <option value="Arial">Arial</option>
-                      <option value="Courier New">Courier</option>
-                      <option value="Times New Roman">Times</option>
-                  </select>
-                  <input type="number" id="wsFontSize" value="16" placeholder="px" class="w-12 bg-black/50 border border-white/10 rounded text-xs text-center text-white outline-none p-1" title="Font Size (px)">
-                  <input type="color" id="wsFontColor" value="#ffffff" class="w-6 h-6 rounded cursor-pointer bg-transparent border-0 p-0" title="Text Color">
-                  <button onclick="applyCustomWorkspaceFont()" class="px-2 py-1 bg-white/5 rounded hover:bg-white/10 text-[10px] font-black text-gray-300 transition-colors uppercase tracking-widest">Apply</button>
                   
-                  <button onclick="saveWorkspace()" class="ml-auto px-3 py-1 bg-blue-600/20 text-blue-400 rounded hover:bg-blue-600 hover:text-white text-xs font-bold flex items-center transition-all shadow-sm"><i data-lucide="save" class="w-3 h-3 mr-1"></i> Save Local</button>
+                  <input type="color" onchange="document.execCommand('foreColor', false, this.value)" class="w-6 h-6 rounded cursor-pointer bg-transparent border-0 p-0 ml-1" title="Text Color">
+                  
+                  <button onclick="saveWorkspace()" class="ml-auto px-3 py-1 bg-blue-600/20 text-blue-400 rounded hover:bg-blue-600 hover:text-white text-xs font-bold flex items-center transition-all shadow-sm"><i data-lucide="save" class="w-3 h-3 mr-1"></i> Save</button>
               </div>
-              <div id="workspaceNotes" contenteditable="true" class="flex-grow outline-none overflow-y-auto text-gray-300 text-sm space-y-2 p-1"></div>
+              <div id="workspaceNotes" contenteditable="true" class="flex-grow outline-none overflow-y-auto text-gray-300 text-sm space-y-2 p-1" style="font-size: 16px;"></div>
           </div>
+
           <!-- Whiteboard Area -->
           <div class="glass-panel rounded-3xl p-5 md:p-6 flex flex-col h-[500px] lg:h-full">
-              <!-- Advanced Whiteboard Toolbar -->
-              <div class="flex flex-wrap gap-2 items-center bg-black/40 px-3 py-2 rounded-xl border border-white/5 w-full mb-4 shadow-inner">
-                  <input type="color" id="wbColor" value="#ffffff" onchange="setPenStyle(this.value, false)" class="w-6 h-6 rounded cursor-pointer bg-transparent border-0 p-0 shadow-sm" title="Custom Tool Color">
-                  
-                  <span class="text-[9px] text-gray-500 uppercase font-black ml-1 tracking-widest">Size:</span>
-                  <input type="range" id="wbThickness" min="1" max="50" value="2" onchange="setPenStyle(null, false, this.value)" class="w-16 accent-blue-500 cursor-pointer">
-                  
-                  <div class="h-4 w-px bg-white/20 mx-1"></div>
-                  
-                  <!-- Text Tool Options -->
-                  <button onclick="setTextMode()" class="text-[10px] text-gray-400 hover:text-white font-bold flex items-center transition-colors uppercase tracking-widest" title="Click anywhere on canvas to type text"><i data-lucide="type" class="w-3 h-3 mr-1"></i> Text Tool</button>
-                  <input type="number" id="wbFontSize" value="24" class="w-10 bg-black/50 border border-white/10 rounded text-[10px] text-center text-white outline-none" title="Text Size">
-                  <select id="wbFontFamily" class="bg-black/50 border border-white/10 rounded text-[10px] text-white outline-none w-16 truncate font-medium">
-                      <option value="Fredoka">Fredoka</option>
-                      <option value="Arial">Arial</option>
-                      <option value="Courier New">Courier</option>
-                      <option value="Times New Roman">Times</option>
-                  </select>
-                  
-                  <div class="h-4 w-px bg-white/20 mx-1"></div>
+              <div class="flex justify-between items-center mb-4 border-b border-white/10 pb-4 flex-wrap gap-2">
                   
                   <!-- Tools -->
-                  <button onclick="setPenMode()" class="text-gray-400 hover:text-white font-bold transition-colors" title="Draw Pen"><i data-lucide="pen-tool" class="w-4 h-4"></i></button>
-                  <button onclick="setPenStyle('rgba(234, 179, 8, 0.4)', true, 20)" class="text-yellow-400 hover:text-yellow-300 font-bold ml-1 transition-colors" title="Highlighter"><i data-lucide="highlighter" class="w-4 h-4"></i></button>
-                  <button onclick="setEraser()" class="text-gray-400 hover:text-white font-bold ml-1 transition-colors" title="Eraser"><i data-lucide="eraser" class="w-4 h-4"></i></button>
+                  <div class="flex gap-2 items-center bg-black/40 px-2 py-1 rounded-lg border border-white/5">
+                     <button onclick="setTool('pen')" class="text-gray-400 hover:text-white" title="Pen"><i data-lucide="pen-tool" class="w-4 h-4"></i></button>
+                     <button onclick="setTool('highlighter')" class="text-yellow-400 hover:text-yellow-300" title="Highlighter"><i data-lucide="highlighter" class="w-4 h-4"></i></button>
+                     <button onclick="setTool('eraser')" class="text-gray-400 hover:text-white" title="Eraser"><i data-lucide="eraser" class="w-4 h-4"></i></button>
+                     <div class="h-3 w-px bg-white/20 mx-0.5"></div>
+                     <button onclick="setTool('line')" class="text-gray-400 hover:text-white" title="Draw Line"><i data-lucide="minus" class="w-4 h-4"></i></button>
+                     <button onclick="setTool('rect')" class="text-gray-400 hover:text-white" title="Draw Rectangle"><i data-lucide="square" class="w-4 h-4"></i></button>
+                     <button onclick="setTool('circle')" class="text-gray-400 hover:text-white" title="Draw Circle"><i data-lucide="circle" class="w-4 h-4"></i></button>
+                  </div>
                   
-                  <button onclick="clearWhiteboard()" class="px-2 py-1 bg-rose-500/20 text-rose-400 rounded hover:bg-rose-500/30 text-[10px] font-black flex items-center transition-colors ml-auto uppercase tracking-widest"><i data-lucide="trash-2" class="w-3 h-3 mr-1"></i> Clear</button>
+                  <!-- Colors & Width -->
+                  <div class="flex gap-2 items-center bg-black/40 px-2 py-1 rounded-lg border border-white/5">
+                     <input type="color" id="wbColorPicker" value="#ffffff" onchange="setPenColor(this.value)" class="w-5 h-5 rounded cursor-pointer bg-transparent border-0 p-0" title="Pen Color">
+                     <div class="flex items-center gap-1 ml-1">
+                         <i data-lucide="menu" class="w-3 h-3 text-gray-500"></i>
+                         <input type="range" id="wbWidthSlider" min="1" max="50" value="2" onchange="setPenWidth(this.value)" class="w-16 accent-blue-500 cursor-pointer" title="Pen Thickness">
+                     </div>
+                  </div>
+
+                  <!-- Actions -->
+                  <div class="flex gap-2 items-center ml-auto">
+                     <button onclick="undoWhiteboard()" class="px-2 py-1 bg-gray-600/20 text-gray-300 rounded hover:bg-gray-600/40 text-xs font-bold transition-colors flex items-center" title="Undo Last Stroke"><i data-lucide="undo" class="w-3 h-3"></i></button>
+                     <button onclick="clearWhiteboard()" class="px-2 py-1 bg-rose-500/20 text-rose-400 rounded hover:bg-rose-500/30 text-xs font-bold transition-colors flex items-center" title="Clear Canvas"><i data-lucide="trash-2" class="w-3 h-3"></i></button>
+                  </div>
               </div>
               <div class="flex-grow relative bg-black/40 rounded-xl overflow-hidden shadow-inner border border-white/5">
                   <canvas id="whiteboardCanvas" class="absolute inset-0 w-full h-full cursor-crosshair touch-none"></canvas>
@@ -961,31 +972,28 @@
     }
 
     // --- Workspace Logic ---
+    function applyFontSize(px) {
+        // Fallback robust sizing logic to bypass execCommand size limits
+        document.execCommand("fontSize", false, "7"); 
+        const fonts = document.querySelectorAll("font[size='7']");
+        fonts.forEach(f => {
+            f.removeAttribute("size");
+            f.style.fontSize = px + "px";
+        });
+        saveWorkspace();
+    }
+
     function insertChecklist() {
         const id = 'chk_' + Date.now();
         const html = `<div class="chk-item"><input type="checkbox" id="${id}"><label for="${id}" contenteditable="true">New Task...</label></div>`;
         document.execCommand('insertHTML', false, html);
     }
 
-    function applyCustomWorkspaceFont() {
-        const size = document.getElementById('wsFontSize').value;
-        const color = document.getElementById('wsFontColor').value;
-        const font = document.getElementById('wsFontFamily').value;
-        
-        document.execCommand('styleWithCSS', false, true);
-        const spanString = `<span style="font-size: ${size}px; color: ${color}; font-family: '${font}', sans-serif;">${document.getSelection()}</span>`;
-        document.execCommand('insertHTML', false, spanString);
-    }
-
-    // Track checklist interactions in contenteditable
     document.getElementById('workspaceNotes').addEventListener('change', function(e) {
-        if(e.target.type === 'checkbox') {
-            saveWorkspace();
-        }
+        if(e.target.type === 'checkbox') saveWorkspace();
     });
 
     function saveWorkspace() {
-        // Save inputs state
         const notesEl = document.getElementById('workspaceNotes');
         const checkboxes = notesEl.querySelectorAll('input[type="checkbox"]');
         checkboxes.forEach(cb => {
@@ -995,11 +1003,10 @@
 
         const notes = notesEl.innerHTML;
         localStorage.setItem('walletNotes', notes);
-        // Save whiteboard image
+        
         const canvas = document.getElementById('whiteboardCanvas');
         localStorage.setItem('walletWhiteboard', canvas.toDataURL());
         
-        // Brief visual flash to show saved
         const saveBtn = document.querySelector('button[onclick="saveWorkspace()"]');
         const origText = saveBtn.innerHTML;
         saveBtn.innerHTML = '<i data-lucide="check" class="w-3 h-3 mr-1"></i> Saved!';
@@ -1023,44 +1030,33 @@
     
     // --- Whiteboard Drawing Logic ---
     let isDrawing = false;
+    let currentTool = 'pen'; 
     let penColor = '#ffffff';
     let penWidth = 2;
-    let isEraser = false;
-    let isHighlighter = false;
-    let isTextMode = false;
+    let startX, startY;
+    let savedImageData;
+    let wbHistory = [];
 
-    function setPenMode() {
-        isTextMode = false;
-        isEraser = false;
-        isHighlighter = false;
-        penColor = document.getElementById('wbColor').value;
-        penWidth = document.getElementById('wbThickness').value;
+    function saveWbState() {
+        const canvas = document.getElementById('whiteboardCanvas');
+        wbHistory.push(canvas.toDataURL());
+        if(wbHistory.length > 20) wbHistory.shift(); 
     }
 
-    function setPenStyle(color, highlighter = false, width = null) {
-        isTextMode = false;
-        isEraser = false;
-        if(color) {
-            penColor = color;
-            if(!highlighter) document.getElementById('wbColor').value = color;
+    function undoWhiteboard() {
+        if(wbHistory.length > 0) {
+            const lastState = wbHistory.pop();
+            const canvas = document.getElementById('whiteboardCanvas');
+            const ctx = canvas.getContext('2d');
+            ctx.clearRect(0,0, canvas.width, canvas.height);
+            
+            if(wbHistory.length > 0) {
+                const img = new Image();
+                img.onload = () => ctx.drawImage(img, 0, 0);
+                img.src = wbHistory[wbHistory.length - 1];
+            }
+            saveWorkspace();
         }
-        if(width) {
-            penWidth = width;
-            document.getElementById('wbThickness').value = width;
-        }
-        isHighlighter = highlighter;
-    }
-
-    function setEraser() {
-        isEraser = true;
-        isTextMode = false;
-        penWidth = document.getElementById('wbThickness').value || 20; 
-    }
-
-    function setTextMode() {
-        isTextMode = true;
-        isEraser = false;
-        penColor = document.getElementById('wbColor').value;
     }
 
     function initWhiteboard() {
@@ -1071,7 +1067,6 @@
         if(canvas.width !== rect.width) {
             canvas.width = rect.width;
             canvas.height = rect.height;
-            // reload drawing if resized
             const savedWB = localStorage.getItem('walletWhiteboard');
             if(savedWB) {
                 const img = new Image();
@@ -1079,6 +1074,8 @@
                 img.src = savedWB;
             }
         }
+        
+        if (wbHistory.length === 0) saveWbState();
 
         canvas.removeEventListener('mousedown', startPos);
         canvas.removeEventListener('mousemove', draw);
@@ -1095,63 +1092,100 @@
         canvas.addEventListener('touchend', endPos);
 
         function startPos(e) {
-            const bcr = canvas.getBoundingClientRect();
-            const clientX = e.clientX ?? e.touches[0].clientX;
-            const clientY = e.clientY ?? e.touches[0].clientY;
-            const x = clientX - bcr.left;
-            const y = clientY - bcr.top;
-
-            if (isTextMode) {
-                const text = prompt("Enter text to place on whiteboard:");
-                if (text) {
-                    const size = document.getElementById('wbFontSize').value || 24;
-                    const font = document.getElementById('wbFontFamily').value || 'Fredoka';
-                    ctx.font = `${size}px ${font}`;
-                    ctx.fillStyle = penColor;
-                    ctx.fillText(text, x, y);
-                    saveWorkspace();
-                }
-                return;
-            }
-
             isDrawing = true;
-            draw(e);
-        }
+            saveWbState(); 
 
-        function endPos() {
-            isDrawing = false;
-            ctx.beginPath();
+            const bcr = canvas.getBoundingClientRect();
+            startX = e.clientX - bcr.left;
+            startY = e.clientY - bcr.top;
+            
+            savedImageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
+
+            if (currentTool === 'pen' || currentTool === 'highlighter' || currentTool === 'eraser') {
+                ctx.beginPath();
+                ctx.moveTo(startX, startY);
+                draw(e);
+            }
         }
 
         function draw(e) {
-            if (!isDrawing || isTextMode) return;
+            if (!isDrawing) return;
             const bcr = canvas.getBoundingClientRect();
-            const clientX = e.clientX ?? e.touches[0].clientX;
-            const clientY = e.clientY ?? e.touches[0].clientY;
-            const x = clientX - bcr.left;
-            const y = clientY - bcr.top;
+            const x = e.clientX - bcr.left;
+            const y = e.clientY - bcr.top;
             
             ctx.lineWidth = penWidth;
             ctx.lineCap = 'round';
             ctx.lineJoin = 'round';
             
-            if (isEraser) {
+            if (currentTool === 'eraser') {
                 ctx.globalCompositeOperation = 'destination-out';
                 ctx.strokeStyle = 'rgba(0,0,0,1)';
+            } else if (currentTool === 'highlighter') {
+                ctx.globalCompositeOperation = 'source-over';
+                
+                let c;
+                if(/^#([A-Fa-f0-9]{3}){1,2}$/.test(penColor)){
+                    c= penColor.substring(1).split('');
+                    if(c.length== 3){ c= [c[0], c[0], c[1], c[1], c[2], c[2]]; }
+                    c= '0x'+c.join('');
+                    ctx.strokeStyle = 'rgba('+[(c>>16)&255, (c>>8)&255, c&255].join(',')+',0.4)';
+                } else {
+                    ctx.strokeStyle = 'rgba(234, 179, 8, 0.4)';
+                }
             } else {
                 ctx.globalCompositeOperation = 'source-over';
                 ctx.strokeStyle = penColor;
             }
 
-            ctx.lineTo(x, y);
-            ctx.stroke();
-            ctx.beginPath();
-            ctx.moveTo(x, y);
+            if (currentTool === 'pen' || currentTool === 'highlighter' || currentTool === 'eraser') {
+                ctx.lineTo(x, y);
+                ctx.stroke();
+            } else {
+                ctx.putImageData(savedImageData, 0, 0);
+                ctx.beginPath();
+                if (currentTool === 'line') {
+                    ctx.moveTo(startX, startY);
+                    ctx.lineTo(x, y);
+                } else if (currentTool === 'rect') {
+                    ctx.rect(startX, startY, x - startX, y - startY);
+                } else if (currentTool === 'circle') {
+                    const radius = Math.sqrt(Math.pow(x - startX, 2) + Math.pow(y - startY, 2));
+                    ctx.arc(startX, startY, radius, 0, 2 * Math.PI);
+                }
+                ctx.stroke();
+            }
         }
+
+        function endPos() {
+            if (isDrawing) {
+                isDrawing = false;
+                ctx.beginPath();
+                saveWorkspace();
+            }
+        }
+    }
+
+    function setTool(tool) {
+        currentTool = tool;
+        if(tool === 'eraser') {
+            document.getElementById('wbWidthSlider').value = 20;
+            penWidth = 20;
+        } else if (tool === 'highlighter') {
+            document.getElementById('wbWidthSlider').value = 15;
+            penWidth = 15;
+        }
+    }
+    function setPenWidth(w) { penWidth = w; }
+    function setPenColor(c) { 
+        penColor = c; 
+        document.getElementById('wbColorPicker').value = c; 
+        if (currentTool === 'eraser') setTool('pen');
     }
 
     function clearWhiteboard() {
         if(confirm("Clear entire whiteboard?")) {
+            saveWbState();
             const canvas = document.getElementById('whiteboardCanvas');
             canvas.getContext('2d').clearRect(0, 0, canvas.width, canvas.height);
             saveWorkspace();
