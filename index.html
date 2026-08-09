@@ -41,7 +41,6 @@
         z-index: -1;
     }
     
-    /* Complex Grid Overlay */
     .grid-overlay {
         position: fixed;
         inset: 0;
@@ -109,7 +108,6 @@
     .nav-btn::after { content: ''; position: absolute; bottom: 0; left: 50%; width: 0; height: 2px; background: var(--primary); transition: all 0.3s ease; transform: translateX(-50%); }
     .nav-btn.active::after { width: 60%; }
 
-    /* Custom JS Driven Global Tooltip */
     #globalTooltip { position: fixed; background: rgba(10, 15, 25, 0.98); backdrop-filter: blur(12px); border: 1px solid rgba(59, 130, 246, 0.5); color: #e2e8f0; padding: 12px 16px; border-radius: 8px; width: max-content; max-width: 280px; white-space: normal; line-height: 1.5; font-size: 0.8rem; font-weight: 500; font-family: 'Fredoka', sans-serif; z-index: 99999; box-shadow: 0 10px 40px rgba(0,0,0,0.9); opacity: 0; pointer-events: none; transition: opacity 0.2s ease; transform: translateX(-50%); }
     .info-icon { display: inline-flex; align-items: center; justify-content: center; margin-left: 8px; color: #60a5fa; cursor: help; position: relative; width: 16px; height: 16px; background: rgba(59, 130, 246, 0.2); border-radius: 50%; text-align: center; line-height: 1; font-size: 10px; font-weight: 900; transition: all 0.2s; flex-shrink: 0; }
     .info-icon:hover { background: rgba(59, 130, 246, 0.5); color: #fff; transform: scale(1.1); }
@@ -124,7 +122,6 @@
     
     .kanban-col { min-height: 200px; background: rgba(0,0,0,0.4); border-radius: 16px; padding: 12px; border: 1px solid rgba(255,255,255,0.05); }
     
-    /* Workspace Active Button Styles */
     .tool-active { background-color: rgba(59, 130, 246, 0.4) !important; border-color: rgba(59, 130, 246, 0.6) !important; color: #ffffff !important; box-shadow: inset 0 2px 4px rgba(0,0,0,0.3); transform: translateY(1px); }
 
     #workspaceNotes {
@@ -145,13 +142,14 @@
     .chk-item label { flex-grow: 1; outline: none; min-width: 50px; cursor: text; line-height: 1.5; font-size: 1rem; }
     .chk-item input[type="checkbox"]:checked + label { text-decoration: line-through; color: #6b7280; opacity: 0.5; }
 
-    /* Wallet Card Stack Mechanics */
-    .wallet-stack { position: relative; height: 400px; display: flex; justify-content: center; align-items: flex-end; margin-bottom: 2rem; }
+    .wallet-stack { position: relative; height: 400px; display: flex; justify-content: center; align-items: flex-end; margin-bottom: 2rem; user-select: none; }
     .wallet-card { position: absolute; width: 100%; max-width: 600px; height: 350px; transition: all 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275); cursor: pointer; transform-origin: bottom center; }
     .wallet-card:hover:not(.active-card) { transform: translateY(-30px) scale(0.96) !important; }
     
-    /* Truncation utility for all inputs/selects */
     .truncate-strict { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; min-width: 0; }
+
+    .preview-card { transition: all 0.2s ease; cursor: pointer; }
+    .preview-card:hover { transform: translateY(-3px); border-color: rgba(59, 130, 246, 0.5); }
   </style>
 </head>
 <body class="p-3 md:p-8 pb-24 relative">
@@ -197,10 +195,8 @@
           </div>
       </div>
 
-      <!-- SWIPEABLE HORIZONTAL CARDS LAYOUT -->
       <div class="flex overflow-x-auto snap-x snap-mandatory gap-4 md:gap-6 pb-4 hide-scroll relative z-20">
         
-        <!-- Liquid Assets Card -->
         <div class="glass-panel rounded-3xl p-6 md:p-8 flex flex-col h-full bg-gradient-to-br from-white/5 to-transparent min-w-[85vw] sm:min-w-[45vw] md:min-w-[calc(33.33%-16px)] snap-center flex-shrink-0">
           <div class="flex justify-between items-start mb-4">
               <h3 class="text-sm font-bold text-gray-400 uppercase tracking-widest flex items-center">
@@ -212,7 +208,6 @@
           <p class="text-gray-400 text-sm mt-4 font-medium tracking-wide">Unified balance across tracked accounts.</p>
         </div>
 
-        <!-- Selected Period Card -->
         <div class="glass-panel rounded-3xl p-6 md:p-8 flex flex-col justify-center h-full bg-gradient-to-br from-white/5 to-transparent min-w-[85vw] sm:min-w-[45vw] md:min-w-[calc(33.33%-16px)] snap-center flex-shrink-0">
           <div class="flex justify-between items-center mb-4 relative z-10 border-b border-white/10 pb-4">
               <div class="relative min-w-0 max-w-[180px] flex-1 flex items-center">
@@ -244,7 +239,6 @@
           </div>
         </div>
 
-        <!-- Credit Card Card -->
         <div class="glass-panel rounded-3xl p-6 md:p-8 flex flex-col justify-center h-full bg-gradient-to-br from-purple-500/10 to-transparent border-purple-500/20 min-w-[85vw] sm:min-w-[45vw] md:min-w-[calc(33.33%-16px)] snap-center flex-shrink-0">
           <div class="flex justify-between items-start mb-4">
               <h3 class="text-sm font-bold text-purple-400 uppercase tracking-widest flex items-center min-w-0">
@@ -266,7 +260,6 @@
           </div>
         </div>
 
-        <!-- Period Expenses / Target Progress Bar -->
         <div class="glass-panel rounded-3xl p-6 md:p-8 flex flex-col justify-center h-full bg-gradient-to-br from-rose-500/5 to-transparent border-rose-500/20 min-w-[85vw] sm:min-w-[45vw] md:min-w-[calc(33.33%-16px)] snap-center flex-shrink-0">
           <div class="flex justify-between items-start gap-2">
             <div class="flex-1 min-w-0 pr-2 flex items-center">
@@ -285,7 +278,6 @@
           <p id="goalText" class="text-xs md:text-sm text-gray-300 mt-3 text-right font-bold truncate whitespace-nowrap">Budget: ₹0</p>
         </div>
 
-        <!-- All-Time Income -->
         <div class="glass-panel rounded-3xl p-6 md:p-8 flex flex-col justify-center min-w-[85vw] sm:min-w-[45vw] md:min-w-[calc(33.33%-16px)] h-full bg-gradient-to-br from-emerald-500/5 to-transparent border-emerald-500/20 snap-center flex-shrink-0">
           <h3 class="text-sm font-bold text-gray-400 uppercase tracking-widest mb-2 truncate whitespace-nowrap flex items-center">Total Income <span class="info-icon" data-info="The absolute gross total of every income event logged into the C.A.S.P.E.R. server across all dates.">i</span></h3>
           <h2 id="allTimeIncome" class="text-4xl lg:text-5xl font-black text-emerald-400 mt-2 truncate whitespace-nowrap drop-shadow-lg">₹0</h2>
@@ -293,7 +285,6 @@
 
       </div>
 
-      <!-- Quick Metrics Grid -->
       <div class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-4 md:gap-6 mt-2 uppercase">
         <div class="glass-panel rounded-2xl p-4 flex flex-col items-center justify-center text-center bg-white/5 border border-white/10">
           <p class="text-[10px] text-gray-400 font-bold tracking-widest mb-1 flex items-center justify-center w-full"><i data-lucide="activity" class="w-3 h-3 mr-1"></i> Health <span class="info-icon" data-info="Algorithm: Base 50 + Savings Velocity Bonus + Liquid Runway Bonus + Low Debt Ratio Bonus.">i</span></p>
@@ -334,14 +325,16 @@
           <!-- Card 1: Pie Chart -->
           <div class="wallet-card glass-panel rounded-3xl p-5 md:p-6 bg-gradient-to-br from-blue-900/40 to-black/80 border border-white/20" onclick="bringToFront(this)" style="transform: translateY(-20px) scale(0.9); z-index: 1;">
               <div class="flex justify-between items-center mb-4 gap-2">
-                <h3 class="text-xs font-bold text-blue-300 uppercase tracking-widest flex items-center flex-shrink-0">Distribution <span class="info-icon" data-info="Categorical breakdown of your spending.">i</span></h3>
+                <h3 class="text-xs font-bold text-blue-300 uppercase tracking-widest flex items-center flex-shrink-0">Distribution <span class="info-icon" data-info="Categorical breakdown of your spending. SWIPE CARDS to view other analytics.">i</span></h3>
                 <div class="flex items-center gap-2 min-w-0">
-                    <select id="pieChartMonthFilter" onchange="updatePieChart(this.value)" class="bg-black/50 text-[10px] font-bold text-white uppercase rounded-xl px-2 py-1 pr-6 border border-white/10 outline-none hover:border-blue-500/50 cursor-pointer max-w-[130px] truncate-strict appearance-none">
-                      <option value="current">SELECTED</option>
-                      <option value="all">ALL TIME</option>
-                    </select>
-                    <i data-lucide="chevron-down" class="absolute right-[45px] top-7 transform w-3 h-3 text-white pointer-events-none"></i>
-                    <button onclick="openChartModal('walletChart', 'Expense Analytics'); event.stopPropagation();" class="text-gray-400 hover:text-white transition-colors bg-white/10 hover:bg-white/20 p-1.5 rounded-lg border border-white/10"><i data-lucide="maximize-2" class="w-4 h-4"></i></button>
+                    <div class="relative min-w-0">
+                        <select id="pieChartMonthFilter" onchange="updatePieChart(this.value)" class="bg-black/50 text-[10px] font-bold text-white uppercase rounded-xl px-2 py-1 pr-6 border border-white/10 outline-none hover:border-blue-500/50 cursor-pointer w-[110px] truncate-strict appearance-none">
+                          <option value="current">SELECTED</option>
+                          <option value="all">ALL TIME</option>
+                        </select>
+                        <i data-lucide="chevron-down" class="absolute right-1.5 top-1/2 transform -translate-y-1/2 w-3 h-3 text-white pointer-events-none"></i>
+                    </div>
+                    <button onclick="openChartModal('walletChart', 'Expense Analytics'); event.stopPropagation();" class="text-gray-400 hover:text-white transition-colors bg-white/10 hover:bg-white/20 p-1.5 rounded-lg border border-white/10 flex-shrink-0"><i data-lucide="maximize-2" class="w-4 h-4"></i></button>
                 </div>
               </div>
               <div class="flex flex-row items-center justify-between gap-4 h-[250px] w-full">
@@ -400,7 +393,6 @@
 
       <!-- Remaining Lower Charts Grid -->
       <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 md:gap-6">
-          <!-- Monthly Expenses Comparison Graph -->
           <div class="glass-panel rounded-3xl p-5 md:p-6 bg-gradient-to-b from-transparent to-white/5">
               <div class="flex justify-between items-center mb-4">
                   <h3 class="text-xs font-bold text-gray-400 uppercase tracking-widest flex items-center">Month Over Month <span class="info-icon" data-info="Bar chart comparing your total aggregate expenses across different calendar months.">i</span></h3>
@@ -796,6 +788,14 @@
                   <canvas id="whiteboardCanvas" class="absolute inset-0 w-full h-full cursor-crosshair touch-none"></canvas>
               </div>
           </div>
+          
+          <!-- RECENT SAVES CAROUSEL -->
+          <div class="glass-panel rounded-3xl p-6 md:p-8 flex flex-col border border-white/10 bg-black/40 lg:col-span-2">
+            <h3 class="text-xs font-bold text-gray-400 uppercase tracking-widest mb-4 flex items-center"><i data-lucide="history" class="w-4 h-4 mr-2"></i> Recent Workspace Saves <span class="info-icon" data-info="Every time you hit Sync, a local snapshot is saved here so you can easily restore previous states.">i</span></h3>
+            <div id="recentSavesGrid" class="flex gap-4 overflow-x-auto pb-4 hide-scroll">
+                 <p class="text-gray-500 text-xs italic p-4">No recent saves found locally. Sync to create a snapshot.</p>
+            </div>
+          </div>
       </div>
     </div>
     </main>
@@ -982,7 +982,99 @@
     let selectedMonth = `${new Date().getFullYear()}-${String(new Date().getMonth() + 1).padStart(2, '0')}`; 
     let searchQuery = '';
     let currentFilter = 'all';
-    let transactions = []; 
+    
+    // HARDCODED LEDGER DATA INJECTION 
+    let transactions = [
+      {"id": "1786233600000", "type": "expense", "amount": 460.0, "account": "UPI", "category": "Food & Dining", "note": "", "timestamp": 1786233600000, "isRecurring": false},
+      {"id": "1786147200001", "type": "expense", "amount": 418.75, "account": "UPI", "category": "Groceries", "note": "", "timestamp": 1786147200000, "isRecurring": false},
+      {"id": "1786147200002", "type": "expense", "amount": 95.0, "account": "UPI", "category": "Food & Dining", "note": "", "timestamp": 1786147200000, "isRecurring": false},
+      {"id": "1786147200003", "type": "expense", "amount": 719.0, "account": "UPI", "category": "Subscriptions", "note": "", "timestamp": 1786147200000, "isRecurring": false},
+      {"id": "1786147200004", "type": "expense", "amount": 55.0, "account": "UPI", "category": "Groceries", "note": "", "timestamp": 1786147200000, "isRecurring": false},
+      {"id": "1786147200005", "type": "expense", "amount": 65.0, "account": "UPI", "category": "Transport", "note": "", "timestamp": 1786147200000, "isRecurring": false},
+      {"id": "1786060800006", "type": "expense", "amount": 163.0, "account": "UPI", "category": "Groceries", "note": "", "timestamp": 1786060800000, "isRecurring": false},
+      {"id": "1785974400007", "type": "expense", "amount": 130.0, "account": "UPI", "category": "Food & Dining", "note": "", "timestamp": 1785974400000, "isRecurring": false},
+      {"id": "1785801600008", "type": "expense", "amount": 240.0, "account": "UPI", "category": "Food & Dining", "note": "", "timestamp": 1785801600000, "isRecurring": false},
+      {"id": "1785715200009", "type": "income", "amount": 39.84, "account": "UPI", "category": "Other", "note": "", "timestamp": 1785715200000, "isRecurring": false},
+      {"id": "1785715200010", "type": "expense", "amount": 115.0, "account": "UPI", "category": "Groceries", "note": "", "timestamp": 1785715200000, "isRecurring": false},
+      {"id": "1785715200011", "type": "expense", "amount": 161.72, "account": "UPI", "category": "Food & Dining", "note": "", "timestamp": 1785715200000, "isRecurring": false},
+      {"id": "1785628800012", "type": "expense", "amount": 64.0, "account": "UPI", "category": "Transport", "note": "", "timestamp": 1785628800000, "isRecurring": false},
+      {"id": "1785628800013", "type": "expense", "amount": 32.0, "account": "UPI", "category": "Transport", "note": "", "timestamp": 1785628800000, "isRecurring": false},
+      {"id": "1785628800014", "type": "expense", "amount": 16.0, "account": "UPI", "category": "Transport", "note": "", "timestamp": 1785628800000, "isRecurring": false},
+      {"id": "1785628800015", "type": "income", "amount": 35.0, "account": "UPI", "category": "Other", "note": "", "timestamp": 1785628800000, "isRecurring": false},
+      {"id": "1785628800016", "type": "expense", "amount": 125.0, "account": "UPI", "category": "Groceries", "note": "", "timestamp": 1785628800000, "isRecurring": false},
+      {"id": "1785628800017", "type": "expense", "amount": 13.0, "account": "UPI", "category": "Transport", "note": "", "timestamp": 1785628800000, "isRecurring": false},
+      {"id": "1785628800018", "type": "expense", "amount": 35.0, "account": "UPI", "category": "Transport", "note": "", "timestamp": 1785628800000, "isRecurring": false},
+      {"id": "1785628800019", "type": "expense", "amount": 23.0, "account": "UPI", "category": "Transport", "note": "", "timestamp": 1785628800000, "isRecurring": false},
+      {"id": "1785628800020", "type": "expense", "amount": 27.0, "account": "UPI", "category": "Transport", "note": "", "timestamp": 1785628800000, "isRecurring": false},
+      {"id": "1785542400021", "type": "expense", "amount": 9750.0, "account": "UPI", "category": "Rent", "note": "", "timestamp": 1785542400000, "isRecurring": false},
+      {"id": "1785542400022", "type": "expense", "amount": 131.0, "account": "UPI", "category": "Food & Dining", "note": "", "timestamp": 1785542400000, "isRecurring": false},
+      {"id": "1785542400023", "type": "expense", "amount": 20000.0, "account": "UPI", "category": "Other", "note": "", "timestamp": 1785542400000, "isRecurring": false},
+      {"id": "1785542400024", "type": "income", "amount": 50080.0, "account": "UPI", "category": "Salary", "note": "", "timestamp": 1785542400000, "isRecurring": false},
+      {"id": "1785369600025", "type": "expense", "amount": 165.0, "account": "UPI", "category": "Food & Dining", "note": "", "timestamp": 1785369600000, "isRecurring": false},
+      {"id": "1785369600026", "type": "expense", "amount": 167.72, "account": "UPI", "category": "Food & Dining", "note": "", "timestamp": 1785369600000, "isRecurring": false},
+      {"id": "1785283200027", "type": "expense", "amount": 198.0, "account": "UPI", "category": "Food & Dining", "note": "", "timestamp": 1785283200000, "isRecurring": false},
+      {"id": "1785283200028", "type": "expense", "amount": 153.0, "account": "UPI", "category": "Shopping", "note": "Amazon India (SMS)", "timestamp": 1785283200000, "isRecurring": false},
+      {"id": "1785196800029", "type": "expense", "amount": 50.0, "account": "UPI", "category": "Groceries", "note": "", "timestamp": 1785196800000, "isRecurring": false},
+      {"id": "1785110400030", "type": "expense", "amount": 120.0, "account": "UPI", "category": "Groceries", "note": "", "timestamp": 1785110400000, "isRecurring": false},
+      {"id": "1785110400031", "type": "expense", "amount": 511.97, "account": "UPI", "category": "Entertainment", "note": "", "timestamp": 1785110400000, "isRecurring": false},
+      {"id": "1785024000032", "type": "expense", "amount": 421.0, "account": "UPI", "category": "Food & Dining", "note": "", "timestamp": 1785024000000, "isRecurring": false},
+      {"id": "1785024000033", "type": "expense", "amount": 35.0, "account": "UPI", "category": "Groceries", "note": "", "timestamp": 1785024000000, "isRecurring": false},
+      {"id": "1785024000034", "type": "expense", "amount": 164.0, "account": "UPI", "category": "Food & Dining", "note": "", "timestamp": 1785024000000, "isRecurring": false},
+      {"id": "1784937600035", "type": "expense", "amount": 60.0, "account": "UPI", "category": "Groceries", "note": "", "timestamp": 1784937600000, "isRecurring": false},
+      {"id": "1784937600036", "type": "expense", "amount": 127.0, "account": "UPI", "category": "Food & Dining", "note": "", "timestamp": 1784937600000, "isRecurring": false},
+      {"id": "1784764800037", "type": "expense", "amount": 80.0, "account": "UPI", "category": "Groceries", "note": "", "timestamp": 1784764800000, "isRecurring": false},
+      {"id": "1784678400038", "type": "expense", "amount": 120.0, "account": "UPI", "category": "Food & Dining", "note": "", "timestamp": 1784678400000, "isRecurring": false},
+      {"id": "1784678400039", "type": "expense", "amount": 60.0, "account": "UPI", "category": "Food & Dining", "note": "", "timestamp": 1784678400000, "isRecurring": false},
+      {"id": "1784592000040", "type": "expense", "amount": 144.0, "account": "UPI", "category": "Food & Dining", "note": "", "timestamp": 1784592000000, "isRecurring": false},
+      {"id": "1784592000041", "type": "income", "amount": 2800.0, "account": "UPI", "category": "Refund", "note": "", "timestamp": 1784592000000, "isRecurring": false},
+      {"id": "1784592000042", "type": "expense", "amount": 30.0, "account": "UPI", "category": "Food & Dining", "note": "", "timestamp": 1784592000000, "isRecurring": false},
+      {"id": "1784505600043", "type": "expense", "amount": 15.0, "account": "UPI", "category": "Groceries", "note": "", "timestamp": 1784505600000, "isRecurring": false},
+      {"id": "1784505600044", "type": "expense", "amount": 45.0, "account": "UPI", "category": "Food & Dining", "note": "", "timestamp": 1784505600000, "isRecurring": false},
+      {"id": "1784419200045", "type": "expense", "amount": 289.0, "account": "UPI", "category": "Groceries", "note": "", "timestamp": 1784419200000, "isRecurring": false},
+      {"id": "1784419200046", "type": "expense", "amount": 167.0, "account": "UPI", "category": "Food & Dining", "note": "", "timestamp": 1784419200000, "isRecurring": false},
+      {"id": "1784419200047", "type": "expense", "amount": 60.0, "account": "UPI", "category": "Food & Dining", "note": "", "timestamp": 1784419200000, "isRecurring": false},
+      {"id": "1784332800048", "type": "expense", "amount": 665.0, "account": "UPI", "category": "Electricity charges", "note": "", "timestamp": 1784332800000, "isRecurring": false},
+      {"id": "1784332800049", "type": "expense", "amount": 60.0, "account": "UPI", "category": "Food & Dining", "note": "", "timestamp": 1784332800000, "isRecurring": false},
+      {"id": "1784332800050", "type": "expense", "amount": 35.0, "account": "UPI", "category": "Groceries", "note": "THANGAM FRUITS AND VEGETABLES (SMS)", "timestamp": 1784332800000, "isRecurring": false},
+      {"id": "1784332800051", "type": "expense", "amount": 40.0, "account": "UPI", "category": "Transport", "note": "METROPOLITAN TRANSPORT (SMS)", "timestamp": 1784332800000, "isRecurring": false},
+      {"id": "1784332800052", "type": "expense", "amount": 23.0, "account": "UPI", "category": "Other", "note": "Cumta info (SMS)", "timestamp": 1784332800000, "isRecurring": false},
+      {"id": "1784332800053", "type": "income", "amount": 62.0, "account": "UPI", "category": "Other", "note": "SHIVAYOGESHJ (SMS)", "timestamp": 1784332800000, "isRecurring": false},
+      {"id": "1784332800054", "type": "expense", "amount": 32.0, "account": "UPI", "category": "Transport", "note": "Rapido (SMS)", "timestamp": 1784332800000, "isRecurring": false},
+      {"id": "1784332800055", "type": "expense", "amount": 32.0, "account": "UPI", "category": "Transport", "note": "Rapido (SMS)", "timestamp": 1784332800000, "isRecurring": false},
+      {"id": "1784332800056", "type": "expense", "amount": 206.0, "account": "UPI", "category": "Entertainment", "note": "MOHAMED IMRAN FAREET (SMS)", "timestamp": 1784332800000, "isRecurring": false},
+      {"id": "1784332800057", "type": "expense", "amount": 681.17, "account": "UPI", "category": "Food & Dining", "note": "Dominos Pizza (SMS)", "timestamp": 1784332800000, "isRecurring": false},
+      {"id": "1784332800058", "type": "expense", "amount": 10.0, "account": "UPI", "category": "Transport", "note": "Indian Railway (SMS)", "timestamp": 1784332800000, "isRecurring": false},
+      {"id": "1784332800059", "type": "expense", "amount": 20.0, "account": "UPI", "category": "Other", "note": "SHIVAYOGESH J (SMS)", "timestamp": 1784332800000, "isRecurring": false},
+      {"id": "1784332800060", "type": "expense", "amount": 13.0, "account": "UPI", "category": "Transport", "note": "", "timestamp": 1784332800000, "isRecurring": false},
+      {"id": "1784332800061", "type": "expense", "amount": 33.0, "account": "UPI", "category": "Transport", "note": "", "timestamp": 1784332800000, "isRecurring": false},
+      {"id": "1784332800062", "type": "expense", "amount": 5.0, "account": "UPI", "category": "Transport", "note": "", "timestamp": 1784332800000, "isRecurring": false},
+      {"id": "1784246400063", "type": "expense", "amount": 1654.0, "account": "UPI", "category": "Shopping", "note": "Amazon India (SMS)", "timestamp": 1784246400000, "isRecurring": false},
+      {"id": "1784246400064", "type": "expense", "amount": 60.0, "account": "UPI", "category": "Groceries", "note": "", "timestamp": 1784246400000, "isRecurring": false},
+      {"id": "1783987200065", "type": "expense", "amount": 105.0, "account": "UPI", "category": "Food & Dining", "note": "SWIGGY (SMS)", "timestamp": 1783987200000, "isRecurring": false},
+      {"id": "1783900800066", "type": "expense", "amount": 60.0, "account": "UPI", "category": "Groceries", "note": "", "timestamp": 1783900800000, "isRecurring": false},
+      {"id": "1783814400067", "type": "expense", "amount": 150.0, "account": "UPI", "category": "Other", "note": "Haircut", "timestamp": 1783814400000, "isRecurring": false},
+      {"id": "1783728000068", "type": "expense", "amount": 20000.0, "account": "UPI", "category": "Other", "note": "", "timestamp": 1783728000000, "isRecurring": false},
+      {"id": "1783555200069", "type": "expense", "amount": 211.0, "account": "UPI", "category": "Food & Dining", "note": "Swiggy Ltd (SMS)", "timestamp": 1783555200000, "isRecurring": false},
+      {"id": "1783468800070", "type": "expense", "amount": 992.25, "account": "UPI", "category": "Transport", "note": "AbhiBus (SMS)", "timestamp": 1783468800000, "isRecurring": false},
+      {"id": "1783468800071", "type": "expense", "amount": 894.0, "account": "UPI", "category": "Transport", "note": "ABHIBUS COM (SMS)", "timestamp": 1783468800000, "isRecurring": false},
+      {"id": "1783382400072", "type": "expense", "amount": 30.0, "account": "UPI", "category": "Food & Dining", "note": "THANGAM FRUITS AND VEGETABLES (SMS)", "timestamp": 1783382400000, "isRecurring": false},
+      {"id": "1783382400073", "type": "expense", "amount": 115.0, "account": "UPI", "category": "Food & Dining", "note": "Swiggy Ltd (SMS)", "timestamp": 1783382400000, "isRecurring": false},
+      {"id": "1783382400074", "type": "expense", "amount": 11.0, "account": "UPI", "category": "Other", "note": "", "timestamp": 1783382400000, "isRecurring": false},
+      {"id": "1783382400075", "type": "expense", "amount": 10.0, "account": "UPI", "category": "Other", "note": "", "timestamp": 1783382400000, "isRecurring": false},
+      {"id": "1783382400076", "type": "expense", "amount": 35.0, "account": "UPI", "category": "Groceries", "note": "THANGAM FRUITS AND VEGETABLES (SMS)", "timestamp": 1783382400000, "isRecurring": false},
+      {"id": "1783209600077", "type": "expense", "amount": 128.0, "account": "UPI", "category": "Food & Dining", "note": "SWIGGY", "timestamp": 1783209600000, "isRecurring": false},
+      {"id": "1783209600078", "type": "expense", "amount": 595.0, "account": "UPI", "category": "Food & Dining", "note": "SWIGGY", "timestamp": 1783209600000, "isRecurring": false},
+      {"id": "1783209600079", "type": "expense", "amount": 147.0, "account": "UPI", "category": "Groceries", "note": "", "timestamp": 1783209600000, "isRecurring": false},
+      {"id": "1783123200080", "type": "expense", "amount": 3250.0, "account": "UPI", "category": "Rent", "note": "", "timestamp": 1783123200000, "isRecurring": false},
+      {"id": "1783123200081", "type": "expense", "amount": 110.0, "account": "UPI", "category": "Groceries", "note": "", "timestamp": 1783123200000, "isRecurring": false},
+      {"id": "1783036800082", "type": "expense", "amount": 255.0, "account": "UPI", "category": "Food & Dining", "note": "", "timestamp": 1783036800000, "isRecurring": false},
+      {"id": "1782950400083", "type": "expense", "amount": 134.0, "account": "UPI", "category": "Other", "note": "", "timestamp": 1782950400000, "isRecurring": false},
+      {"id": "1782950400084", "type": "expense", "amount": 20.0, "account": "UPI", "category": "Groceries", "note": "", "timestamp": 1782950400000, "isRecurring": false},
+      {"id": "1782864000085", "type": "income", "amount": 51091.0, "account": "UPI", "category": "Salary", "note": "", "timestamp": 1782864000000, "isRecurring": false},
+      {"id": "1782864000086", "type": "expense", "amount": 40.0, "account": "UPI", "category": "Groceries", "note": "", "timestamp": 1782864000000, "isRecurring": false},
+      {"id": "1782864000087", "type": "expense", "amount": 122.0, "account": "UPI", "category": "Food & Dining", "note": "SWIGGY", "timestamp": 1782864000000, "isRecurring": false}
+    ];
+    
     let wishlistItems = []; 
     let mediaItems = []; 
     let monthlyWishlistSavings = parseFloat(localStorage.getItem('walletWishlistSavings')) || 0;
@@ -1033,17 +1125,35 @@
     });
 
     /* WALLET STACK MECHANIC */
+    const stack = document.getElementById('walletStack');
+    let stackStartX = 0; let stackStartY = 0;
+    
+    stack.addEventListener('touchstart', e => { 
+        stackStartX = e.changedTouches[0].screenX; stackStartY = e.changedTouches[0].screenY; 
+    }, {passive: true});
+
+    stack.addEventListener('touchend', e => {
+        const touchEndX = e.changedTouches[0].screenX; const touchEndY = e.changedTouches[0].screenY;
+        const diffX = touchEndX - stackStartX; const diffY = touchEndY - stackStartY;
+        if (Math.abs(diffX) > 50 || Math.abs(diffY) > 50) {
+            const cards = Array.from(stack.children);
+            const activeIdx = cards.findIndex(c => c.classList.contains('active-card'));
+            if (activeIdx !== -1) {
+                let nextIdx = activeIdx;
+                if (diffX < -50 || diffY < -50) nextIdx = (activeIdx + 1) % cards.length;
+                else if (diffX > 50 || diffY > 50) nextIdx = (activeIdx - 1 + cards.length) % cards.length;
+                bringToFront(cards[nextIdx]);
+            }
+        }
+    }, {passive: true});
+
     function bringToFront(cardEl) {
-        const stack = document.getElementById('walletStack');
         const cards = Array.from(stack.children);
-        
         cards.forEach(c => c.classList.remove('active-card'));
         cardEl.classList.add('active-card');
 
         let remainingCards = cards.filter(c => c !== cardEl);
-        
-        cardEl.style.zIndex = '10';
-        cardEl.style.transform = 'translateY(10px) scale(1.05)';
+        cardEl.style.zIndex = '10'; cardEl.style.transform = 'translateY(10px) scale(1.05)';
         
         remainingCards.forEach((c, index) => {
             c.style.zIndex = String(remainingCards.length - index);
@@ -1127,16 +1237,55 @@
         a.download = 'Wallet_Workspace_Notes.txt'; a.click();
     }
 
+    function renderRecentSaves() {
+        const history = JSON.parse(localStorage.getItem('workspaceHistory')) || [];
+        const grid = document.getElementById('recentSavesGrid');
+        if(history.length === 0) {
+            grid.innerHTML = `<p class="text-gray-500 text-xs italic p-4">No recent saves found locally. Sync to create a snapshot.</p>`;
+            return;
+        }
+        grid.innerHTML = history.map((h, i) => `
+            <div onclick="restoreWorkspace(${i})" class="preview-card bg-black/60 border border-white/10 rounded-2xl p-3 min-w-[140px] max-w-[140px] flex-shrink-0 flex flex-col h-28 relative overflow-hidden">
+                <p class="text-[9px] text-gray-400 font-bold mb-2 uppercase tracking-widest">${h.date}</p>
+                <div class="text-[8px] text-gray-500 line-clamp-3 mb-2 flex-1">${h.notes.replace(/<[^>]*>?/gm, ' ')}</div>
+                ${h.whiteboard && h.whiteboard.length > 50 ? `<div class="h-6 w-full opacity-50 bg-center bg-contain bg-no-repeat rounded" style="background-image: url('${h.whiteboard}')"></div>` : `<div class="h-6 w-full flex items-center justify-center text-gray-600"><i data-lucide="pen-tool" class="w-3 h-3"></i></div>`}
+            </div>
+        `).join('');
+        lucide.createIcons();
+    }
+
+    function restoreWorkspace(index) {
+        if(confirm("Restore this workspace state? Current unsaved work will be lost.")) {
+            const history = JSON.parse(localStorage.getItem('workspaceHistory')) || [];
+            const data = history[index];
+            if(data) {
+                if(data.notes) document.getElementById('workspaceNotes').innerHTML = data.notes;
+                if(data.whiteboard) {
+                    const canvas = document.getElementById('whiteboardCanvas');
+                    const img = new Image(); img.onload = () => { canvas.getContext('2d').clearRect(0,0,canvas.width,canvas.height); canvas.getContext('2d').drawImage(img, 0, 0); }; img.src = data.whiteboard;
+                }
+            }
+        }
+    }
+
     async function saveWorkspace() {
         const notesEl = document.getElementById('workspaceNotes');
         notesEl.querySelectorAll('input[type="checkbox"]').forEach(cb => { cb.checked ? cb.setAttribute('checked', 'checked') : cb.removeAttribute('checked'); });
         const saveBtn = document.querySelector('button[onclick="saveWorkspace()"]');
         const origText = saveBtn.innerHTML; saveBtn.innerHTML = '<i data-lucide="loader-2" class="w-4 h-4 mr-2 animate-spin"></i> Syncing'; lucide.createIcons();
         
+        const wbData = document.getElementById('whiteboardCanvas').toDataURL();
+        
+        let history = JSON.parse(localStorage.getItem('workspaceHistory')) || [];
+        history.unshift({ id: Date.now(), date: new Date().toLocaleDateString('en-GB',{day:'numeric',month:'short',hour:'2-digit',minute:'2-digit'}), notes: notesEl.innerHTML, whiteboard: wbData });
+        if(history.length > 8) history.pop();
+        localStorage.setItem('workspaceHistory', JSON.stringify(history));
+        renderRecentSaves();
+
         try {
             await fetch(`${API_BASE}/save-workspace`, {
                 method: 'POST', headers: apiHeaders,
-                body: JSON.stringify({ notes: notesEl.innerHTML, whiteboard: document.getElementById('whiteboardCanvas').toDataURL() })
+                body: JSON.stringify({ notes: notesEl.innerHTML, whiteboard: wbData })
             });
             saveBtn.innerHTML = '<i data-lucide="check" class="w-4 h-4 mr-2"></i> Synced!';
         } catch(e) {
@@ -1157,6 +1306,7 @@
                 }
             }
         } catch(e) {}
+        renderRecentSaves();
     }
     
     let isDrawing = false, currentTool = 'pen', penColor = '#ffffff', penWidth = 2, startX, startY, savedImageData, wbHistory = [], isTextMode = false;
@@ -1269,7 +1419,10 @@
     async function syncDataFromServer() {
         try {
             const [txRes, wRes] = await Promise.all([ fetch(`${API_BASE}/get-transactions`), fetch(`${API_BASE}/get-wishlist`) ]);
-            if (txRes.ok) transactions = await txRes.json(); 
+            if (txRes.ok) {
+                const dbTx = await txRes.json();
+                if(dbTx.length > 0) transactions = dbTx;
+            }
             if (wRes.ok) { const allWish = await wRes.json(); wishlistItems = allWish.filter(w => !w.isMedia); mediaItems = allWish.filter(w => w.isMedia); }
             
             // AUTO FALLBACK IF CURRENT MONTH HAS NO DATA
@@ -1312,15 +1465,6 @@
         lucide.createIcons();
     }
 
-    let touchStartX = 0;
-    document.addEventListener('touchstart', e => { touchStartX = e.changedTouches[0].screenX; }, {passive: true});
-    document.addEventListener('touchend', e => {
-        const touchEndX = e.changedTouches[0].screenX;
-        const threshold = 100;
-        if (touchEndX < touchStartX - threshold && currentViewIndex < views.length - 1) switchMainView(views[currentViewIndex + 1]);
-        if (touchEndX > touchStartX + threshold && currentViewIndex > 0) switchMainView(views[currentViewIndex - 1]);
-    }, {passive: true});
-
     function switchTab(type) {
       currentType = type; document.getElementById('recurringToggleDiv').style.display = type === 'expense' ? 'flex' : 'none';
       document.getElementById('tabExpense').className = `flex-1 py-2 text-sm font-bold rounded-lg transition-all ${type === 'expense' ? 'bg-white/10 text-white shadow-md border border-white/10' : 'text-gray-500 hover:text-white border border-transparent'} tracking-wider uppercase`;
@@ -1352,7 +1496,7 @@
       const nowStr = `${new Date().getFullYear()}-${String(new Date().getMonth() + 1).padStart(2, '0')}`; months.add(nowStr);
       const sortedMonths = Array.from(months).sort().reverse(); 
       filter.innerHTML = '<option value="all">ALL TIME</option>'; cardFilter.innerHTML = '<option value="all">ALL TIME</option>';
-      let pOpts = '<option value="current">SELECTED PERIOD</option><option value="all">ALL TIME TOTAL</option>', hOpts = '<option value="all">ALL MONTHS</option>';
+      let pOpts = '<option value="current">SELECTED</option><option value="all">ALL TIME</option>', hOpts = '<option value="all">ALL MONTHS</option>';
 
       sortedMonths.forEach(m => { 
           const text = new Date(m.split('-')[0], m.split('-')[1] - 1).toLocaleDateString('en-GB', { month: 'long', year: 'numeric' }).toUpperCase();
@@ -1388,7 +1532,7 @@
         try { const res = await fetch(`${API_BASE}/receipt-ocr`, { method: 'POST', body: formData }); const data = await res.json(); if (data.total > 0) { document.getElementById('amount').value = data.total; document.getElementById('note').value = 'Scan'; } } catch (e) {} finally { icon.setAttribute('data-lucide', 'camera'); icon.classList.remove('animate-spin'); lucide.createIcons(); event.target.value = ''; }
     }
 
-    async function getAIInsights() {
+    async function getCASPERInsights() {
         const term = document.getElementById('aiTerminal'); const btn = document.getElementById('aiButton'); btn.disabled = true; clearTimeout(aiTypingTimer); term.classList.remove('hidden'); term.innerHTML = '<span class="text-blue-400 animate-pulse font-medium">C.A.S.P.E.R. is analyzing logs...</span>';
         try {
             const res = await fetch(`${API_BASE}/jarvis-advice`, { method: 'POST', headers: apiHeaders, body: JSON.stringify({ transactions, monthlyBudget: monthlyBudgets[selectedMonth]||25000 }) });
