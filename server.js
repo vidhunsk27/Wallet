@@ -151,13 +151,11 @@ app.post('/api/jarvis-advice', async (req, res) => {
     } catch (error) { res.status(500).json({ error: 'Failed to generate' }); }
 });
 
-// DETAILED AI FULL MULTI-MONTH REPORT ROUTE
 app.post('/api/jarvis-report', async (req, res) => {
     try {
         const { compiledMonths, totalLedger, monthlyBudget, selectedMonth } = req.body;
         const model = genAI.getGenerativeModel({ model: 'gemini-1.5-flash' });
-        const prompt = `You are a professional financial advisor AI for Vidhun. 
-        Vidhun has requested a comprehensive detailed financial report.
+        const prompt = `You are a professional financial advisor AI.
         Analyze their entire multi-month financial ledger data to provide a point of view based on their overall trends:
         Month-by-Month breakdown: ${JSON.stringify(compiledMonths)}
         Current selected filter month: ${selectedMonth}
@@ -182,7 +180,6 @@ app.post('/api/jarvis-report', async (req, res) => {
     } catch (error) { res.status(500).json({ error: 'Failed to generate report' }); }
 });
 
-// BULK SMS SYNC ROUTE
 app.post('/api/bulk-sms', async (req, res) => {
     try {
         const { bulkText } = req.body;
@@ -193,8 +190,9 @@ app.post('/api/bulk-sms', async (req, res) => {
         "${bulkText}"
         
         Extract EVERY valid transaction (income or expense) you can find. Ignore OTPs and non-financial spam.
+        CRITICAL RULE: Extract the exact transaction AMOUNT debited or credited. NEVER extract the 'Available Balance' as the amount.
         Rules for "category":
-        - Expense ONLY: 'Food & Dining', 'Groceries', 'Transport', 'Utilities', 'Electricity charges', 'Rent', 'Education', 'Travel', 'Shopping', 'Entertainment', 'Health', 'Subscriptions', 'Investments', 'Other'.
+        - Expense ONLY: 'Food & Dining', 'Groceries', 'Transport', 'Utilities', 'Electricity charges', 'Mobile Recharge', 'Rent', 'Education', 'Travel', 'Shopping', 'Entertainment', 'Health', 'Subscriptions', 'Investments', 'Other'.
         - Income ONLY: 'Salary', 'Freelance', 'Refund', 'Other'.
         
         Return ONLY a JSON array of objects. Format strictly like this:
@@ -240,13 +238,16 @@ app.post('/api/sms-webhook', async (req, res) => {
 
         const model = genAI.getGenerativeModel({ model: 'gemini-1.5-flash' });
         const prompt = `Analyze this bank SMS: "${rawText}". 
-        Extract the amount, merchant, date, type (income/expense), and category.
-        Rules for "category":
-        - For expense, choose from ONLY these: 'Food & Dining', 'Groceries', 'Transport', 'Utilities', 'Electricity charges', 'Rent', 'Education', 'Travel', 'Shopping', 'Entertainment', 'Health', 'Subscriptions', 'Investments', 'Other'.
-        - For income, choose from: 'Salary', 'Freelance', 'Refund', 'Other'.
+        Extract the debited/credited amount, merchant, date, type (income/expense), and category.
+        CRITICAL RULES:
+        1. Look for keywords like "debited", "credited", "sent to", "paid". 
+        2. DO NOT extract the account available balance as the amount. 
+        3. If this is a personal non-banking message or OTP, return {"error":"invalid"}.
+        4. Expense categories ONLY: 'Food & Dining', 'Groceries', 'Transport', 'Utilities', 'Electricity charges', 'Mobile Recharge', 'Rent', 'Education', 'Travel', 'Shopping', 'Entertainment', 'Health', 'Subscriptions', 'Investments', 'Other'.
+        5. Income categories ONLY: 'Salary', 'Freelance', 'Refund', 'Other'.
+        
         Return ONLY a valid JSON object matching this structure exactly: 
-        {"amount": number, "merchant": string, "date": "YYYY-MM-DD", "type": "income" | "expense", "category": string}. 
-        If you cannot process it, return {"error":"invalid"}`;
+        {"amount": number, "merchant": string, "date": "YYYY-MM-DD", "type": "income" | "expense", "category": string}.`;
 
         const result = await model.generateContent(prompt);
         const jsonMatch = result.response.text().match(/\{[\s\S]*\}/);
@@ -322,9 +323,6 @@ app.post('/api/receipt-ocr', upload.single('receipt'), async (req, res) => {
     } catch (error) { res.status(500).json({ error: 'AI Vision decoding exception occurred.' }); }
 });
 
-// =======================================================
-//   PROXY & AI SCRAPER (No Puppeteer - Ultra Fast / No Render crashes)
-// =======================================================
 app.post('/api/scrape-price', async (req, res) => {
     const targetUrl = req.body.url;
     if (!targetUrl) return res.status(400).json({ error: 'No URL provided' });
@@ -373,16 +371,11 @@ app.post('/api/scrape-price', async (req, res) => {
     }
 });
 
-// =======================================================
-//   REWRITTEN BLAZING MEDIA SCRAPER (IMDb/Amazon/Goodreads)
-// =======================================================
 app.post('/api/scrape-media', async (req, res) => {
     const targetUrl = req.body.url;
     if (!targetUrl) return res.status(400).json({ error: 'No URL provided' });
 
     console.log("🎬 SCRAPING MEDIA URL:", targetUrl);
-
-    // Extract exact IMDb ID if present
     const imdbIdMatch = targetUrl.match(/tt\d+/i);
     const imdbId = imdbIdMatch ? imdbIdMatch[0] : null;
 
@@ -431,7 +424,6 @@ app.post('/api/scrape-media', async (req, res) => {
                         const nodes = item['@graph'] ? item['@graph'] : [item];
                         for (let node of nodes) {
                             const type = node['@type'] || '';
-                            // Strictly check if node represents the exact IMDB ID to pull correct data
                             if (imdbId && node.url && !node.url.includes(imdbId)) continue; 
 
                             if (['Movie', 'TVSeries', 'TVEpisode', 'Book', 'Product', 'CreativeWork'].includes(type) || node.name) {
@@ -503,7 +495,7 @@ app.post('/api/scrape-media', async (req, res) => {
     }
 });
 
-// WATCH & READ BOOKMARKLET
+// MEDIA BOOKMARKLET ROUTE (MANUAL ENTRY)
 app.get('/api/bookmark-media', async (req, res) => {
     const targetUrl = req.query.url;
     if (!targetUrl) return res.send("No URL provided.");
@@ -538,6 +530,35 @@ app.get('/api/bookmark-media', async (req, res) => {
             </script>
         </html>
     `);
+});
+
+// MEDIA BOOKMARKLET AUTO-SAVE ROUTE
+app.get('/api/bookmark-media-auto', async (req, res) => {
+    const { title, link, img, cat } = req.query;
+    if (!link) return res.send("Error: Missing parameters.");
+    
+    let mediaType = "Movie";
+    if (/book|goodreads/i.test(link + cat)) mediaType = "Book";
+    else if (/anime|crunchyroll|myanimelist/i.test(link + cat)) mediaType = "Anime";
+
+    const item = { 
+        id: String(Date.now()), 
+        title: title ? decodeURIComponent(title) : 'Saved Media', 
+        price: 0, 
+        link: decodeURIComponent(link), 
+        imageUrl: img ? decodeURIComponent(img) : '', 
+        category: 'MEDIA NODE', 
+        wishCategory: mediaType, 
+        mediaGenre: 'Other', 
+        mediaStatus: 'Planned', 
+        isMedia: true, 
+        timestamp: Date.now() 
+    };
+    
+    try {
+        await db.collection('wishlist').doc(item.id).set(item);
+        res.send(`<script>window.close();</script>`);
+    } catch(err) { res.send("Database error."); }
 });
 
 app.get('/api/bookmark-auto', async (req, res) => {
