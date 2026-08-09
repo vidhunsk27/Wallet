@@ -43,7 +43,6 @@ try {
 
 const db = getFirestore();
 
-// HELPER FOR DIRECT FETCHING WITH REAL DESKTOP BROWSER HEADERS
 async function fetchPageHtml(targetUrl) {
     const headers = {
         'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/125.0.0.0 Safari/537.36',
@@ -162,24 +161,24 @@ app.post('/api/jarvis-advice', async (req, res) => {
     try {
         const { transactions, monthlyBudget } = req.body;
         const model = genAI.getGenerativeModel({ model: 'gemini-1.5-flash' });
-        const prompt = `You are a sharp, highly intelligent personal financial assistant. 
+        const prompt = `You are C.A.S.P.E.R. (Calculated Asset Security and Personal Expense Recorder), a sharp, highly intelligent personal financial assistant for Vidhun. 
         Analyze these transactions (with pre-calculated totals): ${JSON.stringify(transactions)}. 
         The user's monthly budget is ₹${monthlyBudget}. 
         Provide a quick, conversational financial summary, followed by ONE highly actionable piece of advice. 
-        STRICT RULES: 1. Speak directly to the user in a cool, helpful tone. 2. DO NOT use any markdown formatting. 3. Keep it to 3-4 short sentences total. 4. Use normal line breaks to separate the summary from the advice.`;
+        STRICT RULES: 1. Speak directly to Vidhun in a cool, precise tone. 2. DO NOT use any markdown formatting. 3. Keep it to 3-4 short sentences total. 4. Use normal line breaks to separate the summary from the advice.`;
 
         const result = await model.generateContent(prompt);
         res.status(200).json({ advice: result.response.text() });
     } catch (error) { res.status(500).json({ error: 'Failed to generate' }); }
 });
 
-// NEW JARVIS PREDICTIVE ENGINE (CORRELATION & FORECASTING)
+// C.A.S.P.E.R. PREDICTIVE ENGINE (CORRELATION & FORECASTING)
 app.post('/api/jarvis-predict', async (req, res) => {
     try {
         const { currentMonthData, previousMonthData, currentBudget } = req.body;
-        const model = genAI.getGenerativeModel({ model: 'gemini-1.5-pro' }); // Using Pro for deeper correlation logic
+        const model = genAI.getGenerativeModel({ model: 'gemini-1.5-pro' });
         
-        const prompt = `You are Jarvis, an elite predictive financial AI for Vidhun.
+        const prompt = `You are C.A.S.P.E.R. (Calculated Asset Security and Personal Expense Recorder), an elite predictive financial AI for Vidhun.
         Your goal is to correlate Vidhun's previous month's spending patterns with the current month's trajectory, predict the end-of-month (EOM) expense, and tell him EXACTLY where to cut back right now.
 
         DATA INPUTS:
@@ -211,7 +210,7 @@ app.post('/api/jarvis-report', async (req, res) => {
     try {
         const { compiledMonths, totalLedger, monthlyBudget, selectedMonth } = req.body;
         const model = genAI.getGenerativeModel({ model: 'gemini-1.5-flash' });
-        const prompt = `You are a professional financial advisor AI.
+        const prompt = `You are C.A.S.P.E.R. (Calculated Asset Security and Personal Expense Recorder), a professional financial advisor AI for Vidhun.
         Analyze their entire multi-month financial ledger data to provide a point of view based on their overall trends:
         Month-by-Month breakdown: ${JSON.stringify(compiledMonths)}
         Current selected filter month: ${selectedMonth}
@@ -265,7 +264,6 @@ app.post('/api/bulk-sms', async (req, res) => {
         const batch = db.batch();
 
         parsedArray.forEach(parsedData => {
-            // Apply Manual Regex Fallback if AI hallucinates amount to 0
             if (parsedData.amount === 0) {
                 const fallbackAmountMatch = (parsedData.rawText || '').match(/(?:Rs\.?|INR|₹)\s*([0-9,]{1,}(?:\.[0-9]{1,2})?)/i);
                 if (fallbackAmountMatch) {
@@ -302,7 +300,6 @@ app.post('/api/sms-webhook', async (req, res) => {
 
         const model = genAI.getGenerativeModel({ model: 'gemini-1.5-flash' });
         
-        // VASTLY IMPROVED PROMPT TO PREVENT "0" AMOUNT AND "AVL BAL" HALLUCINATIONS
         const prompt = `Analyze this Indian bank SMS: "${rawText}". 
         Extract the transaction details.
         
@@ -326,11 +323,9 @@ app.post('/api/sms-webhook', async (req, res) => {
         const txId = String(Date.now());
         let txData;
 
-        // HARDCODED REGEX FALLBACK (If Gemini still chokes and returns 0)
         if (!parsedData.error && (!parsedData.amount || parsedData.amount === 0)) {
             const fallbackAmountMatch = rawText.match(/(?:Rs\.?|INR|₹)\s*([0-9,]{1,}(?:\.[0-9]{1,2})?)/i);
             if (fallbackAmountMatch) {
-                // Check to make sure it's not grabbing the Avl Bal by accident if it's the only currency tag
                 if (!rawText.substring(Math.max(0, fallbackAmountMatch.index - 10), fallbackAmountMatch.index).match(/avl|bal|available/i)) {
                     parsedData.amount = parseFloat(fallbackAmountMatch[1].replace(/,/g, ''));
                 }
