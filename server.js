@@ -13,7 +13,7 @@ if (process.env.NODE_ENV !== 'production') {
 
 const app = express();
 app.use(cors());
-app.use(express.json());
+app.use(express.json({limit: '50mb'})); // Increased limit for workspace images
 
 const upload = multer({ storage: multer.memoryStorage() });
 
@@ -133,6 +133,28 @@ app.post('/api/sync-wishlist', async (req, res) => {
 });
 
 // ==========================================
+//          CLOUD WORKSPACE SYNC ROUTES
+// ==========================================
+
+app.get('/api/get-workspace', async (req, res) => {
+    try {
+        const doc = await db.collection('settings').doc('workspaceData').get();
+        if (doc.exists) {
+            res.status(200).json(doc.data());
+        } else {
+            res.status(200).json({ notes: '', whiteboard: '' });
+        }
+    } catch (error) { res.status(500).json({ error: 'Failed to fetch workspace' }); }
+});
+
+app.post('/api/save-workspace', async (req, res) => {
+    try {
+        await db.collection('settings').doc('workspaceData').set(req.body);
+        res.status(200).json({ message: 'Workspace synced securely to cloud' });
+    } catch (error) { res.status(500).json({ error: 'Failed to sync workspace' }); }
+});
+
+// ==========================================
 //            AI & TOOL ROUTES
 // ==========================================
 
@@ -149,6 +171,40 @@ app.post('/api/jarvis-advice', async (req, res) => {
         const result = await model.generateContent(prompt);
         res.status(200).json({ advice: result.response.text() });
     } catch (error) { res.status(500).json({ error: 'Failed to generate' }); }
+});
+
+// NEW JARVIS PREDICTIVE ENGINE (CORRELATION & FORECASTING)
+app.post('/api/jarvis-predict', async (req, res) => {
+    try {
+        const { currentMonthData, previousMonthData, currentBudget } = req.body;
+        const model = genAI.getGenerativeModel({ model: 'gemini-1.5-pro' }); // Using Pro for deeper correlation logic
+        
+        const prompt = `You are Jarvis, an elite predictive financial AI for Vidhun.
+        Your goal is to correlate Vidhun's previous month's spending patterns with the current month's trajectory, predict the end-of-month (EOM) expense, and tell him EXACTLY where to cut back right now.
+
+        DATA INPUTS:
+        - Previous Month Transactions: ${JSON.stringify(previousMonthData)}
+        - Current Month Transactions (So far): ${JSON.stringify(currentMonthData)}
+        - Vidhun's Target Budget: ₹${currentBudget}
+
+        YOUR TASK:
+        Write a hyper-focused HTML forecast. Do NOT wrap in \`\`\`html.
+        Use these exact tailwind classes:
+        - Headings: <h2 class="text-sm font-black text-purple-400 mb-2 mt-4 uppercase tracking-widest border-b border-white/10 pb-1">
+        - Paragraphs/Text: <p class="mb-3 text-sm text-gray-300">
+        - Highlighted Targets: <span class="text-rose-400 font-bold">
+        - Safe Targets: <span class="text-emerald-400 font-bold">
+        - Lists: <ul class="list-disc pl-5 mb-3 text-gray-300 space-y-2 text-sm">
+
+        STRUCTURE:
+        1. "Correlation Analysis": How does this month's velocity compare to exactly what happened last month? Which specific category is accelerating too fast?
+        2. "EOM Prediction": Predict the exact mathematical final expense figure if Vidhun continues this behavior.
+        3. "The Cut List": Give 2-3 aggressive, highly specific actions (referencing exact merchant names or categories from the current data) on what to cut immediately to stay under the ₹${currentBudget} target.`;
+
+        const result = await model.generateContent(prompt);
+        let htmlReport = result.response.text().replace(/```html/gi, '').replace(/```/g, '').trim();
+        res.status(200).json({ report: htmlReport });
+    } catch (error) { res.status(500).json({ error: 'Failed to generate prediction' }); }
 });
 
 app.post('/api/jarvis-report', async (req, res) => {
@@ -190,7 +246,7 @@ app.post('/api/bulk-sms', async (req, res) => {
         "${bulkText}"
         
         Extract EVERY valid transaction (income or expense) you can find. Ignore OTPs and non-financial spam.
-        CRITICAL RULE: Extract the exact transaction AMOUNT debited or credited. NEVER extract the 'Available Balance' as the amount.
+        CRITICAL RULE: Extract the exact transaction AMOUNT debited or credited. NEVER extract the 'Available Balance' or 'Avl Bal' as the amount.
         Rules for "category":
         - Expense ONLY: 'Food & Dining', 'Groceries', 'Transport', 'Utilities', 'Electricity charges', 'Mobile Recharge', 'Rent', 'Education', 'Travel', 'Shopping', 'Entertainment', 'Health', 'Subscriptions', 'Investments', 'Other'.
         - Income ONLY: 'Salary', 'Freelance', 'Refund', 'Other'.
@@ -209,6 +265,14 @@ app.post('/api/bulk-sms', async (req, res) => {
         const batch = db.batch();
 
         parsedArray.forEach(parsedData => {
+            // Apply Manual Regex Fallback if AI hallucinates amount to 0
+            if (parsedData.amount === 0) {
+                const fallbackAmountMatch = (parsedData.rawText || '').match(/(?:Rs\.?|INR|₹)\s*([0-9,]{1,}(?:\.[0-9]{1,2})?)/i);
+                if (fallbackAmountMatch) {
+                    parsedData.amount = parseFloat(fallbackAmountMatch[1].replace(/,/g, ''));
+                }
+            }
+
             if (parsedData.amount > 0) {
                 const txId = String(Date.now() + Math.floor(Math.random() * 1000));
                 const txData = { 
@@ -237,14 +301,19 @@ app.post('/api/sms-webhook', async (req, res) => {
         }
 
         const model = genAI.getGenerativeModel({ model: 'gemini-1.5-flash' });
-        const prompt = `Analyze this bank SMS: "${rawText}". 
-        Extract the debited/credited amount, merchant, date, type (income/expense), and category.
-        CRITICAL RULES:
-        1. Look for keywords like "debited", "credited", "sent to", "paid". 
-        2. DO NOT extract the account available balance as the amount. 
-        3. If this is a personal non-banking message or OTP, return {"error":"invalid"}.
+        
+        // VASTLY IMPROVED PROMPT TO PREVENT "0" AMOUNT AND "AVL BAL" HALLUCINATIONS
+        const prompt = `Analyze this Indian bank SMS: "${rawText}". 
+        Extract the transaction details.
+        
+        CRITICAL PARSING RULES:
+        1. EXTRACT THE EXACT DEBITED/CREDITED AMOUNT. Look for "Rs.", "INR", or "₹" right before or after words like "debited", "credited", "spent", "paid".
+        2. NEVER extract the account available balance ("Avl Bal", "Available Balance", "Bal") as the transaction amount.
+        3. If this is a personal non-banking message or just an OTP, return {"error":"invalid"}.
         4. Expense categories ONLY: 'Food & Dining', 'Groceries', 'Transport', 'Utilities', 'Electricity charges', 'Mobile Recharge', 'Rent', 'Education', 'Travel', 'Shopping', 'Entertainment', 'Health', 'Subscriptions', 'Investments', 'Other'.
         5. Income categories ONLY: 'Salary', 'Freelance', 'Refund', 'Other'.
+        
+        Example: "Your a/c XXXX4083 is debited Rs. 227.00 on 09-Aug to SWIGGY. Avl Bal INR 567.26" -> Amount is 227.00, NOT 567.26.
         
         Return ONLY a valid JSON object matching this structure exactly: 
         {"amount": number, "merchant": string, "date": "YYYY-MM-DD", "type": "income" | "expense", "category": string}.`;
@@ -252,10 +321,21 @@ app.post('/api/sms-webhook', async (req, res) => {
         const result = await model.generateContent(prompt);
         const jsonMatch = result.response.text().match(/\{[\s\S]*\}/);
         const cleanText = jsonMatch ? jsonMatch[0] : "{}";
-        const parsedData = JSON.parse(cleanText);
+        let parsedData = JSON.parse(cleanText);
 
         const txId = String(Date.now());
         let txData;
+
+        // HARDCODED REGEX FALLBACK (If Gemini still chokes and returns 0)
+        if (!parsedData.error && (!parsedData.amount || parsedData.amount === 0)) {
+            const fallbackAmountMatch = rawText.match(/(?:Rs\.?|INR|₹)\s*([0-9,]{1,}(?:\.[0-9]{1,2})?)/i);
+            if (fallbackAmountMatch) {
+                // Check to make sure it's not grabbing the Avl Bal by accident if it's the only currency tag
+                if (!rawText.substring(Math.max(0, fallbackAmountMatch.index - 10), fallbackAmountMatch.index).match(/avl|bal|available/i)) {
+                    parsedData.amount = parseFloat(fallbackAmountMatch[1].replace(/,/g, ''));
+                }
+            }
+        }
 
         if (parsedData.error || !parsedData.amount) {
             txData = { id: txId, type: 'expense', amount: 0, merchant: 'Parse Error', account: 'UPI', category: 'Other', note: 'AI failed to parse', timestamp: Date.now(), isRecurring: false, rawMessage: rawText, sender: sender };
@@ -495,7 +575,6 @@ app.post('/api/scrape-media', async (req, res) => {
     }
 });
 
-// MEDIA BOOKMARKLET ROUTE (MANUAL ENTRY)
 app.get('/api/bookmark-media', async (req, res) => {
     const targetUrl = req.query.url;
     if (!targetUrl) return res.send("No URL provided.");
@@ -532,7 +611,6 @@ app.get('/api/bookmark-media', async (req, res) => {
     `);
 });
 
-// MEDIA BOOKMARKLET AUTO-SAVE ROUTE
 app.get('/api/bookmark-media-auto', async (req, res) => {
     const { title, link, img, cat } = req.query;
     if (!link) return res.send("Error: Missing parameters.");
