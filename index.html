@@ -242,7 +242,7 @@
           </div>
         </div>
 
-        <!-- Credit Card Card (NEW) -->
+        <!-- Credit Card Card -->
         <div class="glass-panel rounded-3xl p-6 md:p-8 flex flex-col justify-center h-full bg-gradient-to-br from-purple-500/10 to-transparent border-purple-500/20 min-w-[85vw] sm:min-w-[45vw] md:min-w-[calc(33.33%-16px)] snap-center flex-shrink-0">
           <div class="flex justify-between items-start mb-4">
               <h3 class="text-sm font-bold text-purple-400 uppercase tracking-widest flex items-center min-w-0">
@@ -330,9 +330,9 @@
       <div class="wallet-stack mt-8" id="walletStack">
           
           <!-- Card 1: Pie Chart -->
-          <div class="wallet-card glass-panel rounded-3xl p-5 md:p-6 bg-gradient-to-br from-blue-900/40 to-black/80 border border-white/20" onclick="bringToFront(this)" style="transform: translateY(-20px) scale(0.9); z-index: 1;">
+          <div class="wallet-card glass-panel rounded-3xl p-5 md:p-6 bg-gradient-to-br from-blue-900/40 to-black/80 border border-white/20 active-card" onclick="bringToFront(this)" style="transform: translateY(10px) scale(1.05); z-index: 4;">
               <div class="flex justify-between items-center mb-4 gap-2">
-                <h3 class="text-xs font-bold text-blue-300 uppercase tracking-widest flex items-center flex-shrink-0">Distribution <span class="info-icon" data-info="Categorical breakdown of your spending. SWIPE CARDS to view other analytics.">i</span></h3>
+                <h3 class="text-xs font-bold text-blue-300 uppercase tracking-widest flex items-center flex-shrink-0">Distribution <span class="info-icon" data-info="Categorical breakdown of your spending. SWIPE CARDS UP OR DOWN to view other analytics.">i</span></h3>
                 <div class="flex items-center gap-2 min-w-0">
                     <div class="relative min-w-0">
                         <select id="pieChartMonthFilter" onchange="updatePieChart(this.value)" class="bg-black/50 text-[10px] font-bold text-white uppercase rounded-xl px-2 py-1 pr-6 border border-white/10 outline-none hover:border-blue-500/50 cursor-pointer w-[110px] truncate-strict appearance-none">
@@ -357,7 +357,7 @@
           </div>
 
           <!-- Card 2: C.A.S.P.E.R. AI Insights -->
-          <div class="wallet-card glass-panel rounded-3xl p-5 md:p-6 bg-gradient-to-br from-purple-900/40 to-black/80 border border-white/20" onclick="bringToFront(this)" style="transform: translateY(-10px) scale(0.95); z-index: 2;">
+          <div class="wallet-card glass-panel rounded-3xl p-5 md:p-6 bg-gradient-to-br from-purple-900/40 to-black/80 border border-white/20" onclick="bringToFront(this)" style="transform: translateY(0px) scale(1); z-index: 3;">
               <div class="flex justify-between items-center mb-4 gap-2">
                 <h3 class="text-xs font-bold text-purple-300 uppercase tracking-widest flex items-center flex-shrink-0">C.A.S.P.E.R. Engine <span class="info-icon" data-info="Calculated Asset Security and Personal Expense Recorder. Your personal AI engine.">i</span></h3>
                 <div class="flex items-center gap-2 min-w-0">
@@ -378,7 +378,7 @@
           </div>
 
           <!-- Card 3: Spending Radar -->
-          <div class="wallet-card glass-panel rounded-3xl p-5 md:p-6 bg-gradient-to-br from-emerald-900/30 to-black/80 border border-white/20" onclick="bringToFront(this)" style="transform: translateY(0px) scale(1); z-index: 3;">
+          <div class="wallet-card glass-panel rounded-3xl p-5 md:p-6 bg-gradient-to-br from-emerald-900/30 to-black/80 border border-white/20" onclick="bringToFront(this)" style="transform: translateY(-10px) scale(0.95); z-index: 2;">
               <div class="flex justify-between items-center mb-4">
                   <h3 class="text-xs font-bold text-emerald-300 uppercase tracking-widest flex items-center">Spending Radar <span class="info-icon" data-info="A multidimensional view comparing your top 5 spending categories.">i</span></h3>
                   <div class="flex gap-2">
@@ -389,7 +389,7 @@
           </div>
           
           <!-- Card 4: Net Worth & Cashflow -->
-          <div class="wallet-card glass-panel rounded-3xl p-5 md:p-6 bg-gradient-to-br from-rose-900/30 to-black/80 border border-white/20 active-card" onclick="bringToFront(this)" style="transform: translateY(10px) scale(1.05); z-index: 4;">
+          <div class="wallet-card glass-panel rounded-3xl p-5 md:p-6 bg-gradient-to-br from-rose-900/30 to-black/80 border border-white/20" onclick="bringToFront(this)" style="transform: translateY(-20px) scale(0.9); z-index: 1;">
               <div class="flex justify-between items-center mb-4">
                   <h3 class="text-xs font-bold text-rose-300 uppercase tracking-widest flex items-center">Cumulative Net Worth <span class="info-icon" data-info="Cumulative track of your total retained wealth over time (All-Time Income minus All-Time Expenses).">i</span></h3>
                   <button onclick="openChartModal('trendChart', 'Cumulative Net Worth Over Time'); event.stopPropagation();" class="text-gray-400 hover:text-white transition-colors bg-white/10 hover:bg-white/20 p-1.5 rounded-lg border border-white/10"><i data-lucide="maximize-2" class="w-4 h-4"></i></button>
@@ -399,7 +399,7 @@
       </div>
 
       <!-- Remaining Lower Charts Grid -->
-      <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 md:gap-6">
+      <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 md:gap-6 mt-6">
           <div class="glass-panel rounded-3xl p-5 md:p-6 bg-gradient-to-b from-transparent to-white/5">
               <div class="flex justify-between items-center mb-4">
                   <h3 class="text-xs font-bold text-gray-400 uppercase tracking-widest flex items-center">Month Over Month <span class="info-icon" data-info="Bar chart comparing your total aggregate expenses across different calendar months.">i</span></h3>
@@ -1336,6 +1336,15 @@
 
     async function syncDataFromServer() {
         try {
+            const localTx = localStorage.getItem('walletTx'); const localWish = localStorage.getItem('walletWish');
+            if (localTx && localTx !== "undefined") { 
+                const parsedTx = JSON.parse(localTx); 
+                if (parsedTx.length > 0) { await fetch(`${API_BASE}/sync-transactions`, { method: 'POST', headers: apiHeaders, body: localTx }); localStorage.removeItem('walletTx'); } 
+            }
+            if (localWish && localWish !== "undefined") { 
+                const parsedWish = JSON.parse(localWish); 
+                if (parsedWish.length > 0) { await fetch(`${API_BASE}/sync-wishlist`, { method: 'POST', headers: apiHeaders, body: localWish }); localStorage.removeItem('walletWish'); } 
+            }
             const [txRes, wRes] = await Promise.all([ fetch(`${API_BASE}/get-transactions`), fetch(`${API_BASE}/get-wishlist`) ]);
             if (txRes.ok) {
                 const dbTx = await txRes.json();
@@ -1343,14 +1352,6 @@
             }
             if (wRes.ok) { const allWish = await wRes.json(); wishlistItems = allWish.filter(w => !w.isMedia); mediaItems = allWish.filter(w => w.isMedia); }
             
-            const curMStr = `${new Date().getFullYear()}-${String(new Date().getMonth() + 1).padStart(2, '0')}`;
-            const hasDataThisMonth = transactions.some(t => {
-                const ts = new Date(t.timestamp);
-                return `${ts.getFullYear()}-${String(ts.getMonth() + 1).padStart(2, '0')}` === curMStr;
-            });
-            if (!hasDataThisMonth && transactions.length > 0) {
-                selectedMonth = 'all'; 
-            }
         } catch (err) {} finally { updateUI(); renderWishlist(); renderMedia(); }
     }
 
@@ -1434,7 +1435,18 @@
 
       if (pieFilter) pieFilter.innerHTML = pOpts;
       if (histFilter) { const oldHVal = histFilter.value; histFilter.innerHTML = hOpts; if (Array.from(histFilter.options).some(o => o.value === oldHVal)) histFilter.value = oldHVal; }
-      if (Array.from(filter.options).some(o => o.value === selectedMonth)) { filter.value = selectedMonth; cardFilter.value = selectedMonth; } else { filter.value = nowStr; cardFilter.value = nowStr; selectedMonth = nowStr; }
+      
+      // AUTO FALLBACK IF CURRENT MONTH HAS NO DATA
+      if (Array.from(filter.options).some(o => o.value === selectedMonth)) { 
+          filter.value = selectedMonth; cardFilter.value = selectedMonth; 
+      } else { 
+          if(transactions.length > 0 && selectedMonth !== 'all') {
+             selectedMonth = 'all';
+             filter.value = 'all'; cardFilter.value = 'all';
+          } else {
+             filter.value = nowStr; cardFilter.value = nowStr; selectedMonth = nowStr; 
+          }
+      }
     }
 
     function exportPDF() {
