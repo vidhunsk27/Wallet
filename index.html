@@ -142,10 +142,19 @@
     .chk-item label { flex-grow: 1; outline: none; min-width: 50px; cursor: text; line-height: 1.5; font-size: 1rem; }
     .chk-item input[type="checkbox"]:checked + label { text-decoration: line-through; color: #6b7280; opacity: 0.5; }
 
-    .wallet-stack { position: relative; height: 400px; display: flex; justify-content: center; align-items: flex-end; margin-bottom: 2rem; user-select: none; }
-    .wallet-card { position: absolute; width: 100%; max-width: 600px; height: 350px; transition: all 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275); cursor: pointer; transform-origin: bottom center; }
-    .wallet-card:hover:not(.active-card) { transform: translateY(-30px) scale(0.96) !important; }
-    
+    /* The new Chart Carousel Styling */
+    .chart-carousel-card {
+        min-width: 90vw;
+        height: 380px;
+        scroll-snap-align: center;
+        flex-shrink: 0;
+        display: flex;
+        flex-direction: column;
+    }
+    @media (min-width: 768px) {
+        .chart-carousel-card { min-width: 45vw; }
+    }
+
     .truncate-strict { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; min-width: 0; }
 
     .preview-card { transition: all 0.2s ease; cursor: pointer; }
@@ -195,7 +204,7 @@
           </div>
       </div>
 
-      <!-- SWIPEABLE HORIZONTAL CARDS LAYOUT -->
+      <!-- SWIPEABLE HORIZONTAL TOP CARDS -->
       <div class="flex overflow-x-auto snap-x snap-mandatory gap-4 md:gap-6 pb-4 hide-scroll relative z-20">
         
         <!-- Liquid Assets Card -->
@@ -326,13 +335,13 @@
         </div>
       </div>
 
-      <!-- WALLET STACK CHARTS SECTION -->
-      <div class="wallet-stack mt-8" id="walletStack">
+      <!-- SWIPEABLE CHARTS CAROUSEL -->
+      <div class="flex overflow-x-auto snap-x snap-mandatory gap-4 md:gap-6 pb-4 hide-scroll relative z-20 mt-8">
           
-          <!-- Card 1: Pie Chart -->
-          <div class="wallet-card glass-panel rounded-3xl p-5 md:p-6 bg-gradient-to-br from-blue-900/40 to-black/80 border border-white/20 active-card" onclick="bringToFront(this)" style="transform: translateY(10px) scale(1.05); z-index: 4;">
+          <!-- Chart 1: Distribution Pie Chart -->
+          <div class="chart-carousel-card glass-panel rounded-3xl p-5 md:p-6 bg-gradient-to-br from-blue-900/40 to-black/80 border border-white/20">
               <div class="flex justify-between items-center mb-4 gap-2">
-                <h3 class="text-xs font-bold text-blue-300 uppercase tracking-widest flex items-center flex-shrink-0">Distribution <span class="info-icon" data-info="Categorical breakdown of your spending. SWIPE CARDS UP OR DOWN to view other analytics.">i</span></h3>
+                <h3 class="text-xs font-bold text-blue-300 uppercase tracking-widest flex items-center flex-shrink-0">Distribution <span class="info-icon" data-info="Categorical breakdown of your spending. SWIPE CARDS to view other analytics.">i</span></h3>
                 <div class="flex items-center gap-2 min-w-0">
                     <div class="relative min-w-0">
                         <select id="pieChartMonthFilter" onchange="updatePieChart(this.value)" class="bg-black/50 text-[10px] font-bold text-white uppercase rounded-xl px-2 py-1 pr-6 border border-white/10 outline-none hover:border-blue-500/50 cursor-pointer w-[110px] truncate-strict appearance-none">
@@ -341,10 +350,10 @@
                         </select>
                         <i data-lucide="chevron-down" class="absolute right-1.5 top-1/2 transform -translate-y-1/2 w-3 h-3 text-white pointer-events-none"></i>
                     </div>
-                    <button onclick="openChartModal('walletChart', 'Expense Analytics'); event.stopPropagation();" class="text-gray-400 hover:text-white transition-colors bg-white/10 hover:bg-white/20 p-1.5 rounded-lg border border-white/10 flex-shrink-0"><i data-lucide="maximize-2" class="w-4 h-4"></i></button>
+                    <button onclick="openChartModal('walletChart', 'Expense Analytics');" class="text-gray-400 hover:text-white transition-colors bg-white/10 hover:bg-white/20 p-1.5 rounded-lg border border-white/10 flex-shrink-0"><i data-lucide="maximize-2" class="w-4 h-4"></i></button>
                 </div>
               </div>
-              <div class="flex flex-row items-center justify-between gap-4 h-[250px] w-full">
+              <div class="flex flex-row items-center justify-between gap-4 h-full w-full overflow-hidden">
                   <div class="w-1/2 h-full relative flex items-center justify-center">
                       <canvas id="walletChart"></canvas>
                       <div class="absolute inset-0 flex flex-col items-center justify-center pointer-events-none">
@@ -356,20 +365,20 @@
               </div>
           </div>
 
-          <!-- Card 2: C.A.S.P.E.R. AI Insights -->
-          <div class="wallet-card glass-panel rounded-3xl p-5 md:p-6 bg-gradient-to-br from-purple-900/40 to-black/80 border border-white/20" onclick="bringToFront(this)" style="transform: translateY(0px) scale(1); z-index: 3;">
+          <!-- Chart 2: C.A.S.P.E.R. Engine -->
+          <div class="chart-carousel-card glass-panel rounded-3xl p-5 md:p-6 bg-gradient-to-br from-purple-900/40 to-black/80 border border-white/20">
               <div class="flex justify-between items-center mb-4 gap-2">
-                <h3 class="text-xs font-bold text-purple-300 uppercase tracking-widest flex items-center flex-shrink-0">C.A.S.P.E.R. Engine <span class="info-icon" data-info="Calculated Asset Security and Personal Expense Recorder. Your personal AI engine.">i</span></h3>
+                <h3 class="text-xs font-bold text-purple-300 uppercase tracking-widest flex items-center flex-shrink-0">C.A.S.P.E.R. Engine <span class="info-icon" data-info="Calculated Asset Security and Personal Expense Recorder. Hit 'Analyze' for a budget summary, or 'Forecast' for predictive month-over-month trajectory analysis.">i</span></h3>
                 <div class="flex items-center gap-2 min-w-0">
-                    <button onclick="getCASPERInsights(); event.stopPropagation();" id="aiButton" class="bg-blue-600/30 text-blue-300 hover:bg-blue-600 hover:text-white px-3 py-1.5 rounded-xl text-[10px] font-bold transition-all border border-blue-500/50 flex items-center shadow-md whitespace-nowrap">
+                    <button onclick="getCASPERInsights();" id="aiButton" class="bg-blue-600/30 text-blue-300 hover:bg-blue-600 hover:text-white px-3 py-1.5 rounded-xl text-[10px] font-bold transition-all border border-blue-500/50 flex items-center shadow-md whitespace-nowrap">
                       <i data-lucide="sparkles" class="w-3 h-3 mr-1"></i> Analyze
                     </button>
-                    <button onclick="getCASPERForecast(); event.stopPropagation();" id="aiForecastBtn" class="bg-purple-600/30 text-purple-300 hover:bg-purple-600 hover:text-white px-3 py-1.5 rounded-xl text-[10px] font-bold transition-all border border-purple-500/50 flex items-center shadow-md whitespace-nowrap">
+                    <button onclick="getCASPERForecast();" id="aiForecastBtn" class="bg-purple-600/30 text-purple-300 hover:bg-purple-600 hover:text-white px-3 py-1.5 rounded-xl text-[10px] font-bold transition-all border border-purple-500/50 flex items-center shadow-md whitespace-nowrap">
                       <i data-lucide="brain-circuit" class="w-3 h-3 mr-1"></i> Forecast
                     </button>
                 </div>
               </div>
-              <div id="aiTerminal" class="w-full h-[240px] overflow-y-auto p-4 bg-black/60 border border-purple-500/40 rounded-xl text-xs md:text-sm text-gray-200 shadow-inner tracking-tight leading-relaxed">
+              <div id="aiTerminal" class="w-full h-full overflow-y-auto p-4 bg-black/60 border border-purple-500/40 rounded-xl text-xs md:text-sm text-gray-200 shadow-inner tracking-tight leading-relaxed">
                   <div class="flex flex-col items-center justify-center h-full opacity-50">
                       <i data-lucide="cpu" class="w-12 h-12 mb-3 text-purple-400"></i>
                       <p class="text-center font-bold tracking-widest uppercase text-[10px]">C.A.S.P.E.R. Core Standby.<br>Initialize Analysis or Forecast.</p>
@@ -377,40 +386,50 @@
               </div>
           </div>
 
-          <!-- Card 3: Spending Radar -->
-          <div class="wallet-card glass-panel rounded-3xl p-5 md:p-6 bg-gradient-to-br from-emerald-900/30 to-black/80 border border-white/20" onclick="bringToFront(this)" style="transform: translateY(-10px) scale(0.95); z-index: 2;">
+          <!-- Chart 3: Spending Radar -->
+          <div class="chart-carousel-card glass-panel rounded-3xl p-5 md:p-6 bg-gradient-to-br from-emerald-900/30 to-black/80 border border-white/20">
               <div class="flex justify-between items-center mb-4">
                   <h3 class="text-xs font-bold text-emerald-300 uppercase tracking-widest flex items-center">Spending Radar <span class="info-icon" data-info="A multidimensional view comparing your top 5 spending categories.">i</span></h3>
                   <div class="flex gap-2">
-                      <button onclick="openChartModal('radarChart', 'Spending Radar Map'); event.stopPropagation();" class="text-gray-400 hover:text-white transition-colors bg-white/10 hover:bg-white/20 p-1.5 rounded-lg border border-white/10"><i data-lucide="maximize-2" class="w-4 h-4"></i></button>
+                      <button onclick="openChartModal('radarChart', 'Spending Radar Map');" class="text-gray-400 hover:text-white transition-colors bg-white/10 hover:bg-white/20 p-1.5 rounded-lg border border-white/10"><i data-lucide="maximize-2" class="w-4 h-4"></i></button>
                   </div>
               </div>
-              <div class="h-[250px] relative flex justify-center w-full"><canvas id="radarChart"></canvas></div>
+              <div class="h-full relative flex justify-center w-full"><canvas id="radarChart"></canvas></div>
           </div>
           
-          <!-- Card 4: Net Worth & Cashflow -->
-          <div class="wallet-card glass-panel rounded-3xl p-5 md:p-6 bg-gradient-to-br from-rose-900/30 to-black/80 border border-white/20" onclick="bringToFront(this)" style="transform: translateY(-20px) scale(0.9); z-index: 1;">
+          <!-- Chart 4: Net Worth -->
+          <div class="chart-carousel-card glass-panel rounded-3xl p-5 md:p-6 bg-gradient-to-br from-rose-900/30 to-black/80 border border-white/20">
               <div class="flex justify-between items-center mb-4">
                   <h3 class="text-xs font-bold text-rose-300 uppercase tracking-widest flex items-center">Cumulative Net Worth <span class="info-icon" data-info="Cumulative track of your total retained wealth over time (All-Time Income minus All-Time Expenses).">i</span></h3>
-                  <button onclick="openChartModal('trendChart', 'Cumulative Net Worth Over Time'); event.stopPropagation();" class="text-gray-400 hover:text-white transition-colors bg-white/10 hover:bg-white/20 p-1.5 rounded-lg border border-white/10"><i data-lucide="maximize-2" class="w-4 h-4"></i></button>
+                  <button onclick="openChartModal('trendChart', 'Cumulative Net Worth Over Time');" class="text-gray-400 hover:text-white transition-colors bg-white/10 hover:bg-white/20 p-1.5 rounded-lg border border-white/10"><i data-lucide="maximize-2" class="w-4 h-4"></i></button>
               </div>
-              <div class="h-[250px] relative flex justify-center w-full"><canvas id="trendChart"></canvas></div>
+              <div class="h-full relative flex justify-center w-full"><canvas id="trendChart"></canvas></div>
           </div>
-      </div>
 
-      <!-- Remaining Lower Charts Grid -->
-      <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 md:gap-6 mt-6">
-          <div class="glass-panel rounded-3xl p-5 md:p-6 bg-gradient-to-b from-transparent to-white/5">
+          <!-- Chart 5: Month Over Month -->
+          <div class="chart-carousel-card glass-panel rounded-3xl p-5 md:p-6 bg-gradient-to-b from-transparent to-white/5 border border-white/10">
               <div class="flex justify-between items-center mb-4">
                   <h3 class="text-xs font-bold text-gray-400 uppercase tracking-widest flex items-center">Month Over Month <span class="info-icon" data-info="Bar chart comparing your total aggregate expenses across different calendar months.">i</span></h3>
                   <div class="flex gap-2">
                       <button onclick="openChartModal('monthlyTrendChart', 'Monthly Spend Comparison')" class="text-gray-500 hover:text-white transition-colors bg-white/10 hover:bg-white/20 p-1.5 rounded-lg border border-white/10"><i data-lucide="maximize-2" class="w-4 h-4"></i></button>
                   </div>
               </div>
-              <div class="h-52 relative flex justify-center"><canvas id="monthlyTrendChart"></canvas></div>
+              <div class="h-full relative flex justify-center w-full"><canvas id="monthlyTrendChart"></canvas></div>
+          </div>
+
+          <!-- Chart 6: Weekly Rhythm -->
+          <div class="chart-carousel-card glass-panel rounded-3xl p-5 md:p-6 bg-gradient-to-b from-transparent to-white/5 border border-white/10">
+              <div class="flex justify-between items-center mb-4">
+                  <h3 class="text-xs font-bold text-gray-400 uppercase tracking-widest flex items-center">Weekly Rhythm <span class="info-icon" data-info="Visualizes what days of the week you spend the most money historically.">i</span></h3>
+                  <div class="flex gap-2">
+                      <button onclick="openChartModal('weeklyRhythmChart', 'Weekly Rhythm')" class="text-gray-500 hover:text-white transition-colors bg-white/10 hover:bg-white/20 p-1.5 rounded-lg border border-white/10"><i data-lucide="maximize-2" class="w-4 h-4"></i></button>
+                  </div>
+              </div>
+              <div class="h-full relative flex justify-center w-full"><canvas id="weeklyRhythmChart"></canvas></div>
           </div>
           
-          <div class="glass-panel rounded-3xl p-5 md:p-6 bg-gradient-to-b from-transparent to-white/5">
+          <!-- Chart 7: 7-Day Cashflow -->
+          <div class="chart-carousel-card glass-panel rounded-3xl p-5 md:p-6 bg-gradient-to-b from-transparent to-white/5 border border-white/10">
               <div class="flex justify-between items-center mb-4">
                   <h3 class="text-xs font-bold text-gray-400 uppercase tracking-widest flex items-center">7-Day Cashflow <span class="info-icon" data-info="Daily split of income vs. expenses for the most recent 7 days of activity in the selected period.">i</span></h3>
                   <div class="flex items-center gap-2 flex-shrink-0">
@@ -418,10 +437,11 @@
                       <button onclick="openChartModal('cashflowChart', 'Recent 7-Day Cashflow')" class="text-gray-500 hover:text-white transition-colors bg-white/10 hover:bg-white/20 p-1.5 rounded-lg border border-white/10"><i data-lucide="maximize-2" class="w-4 h-4"></i></button>
                   </div>
               </div>
-              <div class="h-52 relative flex justify-center"><canvas id="cashflowChart"></canvas></div>
+              <div class="h-full relative flex justify-center w-full"><canvas id="cashflowChart"></canvas></div>
           </div>
 
-          <div class="glass-panel rounded-3xl p-5 md:p-6 bg-gradient-to-b from-transparent to-white/5">
+          <!-- Chart 8: Historical Flow -->
+          <div class="chart-carousel-card glass-panel rounded-3xl p-5 md:p-6 bg-gradient-to-b from-transparent to-white/5 border border-white/10">
               <div class="flex justify-between items-center mb-4">
                   <h3 class="text-xs font-bold text-gray-400 uppercase tracking-widest flex items-center">Historical Flow <span class="info-icon" data-info="Long-term view comparing inbound and outbound cashflow across all historical data points.">i</span></h3>
                   <div class="flex items-center gap-2 min-w-0">
@@ -432,7 +452,7 @@
                       <button onclick="openChartModal('allMonthsChart', 'Historical Monthly Flow')" class="text-gray-500 hover:text-white transition-colors bg-white/10 hover:bg-white/20 p-1.5 rounded-lg border border-white/10 flex-shrink-0"><i data-lucide="maximize-2" class="w-4 h-4"></i></button>
                   </div>
               </div>
-              <div class="h-52 relative flex justify-center"><canvas id="allMonthsChart"></canvas></div>
+              <div class="h-full relative flex justify-center w-full"><canvas id="allMonthsChart"></canvas></div>
           </div>
       </div>
 
@@ -986,11 +1006,13 @@
     let currentType = 'expense'; 
     let monthlyBudgets = JSON.parse(localStorage.getItem('walletBudgets')) || { 'default': 25000 }; 
     let ccLimit = parseFloat(localStorage.getItem('walletCCLimit')) || 50000;
-    let selectedMonth = `${new Date().getFullYear()}-${String(new Date().getMonth() + 1).padStart(2, '0')}`; 
+    
+    // Setting default month to match provided data context (August 2026)
+    let selectedMonth = '2026-08'; 
+    
     let searchQuery = '';
     let currentFilter = 'all';
     
-    // HARDCODED LEDGER DATA INJECTION 
     let transactions = [{"id": "1786233600000", "type": "expense", "amount": 460.0, "account": "UPI", "category": "Food & Dining", "note": "", "timestamp": 1786233600000, "isRecurring": false}, {"id": "1786147200001", "type": "expense", "amount": 418.75, "account": "UPI", "category": "Groceries", "note": "", "timestamp": 1786147200000, "isRecurring": false}, {"id": "1786147200002", "type": "expense", "amount": 95.0, "account": "UPI", "category": "Food & Dining", "note": "", "timestamp": 1786147200000, "isRecurring": false}, {"id": "1786147200003", "type": "expense", "amount": 719.0, "account": "UPI", "category": "Subscriptions", "note": "", "timestamp": 1786147200000, "isRecurring": false}, {"id": "1786147200004", "type": "expense", "amount": 55.0, "account": "UPI", "category": "Groceries", "note": "", "timestamp": 1786147200000, "isRecurring": false}, {"id": "1786147200005", "type": "expense", "amount": 65.0, "account": "UPI", "category": "Transport", "note": "", "timestamp": 1786147200000, "isRecurring": false}, {"id": "1786060800006", "type": "expense", "amount": 163.0, "account": "UPI", "category": "Groceries", "note": "", "timestamp": 1786060800000, "isRecurring": false}, {"id": "1785974400007", "type": "expense", "amount": 130.0, "account": "UPI", "category": "Food & Dining", "note": "", "timestamp": 1785974400000, "isRecurring": false}, {"id": "1785801600008", "type": "expense", "amount": 240.0, "account": "UPI", "category": "Food & Dining", "note": "", "timestamp": 1785801600000, "isRecurring": false}, {"id": "1785715200009", "type": "income", "amount": 39.84, "account": "UPI", "category": "Other", "note": "", "timestamp": 1785715200000, "isRecurring": false}, {"id": "1785715200010", "type": "expense", "amount": 115.0, "account": "UPI", "category": "Groceries", "note": "", "timestamp": 1785715200000, "isRecurring": false}, {"id": "1785715200011", "type": "expense", "amount": 161.72, "account": "UPI", "category": "Food & Dining", "note": "", "timestamp": 1785715200000, "isRecurring": false}, {"id": "1785628800012", "type": "expense", "amount": 64.0, "account": "UPI", "category": "Transport", "note": "", "timestamp": 1785628800000, "isRecurring": false}, {"id": "1785628800013", "type": "expense", "amount": 32.0, "account": "UPI", "category": "Transport", "note": "", "timestamp": 1785628800000, "isRecurring": false}, {"id": "1785628800014", "type": "expense", "amount": 16.0, "account": "UPI", "category": "Transport", "note": "", "timestamp": 1785628800000, "isRecurring": false}, {"id": "1785628800015", "type": "income", "amount": 35.0, "account": "UPI", "category": "Other", "note": "", "timestamp": 1785628800000, "isRecurring": false}, {"id": "1785628800016", "type": "expense", "amount": 125.0, "account": "UPI", "category": "Groceries", "note": "", "timestamp": 1785628800000, "isRecurring": false}, {"id": "1785628800017", "type": "expense", "amount": 13.0, "account": "UPI", "category": "Transport", "note": "", "timestamp": 1785628800000, "isRecurring": false}, {"id": "1785628800018", "type": "expense", "amount": 35.0, "account": "UPI", "category": "Transport", "note": "", "timestamp": 1785628800000, "isRecurring": false}, {"id": "1785628800019", "type": "expense", "amount": 23.0, "account": "UPI", "category": "Transport", "note": "", "timestamp": 1785628800000, "isRecurring": false}, {"id": "1785628800020", "type": "expense", "amount": 27.0, "account": "UPI", "category": "Transport", "note": "", "timestamp": 1785628800000, "isRecurring": false}, {"id": "1785542400021", "type": "expense", "amount": 9750.0, "account": "UPI", "category": "Rent", "note": "", "timestamp": 1785542400000, "isRecurring": false}, {"id": "1785542400022", "type": "expense", "amount": 131.0, "account": "UPI", "category": "Food & Dining", "note": "", "timestamp": 1785542400000, "isRecurring": false}, {"id": "1785542400023", "type": "expense", "amount": 20000.0, "account": "UPI", "category": "Other", "note": "", "timestamp": 1785542400000, "isRecurring": false}, {"id": "1785542400024", "type": "income", "amount": 50080.0, "account": "UPI", "category": "Salary", "note": "", "timestamp": 1785542400000, "isRecurring": false}, {"id": "1785369600025", "type": "expense", "amount": 165.0, "account": "UPI", "category": "Food & Dining", "note": "", "timestamp": 1785369600000, "isRecurring": false}, {"id": "1785369600026", "type": "expense", "amount": 167.72, "account": "UPI", "category": "Food & Dining", "note": "", "timestamp": 1785369600000, "isRecurring": false}, {"id": "1785283200027", "type": "expense", "amount": 198.0, "account": "UPI", "category": "Food & Dining", "note": "", "timestamp": 1785283200000, "isRecurring": false}, {"id": "1785283200028", "type": "expense", "amount": 153.0, "account": "UPI", "category": "Shopping", "note": "Amazon India (SMS)", "timestamp": 1785283200000, "isRecurring": false}, {"id": "1785196800029", "type": "expense", "amount": 50.0, "account": "UPI", "category": "Groceries", "note": "", "timestamp": 1785196800000, "isRecurring": false}, {"id": "1785110400030", "type": "expense", "amount": 120.0, "account": "UPI", "category": "Groceries", "note": "", "timestamp": 1785110400000, "isRecurring": false}, {"id": "1785110400031", "type": "expense", "amount": 511.97, "account": "UPI", "category": "Entertainment", "note": "", "timestamp": 1785110400000, "isRecurring": false}, {"id": "1785024000032", "type": "expense", "amount": 421.0, "account": "UPI", "category": "Food & Dining", "note": "", "timestamp": 1785024000000, "isRecurring": false}, {"id": "1785024000033", "type": "expense", "amount": 35.0, "account": "UPI", "category": "Groceries", "note": "", "timestamp": 1785024000000, "isRecurring": false}, {"id": "1785024000034", "type": "expense", "amount": 164.0, "account": "UPI", "category": "Food & Dining", "note": "", "timestamp": 1785024000000, "isRecurring": false}, {"id": "1784937600035", "type": "expense", "amount": 60.0, "account": "UPI", "category": "Groceries", "note": "", "timestamp": 1784937600000, "isRecurring": false}, {"id": "1784937600036", "type": "expense", "amount": 127.0, "account": "UPI", "category": "Food & Dining", "note": "", "timestamp": 1784937600000, "isRecurring": false}, {"id": "1784764800037", "type": "expense", "amount": 80.0, "account": "UPI", "category": "Groceries", "note": "", "timestamp": 1784764800000, "isRecurring": false}, {"id": "1784678400038", "type": "expense", "amount": 120.0, "account": "UPI", "category": "Food & Dining", "note": "", "timestamp": 1784678400000, "isRecurring": false}, {"id": "1784678400039", "type": "expense", "amount": 60.0, "account": "UPI", "category": "Food & Dining", "note": "", "timestamp": 1784678400000, "isRecurring": false}, {"id": "1784592000040", "type": "expense", "amount": 144.0, "account": "UPI", "category": "Food & Dining", "note": "", "timestamp": 1784592000000, "isRecurring": false}, {"id": "1784592000041", "type": "income", "amount": 2800.0, "account": "UPI", "category": "Refund", "note": "", "timestamp": 1784592000000, "isRecurring": false}, {"id": "1784592000042", "type": "expense", "amount": 30.0, "account": "UPI", "category": "Food & Dining", "note": "", "timestamp": 1784592000000, "isRecurring": false}, {"id": "1784505600043", "type": "expense", "amount": 15.0, "account": "UPI", "category": "Groceries", "note": "", "timestamp": 1784505600000, "isRecurring": false}, {"id": "1784505600044", "type": "expense", "amount": 45.0, "account": "UPI", "category": "Food & Dining", "note": "", "timestamp": 1784505600000, "isRecurring": false}, {"id": "1784419200045", "type": "expense", "amount": 289.0, "account": "UPI", "category": "Groceries", "note": "", "timestamp": 1784419200000, "isRecurring": false}, {"id": "1784419200046", "type": "expense", "amount": 167.0, "account": "UPI", "category": "Food & Dining", "note": "", "timestamp": 1784419200000, "isRecurring": false}, {"id": "1784419200047", "type": "expense", "amount": 60.0, "account": "UPI", "category": "Food & Dining", "note": "", "timestamp": 1784419200000, "isRecurring": false}, {"id": "1784332800048", "type": "expense", "amount": 665.0, "account": "UPI", "category": "Electricity charges", "note": "", "timestamp": 1784332800000, "isRecurring": false}, {"id": "1784332800049", "type": "expense", "amount": 60.0, "account": "UPI", "category": "Food & Dining", "note": "", "timestamp": 1784332800000, "isRecurring": false}, {"id": "1784332800050", "type": "expense", "amount": 35.0, "account": "UPI", "category": "Groceries", "note": "THANGAM FRUITS AND VEGETABLES (SMS)", "timestamp": 1784332800000, "isRecurring": false}, {"id": "1784332800051", "type": "expense", "amount": 40.0, "account": "UPI", "category": "Transport", "note": "METROPOLITAN TRANSPORT (SMS)", "timestamp": 1784332800000, "isRecurring": false}, {"id": "1784332800052", "type": "expense", "amount": 23.0, "account": "UPI", "category": "Other", "note": "Cumta info (SMS)", "timestamp": 1784332800000, "isRecurring": false}, {"id": "1784332800053", "type": "income", "amount": 62.0, "account": "UPI", "category": "Other", "note": "SHIVAYOGESHJ (SMS)", "timestamp": 1784332800000, "isRecurring": false}, {"id": "1784332800054", "type": "expense", "amount": 32.0, "account": "UPI", "category": "Transport", "note": "Rapido (SMS)", "timestamp": 1784332800000, "isRecurring": false}, {"id": "1784332800055", "type": "expense", "amount": 32.0, "account": "UPI", "category": "Transport", "note": "Rapido (SMS)", "timestamp": 1784332800000, "isRecurring": false}, {"id": "1784332800056", "type": "expense", "amount": 206.0, "account": "UPI", "category": "Entertainment", "note": "MOHAMED IMRAN FAREET (SMS)", "timestamp": 1784332800000, "isRecurring": false}, {"id": "1784332800057", "type": "expense", "amount": 681.17, "account": "UPI", "category": "Food & Dining", "note": "Dominos Pizza (SMS)", "timestamp": 1784332800000, "isRecurring": false}, {"id": "1784332800058", "type": "expense", "amount": 10.0, "account": "UPI", "category": "Transport", "note": "Indian Railway (SMS)", "timestamp": 1784332800000, "isRecurring": false}, {"id": "1784332800059", "type": "expense", "amount": 20.0, "account": "UPI", "category": "Other", "note": "SHIVAYOGESH J (SMS)", "timestamp": 1784332800000, "isRecurring": false}, {"id": "1784332800060", "type": "expense", "amount": 13.0, "account": "UPI", "category": "Transport", "note": "", "timestamp": 1784332800000, "isRecurring": false}, {"id": "1784332800061", "type": "expense", "amount": 33.0, "account": "UPI", "category": "Transport", "note": "", "timestamp": 1784332800000, "isRecurring": false}, {"id": "1784332800062", "type": "expense", "amount": 5.0, "account": "UPI", "category": "Transport", "note": "", "timestamp": 1784332800000, "isRecurring": false}, {"id": "1784246400063", "type": "expense", "amount": 1654.0, "account": "UPI", "category": "Shopping", "note": "Amazon India (SMS)", "timestamp": 1784246400000, "isRecurring": false}, {"id": "1784246400064", "type": "expense", "amount": 60.0, "account": "UPI", "category": "Groceries", "note": "", "timestamp": 1784246400000, "isRecurring": false}, {"id": "1783987200065", "type": "expense", "amount": 105.0, "account": "UPI", "category": "Food & Dining", "note": "SWIGGY (SMS)", "timestamp": 1783987200000, "isRecurring": false}, {"id": "1783900800066", "type": "expense", "amount": 60.0, "account": "UPI", "category": "Groceries", "note": "", "timestamp": 1783900800000, "isRecurring": false}, {"id": "1783814400067", "type": "expense", "amount": 150.0, "account": "UPI", "category": "Other", "note": "Haircut", "timestamp": 1783814400000, "isRecurring": false}, {"id": "1783728000068", "type": "expense", "amount": 20000.0, "account": "UPI", "category": "Other", "note": "", "timestamp": 1783728000000, "isRecurring": false}, {"id": "1783555200069", "type": "expense", "amount": 211.0, "account": "UPI", "category": "Food & Dining", "note": "Swiggy Ltd (SMS)", "timestamp": 1783555200000, "isRecurring": false}, {"id": "1783468800070", "type": "expense", "amount": 992.25, "account": "UPI", "category": "Transport", "note": "AbhiBus (SMS)", "timestamp": 1783468800000, "isRecurring": false}, {"id": "1783468800071", "type": "expense", "amount": 894.0, "account": "UPI", "category": "Transport", "note": "ABHIBUS COM (SMS)", "timestamp": 1783468800000, "isRecurring": false}, {"id": "1783382400072", "type": "expense", "amount": 30.0, "account": "UPI", "category": "Food & Dining", "note": "THANGAM FRUITS AND VEGETABLES (SMS)", "timestamp": 1783382400000, "isRecurring": false}, {"id": "1783382400073", "type": "expense", "amount": 115.0, "account": "UPI", "category": "Food & Dining", "note": "Swiggy Ltd (SMS)", "timestamp": 1783382400000, "isRecurring": false}, {"id": "1783382400074", "type": "expense", "amount": 11.0, "account": "UPI", "category": "Other", "note": "", "timestamp": 1783382400000, "isRecurring": false}, {"id": "1783382400075", "type": "expense", "amount": 10.0, "account": "UPI", "category": "Other", "note": "", "timestamp": 1783382400000, "isRecurring": false}, {"id": "1783382400076", "type": "expense", "amount": 35.0, "account": "UPI", "category": "Groceries", "note": "THANGAM FRUITS AND VEGETABLES (SMS)", "timestamp": 1783382400000, "isRecurring": false}, {"id": "1783209600077", "type": "expense", "amount": 128.0, "account": "UPI", "category": "Food & Dining", "note": "SWIGGY", "timestamp": 1783209600000, "isRecurring": false}, {"id": "1783209600078", "type": "expense", "amount": 595.0, "account": "UPI", "category": "Food & Dining", "note": "SWIGGY", "timestamp": 1783209600000, "isRecurring": false}, {"id": "1783209600079", "type": "expense", "amount": 147.0, "account": "UPI", "category": "Groceries", "note": "", "timestamp": 1783209600000, "isRecurring": false}, {"id": "1783123200080", "type": "expense", "amount": 3250.0, "account": "UPI", "category": "Rent", "note": "", "timestamp": 1783123200000, "isRecurring": false}, {"id": "1783123200081", "type": "expense", "amount": 110.0, "account": "UPI", "category": "Groceries", "note": "", "timestamp": 1783123200000, "isRecurring": false}, {"id": "1783036800082", "type": "expense", "amount": 255.0, "account": "UPI", "category": "Food & Dining", "note": "", "timestamp": 1783036800000, "isRecurring": false}, {"id": "1782950400083", "type": "expense", "amount": 134.0, "account": "UPI", "category": "Other", "note": "", "timestamp": 1782950400000, "isRecurring": false}, {"id": "1782950400084", "type": "expense", "amount": 20.0, "account": "UPI", "category": "Groceries", "note": "", "timestamp": 1782950400000, "isRecurring": false}, {"id": "1782864000085", "type": "income", "amount": 51091.0, "account": "UPI", "category": "Salary", "note": "", "timestamp": 1782864000000, "isRecurring": false}, {"id": "1782864000086", "type": "expense", "amount": 40.0, "account": "UPI", "category": "Groceries", "note": "", "timestamp": 1782864000000, "isRecurring": false}, {"id": "1782864000087", "type": "expense", "amount": 122.0, "account": "UPI", "category": "Food & Dining", "note": "SWIGGY", "timestamp": 1782864000000, "isRecurring": false}];
     
     let wishlistItems = []; 
@@ -1336,23 +1358,31 @@
 
     async function syncDataFromServer() {
         try {
-            const localTx = localStorage.getItem('walletTx'); const localWish = localStorage.getItem('walletWish');
-            if (localTx && localTx !== "undefined") { 
-                const parsedTx = JSON.parse(localTx); 
-                if (parsedTx.length > 0) { await fetch(`${API_BASE}/sync-transactions`, { method: 'POST', headers: apiHeaders, body: localTx }); localStorage.removeItem('walletTx'); } 
-            }
-            if (localWish && localWish !== "undefined") { 
-                const parsedWish = JSON.parse(localWish); 
-                if (parsedWish.length > 0) { await fetch(`${API_BASE}/sync-wishlist`, { method: 'POST', headers: apiHeaders, body: localWish }); localStorage.removeItem('walletWish'); } 
-            }
+            // First pass, use local data to ensure instant render
+            updateUI(); 
+            renderWishlist(); 
+            renderMedia();
+
+            // Fetch from Cloud DB to overwrite local if new data exists
             const [txRes, wRes] = await Promise.all([ fetch(`${API_BASE}/get-transactions`), fetch(`${API_BASE}/get-wishlist`) ]);
+            
             if (txRes.ok) {
                 const dbTx = await txRes.json();
                 if(dbTx.length > 0) transactions = dbTx;
             }
-            if (wRes.ok) { const allWish = await wRes.json(); wishlistItems = allWish.filter(w => !w.isMedia); mediaItems = allWish.filter(w => w.isMedia); }
             
-        } catch (err) {} finally { updateUI(); renderWishlist(); renderMedia(); }
+            if (wRes.ok) { 
+                const allWish = await wRes.json(); 
+                if(allWish.length > 0) {
+                    wishlistItems = allWish.filter(w => !w.isMedia); 
+                    mediaItems = allWish.filter(w => w.isMedia); 
+                }
+            }
+        } catch (err) {
+            console.error("Sync Error", err);
+        } finally { 
+            updateUI(); renderWishlist(); renderMedia(); 
+        }
     }
 
     const views = ['dashboard', 'wishlist', 'media', 'workspace'];
@@ -1436,13 +1466,12 @@
       if (pieFilter) pieFilter.innerHTML = pOpts;
       if (histFilter) { const oldHVal = histFilter.value; histFilter.innerHTML = hOpts; if (Array.from(histFilter.options).some(o => o.value === oldHVal)) histFilter.value = oldHVal; }
       
-      // AUTO FALLBACK IF CURRENT MONTH HAS NO DATA
+      // AUTO FALLBACK: If current selected month has no data, default to ALL
       if (Array.from(filter.options).some(o => o.value === selectedMonth)) { 
           filter.value = selectedMonth; cardFilter.value = selectedMonth; 
       } else { 
           if(transactions.length > 0 && selectedMonth !== 'all') {
-             selectedMonth = 'all';
-             filter.value = 'all'; cardFilter.value = 'all';
+             selectedMonth = 'all'; filter.value = 'all'; cardFilter.value = 'all';
           } else {
              filter.value = nowStr; cardFilter.value = nowStr; selectedMonth = nowStr; 
           }
@@ -1799,7 +1828,7 @@
       updateHistoryChart(document.getElementById('historyChartFilter')?.value || 'all');
 
       const lst = document.getElementById('ledgerList');
-      lst.innerHTML = ft.length ? sf.reverse().map(t => `<div class="ledger-item flex items-center justify-between p-4 rounded-2xl mb-2.5 relative overflow-hidden"><div class="absolute inset-0 bg-gradient-to-r from-transparent via-white/[0.03] to-transparent opacity-0 hover:opacity-100 transition-opacity pointer-events-none"></div><div class="flex items-center space-x-3 md:space-x-4 relative z-10 min-w-0"><div class="w-12 h-12 rounded-xl flex items-center justify-center shadow-inner border border-white/10 flex-shrink-0 ${t.type==='income'?'bg-emerald-500/20 text-emerald-400':'bg-rose-500/20 text-rose-400'}"><i data-lucide="${t.type==='income'?'arrow-down-left':'credit-card'}" class="w-6 h-6"></i></div><div class="min-w-0 flex-1"><p class="font-bold text-gray-200 text-sm flex items-center truncate">${t.category} ${t.isRecurring ? '<span class="bg-blue-600/30 text-blue-300 text-[8px] px-1.5 ml-2 rounded border border-blue-500/30 shadow-sm flex-shrink-0">AUTO</span>' : ''} ${t.amount>10000&&t.type!=='income'?'<span class="bg-rose-500/20 text-rose-300 border border-rose-500/30 text-[8px] px-1.5 ml-2 rounded shadow-sm flex-shrink-0">HIGH</span>':''}</p><p class="text-[10px] text-gray-500 uppercase mt-1 tracking-wider font-bold truncate">Acct: <span class="text-gray-300">${t.account}</span> • Date: <span class="text-gray-300">${new Date(t.timestamp).toLocaleDateString('en-GB',{day:'numeric',month:'short', year:'numeric'})}</span></p></div></div><div class="flex flex-col items-end space-y-1 relative z-10 flex-shrink-0 pl-2"><div class="flex items-center space-x-2"><p class="font-black text-base md:text-lg ${t.type==='income'?'text-emerald-400':'text-rose-400'}">${t.type==='income'?'+':'-'}₹${t.amount.toLocaleString()}</p><button onclick="openEditModal('${t.id}')" class="action-btn text-gray-500 hover:text-blue-400 p-2"><i data-lucide="edit-2" class="w-4 h-4"></i></button><button onclick="deleteTx('${t.id}')" class="action-btn text-gray-500 hover:text-rose-500 p-2 pl-0"><i data-lucide="trash-2" class="w-4 h-4"></i></button></div>${t.note ? `<p class="text-[10px] text-gray-400 text-right mt-1 font-medium tracking-wide truncate max-w-[150px]">Desc: "${t.note}"</p>`:''}</div></div>`).join('') : `<p class="text-gray-500 text-sm py-8 text-center font-black uppercase tracking-widest">No Database Entries Found.</p>`;
+      lst.innerHTML = ft.length ? sf.reverse().map(t => `<div class="ledger-item flex items-center justify-between p-4 rounded-2xl mb-2.5 relative overflow-hidden"><div class="absolute inset-0 bg-gradient-to-r from-transparent via-white/[0.03] to-transparent opacity-0 hover:opacity-100 transition-opacity pointer-events-none"></div><div class="flex items-center space-x-3 md:space-x-4 relative z-10 min-w-0"><div class="w-12 h-12 rounded-xl flex items-center justify-center shadow-inner border border-white/10 flex-shrink-0 ${t.type==='income'?'bg-emerald-500/20 text-emerald-400':'bg-rose-500/20 text-rose-400'}"><i data-lucide="${t.type==='income'?'arrow-down-left':'credit-card'}" class="w-6 h-6"></i></div><div class="min-w-0 flex-1"><p class="font-bold text-gray-200 text-sm flex items-center truncate">${t.category} ${t.isRecurring ? '<span class="bg-blue-600/30 text-blue-300 text-[8px] px-1.5 ml-2 rounded border border-blue-500/30 shadow-sm flex-shrink-0">AUTO</span>' : ''} ${t.amount>10000&&t.type!=='income'?'<span class="bg-rose-500/20 text-rose-300 border border-rose-500/30 text-[8px] px-1.5 ml-2 rounded shadow-sm flex-shrink-0">HIGH</span>':''}</p><p class="text-[10px] text-gray-500 uppercase mt-1 tracking-wider font-bold truncate">Acct: <span class="text-gray-300">${t.account}</span> • Date: <span class="text-gray-300">${new Date(t.timestamp).toLocaleDateString('en-GB',{day:'numeric',month:'short', year:'numeric'})}</span></p></div></div><div class="flex flex-col items-end space-y-1 relative z-10 flex-shrink-0 pl-2"><div class="flex items-center space-x-2"><p class="font-black text-base md:text-lg ${t.type==='income'?'text-emerald-400':'text-rose-400'}">${t.type==='income'?'+':'-'}₹${t.amount.toLocaleString()}</p><button onclick="openEditModal('${t.id}')" class="action-btn text-gray-500 hover:text-blue-400 p-2"><i data-lucide="edit-2" class="w-4 h-4"></i></button><button onclick="deleteTx('${t.id}')" class="action-action text-gray-500 hover:text-rose-500 p-2 pl-0"><i data-lucide="trash-2" class="w-4 h-4"></i></button></div>${t.note ? `<p class="text-[10px] text-gray-400 text-right mt-1 font-medium tracking-wide truncate max-w-[150px]">Desc: "${t.note}"</p>`:''}</div></div>`).join('') : `<p class="text-gray-500 text-sm py-8 text-center font-black uppercase tracking-widest">No Database Entries Found.</p>`;
       lucide.createIcons();
     }
 
