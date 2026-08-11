@@ -45,6 +45,7 @@
     .nav-btn::after { content: ''; position: absolute; bottom: 0; left: 50%; width: 0; height: 2px; background: var(--primary); transition: all 0.3s ease; transform: translateX(-50%); }
     .nav-btn.active::after { width: 60%; }
 
+    /* Custom JS Driven Global Tooltip */
     #globalTooltip { position: fixed; background: rgba(10, 15, 25, 0.98); backdrop-filter: blur(12px); border: 1px solid rgba(59, 130, 246, 0.5); color: #e2e8f0; padding: 12px 16px; border-radius: 8px; width: max-content; max-width: 280px; white-space: normal; line-height: 1.5; font-size: 0.8rem; font-weight: 500; font-family: 'Fredoka', sans-serif; z-index: 99999; box-shadow: 0 10px 40px rgba(0,0,0,0.9); opacity: 0; pointer-events: none; transition: opacity 0.2s ease; transform: translateX(-50%); }
     .info-icon { display: inline-flex; align-items: center; justify-content: center; margin-left: 8px; color: #60a5fa; cursor: help; position: relative; width: 16px; height: 16px; background: rgba(59, 130, 246, 0.2); border-radius: 50%; text-align: center; line-height: 1; font-size: 10px; font-weight: 900; transition: all 0.2s; flex-shrink: 0; }
     .info-icon:hover { background: rgba(59, 130, 246, 0.5); color: #fff; transform: scale(1.1); }
@@ -58,7 +59,9 @@
     @media (min-width: 768px) { .ledger-item .action-btn { opacity: 0; transform: scale(0.8); } .ledger-item:hover .action-btn { opacity: 1; transform: scale(1); } }
     
     .kanban-col { min-height: 200px; background: rgba(0,0,0,0.4); border-radius: 16px; padding: 12px; border: 1px solid rgba(255,255,255,0.05); }
-    .tool-active { background-color: rgba(59, 130, 246, 0.4) !important; border-color: rgba(59, 130, 246, 0.6) !important; color: #ffffff !important; box-shadow: inset 0 2px 4px rgba(0,0,0,0.3); transform: translateY(1px); }
+    
+    /* Workspace Active Button Styles */
+    .tool-active { background-color: rgba(59, 130, 246, 0.6) !important; border-color: rgba(59, 130, 246, 0.8) !important; color: #ffffff !important; box-shadow: inset 0 2px 4px rgba(0,0,0,0.4); transform: translateY(1px); }
 
     #workspaceNotes { background-color: rgba(5, 5, 10, 0.7); background-image: linear-gradient(rgba(255,255,255,0.03) 1px, transparent 1px), linear-gradient(90deg, rgba(255,255,255,0.03) 1px, transparent 1px); background-size: 24px 24px; border-radius: 12px; padding: 1.5rem; }
     #workspaceNotes[contenteditable="true"]:empty:before { content: "Type notes, tasks, or start writing..."; color: #6b7280; display: block; }
@@ -71,8 +74,14 @@
     .chk-item label { flex-grow: 1; outline: none; min-width: 50px; cursor: text; line-height: 1.5; font-size: 1rem; }
     .chk-item input[type="checkbox"]:checked + label { text-decoration: line-through; color: #6b7280; opacity: 0.5; }
 
+    /* Apple Wallet Style Stack */
     .wallet-stack { position: relative; height: 420px; display: flex; justify-content: center; align-items: flex-end; margin-bottom: 2rem; user-select: none; }
-    .wallet-card { position: absolute; width: 100%; max-width: 700px; height: 350px; transition: all 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275); cursor: pointer; transform-origin: bottom center; border-top: 1px solid rgba(255,255,255,0.2); }
+    .wallet-card { 
+        position: absolute; width: 100%; max-width: 700px; height: 350px; 
+        transition: all 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275); 
+        cursor: pointer; transform-origin: bottom center; 
+        border-top: 1px solid rgba(255,255,255,0.2); 
+    }
     .wallet-card:hover:not(.active-card) { transform: translateY(-40px) scale(0.98) !important; box-shadow: 0 -10px 40px rgba(0,0,0,0.5); }
     
     .truncate-strict { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; min-width: 0; }
@@ -282,7 +291,7 @@
           <!-- Card 2: C.A.S.P.E.R. AI Insights -->
           <div class="wallet-card glass-panel rounded-3xl p-5 md:p-6 bg-gradient-to-br from-purple-900/40 to-black/90 border border-purple-500/30" onclick="bringToFront(this)" style="transform: translateY(0px) scale(1); z-index: 4; filter: brightness(0.9);">
               <div class="flex justify-between items-center mb-4 gap-2">
-                <h3 class="text-xs font-bold text-purple-300 uppercase tracking-widest flex items-center flex-shrink-0">C.A.S.P.E.R. <span class="info-icon" data-info="Calculated Asset Security and Personal Expense Recorder. Hit 'Analyze' for a budget summary, or 'Forecast' for predictive month-over-month trajectory analysis.">i</span></h3>
+                <h3 class="text-xs font-bold text-purple-300 uppercase tracking-widest flex items-center flex-shrink-0">C.A.S.P.E.R. ENGINE <span class="info-icon" data-info="Calculated Asset Security and Personal Expense Recorder. Hit 'Analyze' for a budget summary, or 'Forecast' for predictive month-over-month trajectory analysis.">i</span></h3>
                 <div class="flex flex-wrap items-center gap-2 min-w-0 justify-end">
                     <button onclick="getCASPERInsights(); event.stopPropagation();" id="aiButton" class="bg-blue-600/30 text-blue-300 hover:bg-blue-600 hover:text-white px-3 py-1.5 rounded-xl text-[10px] font-bold transition-all border border-blue-500/50 flex items-center shadow-md">
                       <i data-lucide="sparkles" class="w-3 h-3 mr-1"></i> Analyze
@@ -323,17 +332,17 @@
 
       <!-- Remaining Lower Charts Grid -->
       <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 md:gap-6 mt-6">
-          <div class="glass-panel rounded-3xl p-5 md:p-6 bg-gradient-to-b from-transparent to-white/5">
+          <div class="glass-panel rounded-3xl p-5 md:p-6 bg-gradient-to-b from-transparent to-white/5 border border-white/10">
               <div class="flex justify-between items-center mb-4">
                   <h3 class="text-xs font-bold text-gray-400 uppercase tracking-widest flex items-center">Month Over Month <span class="info-icon" data-info="Bar chart comparing your total aggregate expenses across different calendar months.">i</span></h3>
                   <div class="flex gap-2">
                       <button onclick="openChartModal('monthlyTrendChart', 'Monthly Spend Comparison')" class="text-gray-500 hover:text-white transition-colors bg-white/10 hover:bg-white/20 p-1.5 rounded-lg border border-white/10"><i data-lucide="maximize-2" class="w-4 h-4"></i></button>
                   </div>
               </div>
-              <div class="h-52 relative flex justify-center"><canvas id="monthlyTrendChart"></canvas></div>
+              <div class="h-52 relative flex justify-center w-full"><canvas id="monthlyTrendChart"></canvas></div>
           </div>
           
-          <div class="glass-panel rounded-3xl p-5 md:p-6 bg-gradient-to-b from-transparent to-white/5">
+          <div class="glass-panel rounded-3xl p-5 md:p-6 bg-gradient-to-b from-transparent to-white/5 border border-white/10">
               <div class="flex justify-between items-center mb-4">
                   <h3 class="text-xs font-bold text-gray-400 uppercase tracking-widest flex items-center">7-Day Cashflow <span class="info-icon" data-info="Daily split of income vs. expenses for the most recent 7 days of activity in the selected period.">i</span></h3>
                   <div class="flex items-center gap-2 flex-shrink-0">
@@ -341,10 +350,10 @@
                       <button onclick="openChartModal('cashflowChart', 'Recent 7-Day Cashflow')" class="text-gray-500 hover:text-white transition-colors bg-white/10 hover:bg-white/20 p-1.5 rounded-lg border border-white/10"><i data-lucide="maximize-2" class="w-4 h-4"></i></button>
                   </div>
               </div>
-              <div class="h-52 relative flex justify-center"><canvas id="cashflowChart"></canvas></div>
+              <div class="h-52 relative flex justify-center w-full"><canvas id="cashflowChart"></canvas></div>
           </div>
 
-          <div class="glass-panel rounded-3xl p-5 md:p-6 bg-gradient-to-b from-transparent to-white/5">
+          <div class="glass-panel rounded-3xl p-5 md:p-6 bg-gradient-to-b from-transparent to-white/5 border border-white/10">
               <div class="flex justify-between items-center mb-4">
                   <h3 class="text-xs font-bold text-gray-400 uppercase tracking-widest flex items-center">Historical Flow <span class="info-icon" data-info="Long-term view comparing inbound and outbound cashflow across all historical data points.">i</span></h3>
                   <div class="flex items-center gap-2 min-w-0">
@@ -355,7 +364,7 @@
                       <button onclick="openChartModal('allMonthsChart', 'Historical Monthly Flow')" class="text-gray-500 hover:text-white transition-colors bg-white/10 hover:bg-white/20 p-1.5 rounded-lg border border-white/10 flex-shrink-0"><i data-lucide="maximize-2" class="w-4 h-4"></i></button>
                   </div>
               </div>
-              <div class="h-52 relative flex justify-center"><canvas id="allMonthsChart"></canvas></div>
+              <div class="h-52 relative flex justify-center w-full"><canvas id="allMonthsChart"></canvas></div>
           </div>
       </div>
 
@@ -719,10 +728,10 @@
               </div>
           </div>
           
-          <!-- RECENT SAVES CAROUSEL -->
-          <div class="glass-panel rounded-3xl p-6 md:p-8 flex flex-col border border-white/10 bg-black/40 lg:col-span-2">
+          <!-- RECENT SAVES CAROUSEL (NOW SCROLLABLE) -->
+          <div class="glass-panel rounded-3xl p-6 md:p-8 flex flex-col border border-white/10 bg-black/40 lg:col-span-2 overflow-hidden w-full">
             <h3 class="text-xs font-bold text-gray-400 uppercase tracking-widest mb-4 flex items-center"><i data-lucide="history" class="w-4 h-4 mr-2"></i> Recent Workspace Saves <span class="info-icon" data-info="Every time you hit Sync, a local snapshot is saved here so you can easily restore previous states.">i</span></h3>
-            <div id="recentSavesGrid" class="flex gap-4 overflow-x-auto pb-4 hide-scroll">
+            <div id="recentSavesGrid" class="flex gap-4 overflow-x-auto pb-4 hide-scroll w-full snap-x">
                  <p class="text-gray-500 text-xs italic p-4">No recent saves found locally. Sync to create a snapshot.</p>
             </div>
           </div>
@@ -910,16 +919,14 @@
     let monthlyBudgets = JSON.parse(localStorage.getItem('walletBudgets')) || { 'default': 25000 }; 
     let ccLimit = parseFloat(localStorage.getItem('walletCCLimit')) || 50000;
     
-    // Auto-set default month to 2026-08 since we injected that data
     let selectedMonth = '2026-08'; 
     
     let searchQuery = '';
     let currentFilter = 'all';
     
-    // HEAVILY COMPRESSED BACKUP OF YOUR 88 TRANSACTIONS TO AVOID CHARACTER LIMITS
     const rawData = '[{"i":"1786233600000","t":"e","a":460.0,"ac":"UPI","c":"Food & Dining","n":"","ts":1786233600000},{"i":"1786147200001","t":"e","a":418.75,"ac":"UPI","c":"Groceries","n":"","ts":1786147200000},{"i":"1786147200002","t":"e","a":95.0,"ac":"UPI","c":"Food & Dining","n":"","ts":1786147200000},{"i":"1786147200003","t":"e","a":719.0,"ac":"UPI","c":"Subscriptions","n":"","ts":1786147200000},{"i":"1786147200004","t":"e","a":55.0,"ac":"UPI","c":"Groceries","n":"","ts":1786147200000},{"i":"1786147200005","t":"e","a":65.0,"ac":"UPI","c":"Transport","n":"","ts":1786147200000},{"i":"1786060800006","t":"e","a":163.0,"ac":"UPI","c":"Groceries","n":"","ts":1786060800000},{"i":"1785974400007","t":"e","a":130.0,"ac":"UPI","c":"Food & Dining","n":"","ts":1785974400000},{"i":"1785801600008","t":"e","a":240.0,"ac":"UPI","c":"Food & Dining","n":"","ts":1785801600000},{"i":"1785715200009","t":"i","a":39.84,"ac":"UPI","c":"Other","n":"","ts":1785715200000},{"i":"1785715200010","t":"e","a":115.0,"ac":"UPI","c":"Groceries","n":"","ts":1785715200000},{"i":"1785715200011","t":"e","a":161.72,"ac":"UPI","c":"Food & Dining","n":"","ts":1785715200000},{"i":"1785628800012","t":"e","a":64.0,"ac":"UPI","c":"Transport","n":"","ts":1785628800000},{"i":"1785628800013","t":"e","a":32.0,"ac":"UPI","c":"Transport","n":"","ts":1785628800000},{"i":"1785628800014","t":"e","a":16.0,"ac":"UPI","c":"Transport","n":"","ts":1785628800000},{"i":"1785628800015","t":"i","a":35.0,"ac":"UPI","c":"Other","n":"","ts":1785628800000},{"i":"1785628800016","t":"e","a":125.0,"ac":"UPI","c":"Groceries","n":"","ts":1785628800000},{"i":"1785628800017","t":"e","a":13.0,"ac":"UPI","c":"Transport","n":"","ts":1785628800000},{"i":"1785628800018","t":"e","a":35.0,"ac":"UPI","c":"Transport","n":"","ts":1785628800000},{"i":"1785628800019","t":"e","a":23.0,"ac":"UPI","c":"Transport","n":"","ts":1785628800000},{"i":"1785628800020","t":"e","a":27.0,"ac":"UPI","c":"Transport","n":"","ts":1785628800000},{"i":"1785542400021","t":"e","a":9750.0,"ac":"UPI","c":"Rent","n":"","ts":1785542400000},{"i":"1785542400022","t":"e","a":131.0,"ac":"UPI","c":"Food & Dining","n":"","ts":1785542400000},{"i":"1785542400023","t":"e","a":20000.0,"ac":"UPI","c":"Other","n":"","ts":1785542400000},{"i":"1785542400024","t":"i","a":50080.0,"ac":"UPI","c":"Salary","n":"","ts":1785542400000},{"i":"1785369600025","t":"e","a":165.0,"ac":"UPI","c":"Food & Dining","n":"","ts":1785369600000},{"i":"1785369600026","t":"e","a":167.72,"ac":"UPI","c":"Food & Dining","n":"","ts":1785369600000},{"i":"1785283200027","t":"e","a":198.0,"ac":"UPI","c":"Food & Dining","n":"","ts":1785283200000},{"i":"1785283200028","t":"e","a":153.0,"ac":"UPI","c":"Shopping","n":"Amazon India (SMS)","ts":1785283200000},{"i":"1785196800029","t":"e","a":50.0,"ac":"UPI","c":"Groceries","n":"","ts":1785196800000},{"i":"1785110400030","t":"e","a":120.0,"ac":"UPI","c":"Groceries","n":"","ts":1785110400000},{"i":"1785110400031","t":"e","a":511.97,"ac":"UPI","c":"Entertainment","n":"","ts":1785110400000},{"i":"1785024000032","t":"e","a":421.0,"ac":"UPI","c":"Food & Dining","n":"","ts":1785024000000},{"i":"1785024000033","t":"e","a":35.0,"ac":"UPI","c":"Groceries","n":"","ts":1785024000000},{"i":"1785024000034","t":"e","a":164.0,"ac":"UPI","c":"Food & Dining","n":"","ts":1785024000000},{"i":"1784937600035","t":"e","a":60.0,"ac":"UPI","c":"Groceries","n":"","ts":1784937600000},{"i":"1784937600036","t":"e","a":127.0,"ac":"UPI","c":"Food & Dining","n":"","ts":1784937600000},{"i":"1784764800037","t":"e","a":80.0,"ac":"UPI","c":"Groceries","n":"","ts":1784764800000},{"i":"1784678400038","t":"e","a":120.0,"ac":"UPI","c":"Food & Dining","n":"","ts":1784678400000},{"i":"1784678400039","t":"e","a":60.0,"ac":"UPI","c":"Food & Dining","n":"","ts":1784678400000},{"i":"1784592000040","t":"e","a":144.0,"ac":"UPI","c":"Food & Dining","n":"","ts":1784592000000},{"i":"1784592000041","t":"i","a":2800.0,"ac":"UPI","c":"Refund","n":"","ts":1784592000000},{"i":"1784592000042","t":"e","a":30.0,"ac":"UPI","c":"Food & Dining","n":"","ts":1784592000000},{"i":"1784505600043","t":"e","a":15.0,"ac":"UPI","c":"Groceries","n":"","ts":1784505600000},{"i":"1784505600044","t":"e","a":45.0,"ac":"UPI","c":"Food & Dining","n":"","ts":1784505600000},{"i":"1784419200045","t":"e","a":289.0,"ac":"UPI","c":"Groceries","n":"","ts":1784419200000},{"i":"1784419200046","t":"e","a":167.0,"ac":"UPI","c":"Food & Dining","n":"","ts":1784419200000},{"i":"1784419200047","t":"e","a":60.0,"ac":"UPI","c":"Food & Dining","n":"","ts":1784419200000},{"i":"1784332800048","t":"e","a":665.0,"ac":"UPI","c":"Electricity charges","n":"","ts":1784332800000},{"i":"1784332800049","t":"e","a":60.0,"ac":"UPI","c":"Food & Dining","n":"","ts":1784332800000},{"i":"1784332800050","t":"e","a":35.0,"ac":"UPI","c":"Groceries","n":"THANGAM FRUITS AND VEGETABLES (SMS)","ts":1784332800000},{"i":"1784332800051","t":"e","a":40.0,"ac":"UPI","c":"Transport","n":"METROPOLITAN TRANSPORT (SMS)","ts":1784332800000},{"i":"1784332800052","t":"e","a":23.0,"ac":"UPI","c":"Other","n":"Cumta info (SMS)","ts":1784332800000},{"i":"1784332800053","t":"i","a":62.0,"ac":"UPI","c":"Other","n":"SHIVAYOGESHJ (SMS)","ts":1784332800000},{"i":"1784332800054","t":"e","a":32.0,"ac":"UPI","c":"Transport","n":"Rapido (SMS)","ts":1784332800000},{"i":"1784332800055","t":"e","a":32.0,"ac":"UPI","c":"Transport","n":"Rapido (SMS)","ts":1784332800000},{"i":"1784332800056","t":"e","a":206.0,"ac":"UPI","c":"Entertainment","n":"MOHAMED IMRAN FAREET (SMS)","ts":1784332800000},{"i":"1784332800057","t":"e","a":681.17,"ac":"UPI","c":"Food & Dining","n":"Dominos Pizza (SMS)","ts":1784332800000},{"i":"1784332800058","t":"e","a":10.0,"ac":"UPI","c":"Transport","n":"Indian Railway (SMS)","ts":1784332800000},{"i":"1784332800059","t":"e","a":20.0,"ac":"UPI","c":"Other","n":"SHIVAYOGESH J (SMS)","ts":1784332800000},{"i":"1784332800060","t":"e","a":13.0,"ac":"UPI","c":"Transport","n":"","ts":1784332800000},{"i":"1784332800061","t":"e","a":33.0,"ac":"UPI","c":"Transport","n":"","ts":1784332800000},{"i":"1784332800062","t":"e","a":5.0,"ac":"UPI","c":"Transport","n":"","ts":1784332800000},{"i":"1784246400063","t":"e","a":1654.0,"ac":"UPI","c":"Shopping","n":"Amazon India (SMS)","ts":1784246400000},{"i":"1784246400064","t":"e","a":60.0,"ac":"UPI","c":"Groceries","n":"","ts":1784246400000},{"i":"1783987200065","t":"e","a":105.0,"ac":"UPI","c":"Food & Dining","n":"SWIGGY (SMS)","ts":1783987200000},{"i":"1783900800066","t":"e","a":60.0,"ac":"UPI","c":"Groceries","n":"","ts":1783900800000},{"i":"1783814400067","t":"e","a":150.0,"ac":"UPI","c":"Other","n":"Haircut","ts":1783814400000},{"i":"1783728000068","t":"e","a":20000.0,"ac":"UPI","c":"Other","n":"","ts":1783728000000},{"i":"1783555200069","t":"e","a":211.0,"ac":"UPI","c":"Food & Dining","n":"Swiggy Ltd (SMS)","ts":1783555200000},{"i":"1783468800070","t":"e","a":992.25,"ac":"UPI","c":"Transport","n":"AbhiBus (SMS)","ts":1783468800000},{"i":"1783468800071","t":"e","a":894.0,"ac":"UPI","c":"Transport","n":"ABHIBUS COM (SMS)","ts":1783468800000},{"i":"1783382400072","t":"e","a":30.0,"ac":"UPI","c":"Food & Dining","n":"THANGAM FRUITS AND VEGETABLES (SMS)","ts":1783382400000},{"i":"1783382400073","t":"e","a":115.0,"ac":"UPI","c":"Food & Dining","n":"Swiggy Ltd (SMS)","ts":1783382400000},{"i":"1783382400074","t":"e","a":11.0,"ac":"UPI","c":"Other","n":"","ts":1783382400000},{"i":"1783382400075","t":"e","a":10.0,"ac":"UPI","c":"Other","n":"","ts":1783382400000},{"i":"1783382400076","t":"e","a":35.0,"ac":"UPI","c":"Groceries","n":"THANGAM FRUITS AND VEGETABLES (SMS)","ts":1783382400000},{"i":"1783209600077","t":"e","a":128.0,"ac":"UPI","c":"Food & Dining","n":"SWIGGY","ts":1783209600000},{"i":"1783209600078","t":"e","a":595.0,"ac":"UPI","c":"Food & Dining","n":"SWIGGY","ts":1783209600000},{"i":"1783209600079","t":"e","a":147.0,"ac":"UPI","c":"Groceries","n":"","ts":1783209600000},{"i":"1783123200080","t":"e","a":3250.0,"ac":"UPI","c":"Rent","n":"","ts":1783123200000},{"i":"1783123200081","t":"e","a":110.0,"ac":"UPI","c":"Groceries","n":"","ts":1783123200000},{"i":"1783036800082","t":"e","a":255.0,"ac":"UPI","c":"Food & Dining","n":"","ts":1783036800000},{"i":"1782950400083","t":"e","a":134.0,"ac":"UPI","c":"Other","n":"","ts":1782950400000},{"i":"1782950400084","t":"e","a":20.0,"ac":"UPI","c":"Groceries","n":"","ts":1782950400000},{"i":"1782864000085","t":"i","a":51091.0,"ac":"UPI","c":"Salary","n":"","ts":1782864000000},{"i":"1782864000086","t":"e","a":40.0,"ac":"UPI","c":"Groceries","n":"","ts":1782864000000},{"i":"1782864000087","t":"e","a":122.0,"ac":"UPI","c":"Food & Dining","n":"SWIGGY","ts":1782864000000}]';
     
-    let transactions = JSON.parse(rawData).map(t => ({id: t.i, type: t.t === 'e' ? 'expense' : 'income', amount: t.a, account: t.ac, category: t.c, note: t.n, timestamp: t.ts, isRecurring: false}));
+    let transactions = JSON.parse(rawData).map(t => ({id: String(t.i), type: t.t === 'e' ? 'expense' : 'income', amount: t.a, account: t.ac, category: t.c, note: t.n, timestamp: t.ts, isRecurring: false}));
     
     let wishlistItems = []; 
     let mediaItems = []; 
@@ -1272,7 +1279,6 @@
             
             if (txRes.ok) {
                 const dbTx = await txRes.json();
-                
                 const txMap = new Map();
                 transactions.forEach(t => txMap.set(t.id, t));
                 if(dbTx && dbTx.length > 0) {
@@ -1599,7 +1605,7 @@
 
     function generateMediaCard(item) {
         const sColor = item.mediaStatus === 'Completed' ? 'bg-emerald-500/20 text-emerald-300' : (item.mediaStatus === 'In Progress' ? 'bg-orange-500/20 text-orange-300' : 'bg-blue-500/20 text-blue-300');
-        return `<div class="glass-panel rounded-3xl p-5 relative group border border-white/10 flex flex-col justify-between hover:-translate-y-1.5 transition-transform bg-gradient-to-br from-white/5 to-transparent"><div class="absolute top-3 right-3 flex space-x-2 opacity-100 md:opacity-0 group-hover:opacity-100 transition-all z-20"><button onclick="openEditWishlistModal('${item.id}', true)" class="bg-blue-500/30 text-blue-300 p-2 rounded-full hover:bg-blue-500 hover:text-white"><i data-lucide="edit-2" class="w-4 h-4"></i></button><button onclick="deleteMediaItem('${item.id}')" class="bg-red-500/30 text-red-300 p-2 rounded-full hover:bg-red-50 hover:text-white"><i data-lucide="x" class="w-4 h-4"></i></button></div>${item.imageUrl ? `<img src="${item.imageUrl}" class="w-full h-56 object-cover rounded-xl mb-4 bg-black/50 border border-white/10">` : `<div class="w-full h-56 rounded-xl mb-4 bg-white/5 border border-white/10 flex items-center justify-center"><i data-lucide="film" class="w-8 h-8 text-gray-500"></i></div>`}<div class="flex-grow space-y-2 min-w-0"><div class="flex items-center justify-between gap-2 pr-16"><div class="flex gap-2 min-w-0"><span class="px-2 py-0.5 bg-purple-500/20 text-purple-300 border border-purple-500/30 rounded-md text-[9px] font-black uppercase tracking-wider truncate max-w-[100px]">${item.wishCategory}</span></div><span class="text-[9px] text-gray-500 font-bold flex-shrink-0">${item.timestamp ? new Date(item.timestamp).toLocaleDateString() : ''}</span></div><div class="flex items-start justify-between gap-2 pt-1"><h3 class="font-bold text-white text-lg tracking-wider line-clamp-2">${item.title}</h3><button onclick="toggleMediaStatus('${item.id}')" class="text-gray-400 hover:text-emerald-400 transition-colors mt-1 flex-shrink-0"><i data-lucide="${item.mediaStatus === 'Completed' ? 'check-circle' : 'circle'}" class="w-5 h-5"></i></button></div>${item.mediaDetails ? `<p class="text-[11px] text-gray-300 bg-black/50 px-2 py-1 rounded-lg border border-white/10 mt-2 truncate">${item.mediaDetails}</p>` : ''}<div class="flex items-center justify-between pt-2"><span class="px-2 py-1 ${sColor} rounded-md text-[9px] font-black uppercase tracking-wider flex-shrink-0">${item.mediaStatus}</span>${item.mediaRating !== 'Unrated' ? `<span class="text-yellow-400 text-xs flex-shrink-0">${'⭐'.repeat(parseInt(item.mediaRating))}</span>` : ''}</div></div><div class="flex gap-2 mt-4"><button onclick="linkMediaToWishlist('${item.id}')" class="flex-1 bg-blue-500/20 text-blue-300 py-2.5 rounded-xl text-xs font-bold transition-all border border-blue-500/30 uppercase tracking-wider truncate">Add to Wish</button>${item.link ? `<a href="${item.link}" target="_blank" class="flex-1 text-center bg-white/10 hover:bg-white/20 py-2.5 rounded-xl text-xs font-bold transition-all border border-white/20 text-white uppercase tracking-wider truncate">Link</a>` : ''}</div></div>`;
+        return `<div class="glass-panel rounded-3xl p-5 relative group border border-white/10 flex flex-col justify-between hover:-translate-y-1.5 transition-transform bg-gradient-to-br from-white/5 to-transparent"><div class="absolute top-3 right-3 flex space-x-2 opacity-100 md:opacity-0 group-hover:opacity-100 transition-all z-20"><button onclick="openEditWishlistModal('${item.id}', true)" class="bg-blue-500/30 text-blue-300 p-2 rounded-full hover:bg-blue-50 hover:text-white"><i data-lucide="edit-2" class="w-4 h-4"></i></button><button onclick="deleteMediaItem('${item.id}')" class="bg-red-500/30 text-red-300 p-2 rounded-full hover:bg-red-50 hover:text-white"><i data-lucide="x" class="w-4 h-4"></i></button></div>${item.imageUrl ? `<img src="${item.imageUrl}" class="w-full h-56 object-cover rounded-xl mb-4 bg-black/50 border border-white/10">` : `<div class="w-full h-56 rounded-xl mb-4 bg-white/5 border border-white/10 flex items-center justify-center"><i data-lucide="film" class="w-8 h-8 text-gray-500"></i></div>`}<div class="flex-grow space-y-2 min-w-0"><div class="flex items-center justify-between gap-2 pr-16"><div class="flex gap-2 min-w-0"><span class="px-2 py-0.5 bg-purple-500/20 text-purple-300 border border-purple-500/30 rounded-md text-[9px] font-black uppercase tracking-wider truncate max-w-[100px]">${item.wishCategory}</span></div><span class="text-[9px] text-gray-500 font-bold flex-shrink-0">${item.timestamp ? new Date(item.timestamp).toLocaleDateString() : ''}</span></div><div class="flex items-start justify-between gap-2 pt-1"><h3 class="font-bold text-white text-lg tracking-wider line-clamp-2">${item.title}</h3><button onclick="toggleMediaStatus('${item.id}')" class="text-gray-400 hover:text-emerald-400 transition-colors mt-1 flex-shrink-0"><i data-lucide="${item.mediaStatus === 'Completed' ? 'check-circle' : 'circle'}" class="w-5 h-5"></i></button></div>${item.mediaDetails ? `<p class="text-[11px] text-gray-300 bg-black/50 px-2 py-1 rounded-lg border border-white/10 mt-2 truncate">${item.mediaDetails}</p>` : ''}<div class="flex items-center justify-between pt-2"><span class="px-2 py-1 ${sColor} rounded-md text-[9px] font-black uppercase tracking-wider flex-shrink-0">${item.mediaStatus}</span>${item.mediaRating !== 'Unrated' ? `<span class="text-yellow-400 text-xs flex-shrink-0">${'⭐'.repeat(parseInt(item.mediaRating))}</span>` : ''}</div></div><div class="flex gap-2 mt-4"><button onclick="linkMediaToWishlist('${item.id}')" class="flex-1 bg-blue-500/20 text-blue-300 py-2.5 rounded-xl text-xs font-bold transition-all border border-blue-500/30 uppercase tracking-wider truncate">Add to Wish</button>${item.link ? `<a href="${item.link}" target="_blank" class="flex-1 text-center bg-white/10 hover:bg-white/20 py-2.5 rounded-xl text-xs font-bold transition-all border border-white/20 text-white uppercase tracking-wider truncate">Link</a>` : ''}</div></div>`;
     }
 
     function renderMedia() {
