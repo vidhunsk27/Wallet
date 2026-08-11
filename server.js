@@ -172,7 +172,6 @@ app.post('/api/jarvis-advice', async (req, res) => {
     } catch (error) { res.status(500).json({ error: 'Failed to generate' }); }
 });
 
-// C.A.S.P.E.R. PREDICTIVE ENGINE (CORRELATION & FORECASTING)
 app.post('/api/jarvis-predict', async (req, res) => {
     try {
         const { currentMonthData, previousMonthData, currentBudget } = req.body;
