@@ -16,99 +16,35 @@
   <style>
     @import url('https://fonts.googleapis.com/css2?family=Fredoka:wght@300;400;500;600;700&display=swap');
     
-    :root {
-      --primary: #3b82f6;
-      --secondary: #8b5cf6;
-      --accent: #10b981;
-      --bg-dark: #020617;
-    }
-
-    body { 
-        font-family: 'Fredoka', sans-serif; 
-        background-color: var(--bg-dark);
-        color: #f3f4f6; 
-        -webkit-overflow-scrolling: touch; 
-        overflow-x: hidden; 
-        min-height: 100vh;
-        perspective: 1000px;
-    }
+    :root { --primary: #3b82f6; --secondary: #8b5cf6; --accent: #10b981; --bg-dark: #020617; }
+    body { font-family: 'Fredoka', sans-serif; background-color: var(--bg-dark); color: #f3f4f6; -webkit-overflow-scrolling: touch; overflow-x: hidden; min-height: 100vh; perspective: 1000px; }
+    body::before { content: ''; position: fixed; inset: 0; background: linear-gradient(135deg, rgba(10, 15, 30, 0.96) 0%, rgba(5, 5, 10, 0.99) 100%); z-index: -1; }
     
-    body::before {
-        content: '';
-        position: fixed;
-        inset: 0;
-        background: linear-gradient(135deg, rgba(10, 15, 30, 0.96) 0%, rgba(5, 5, 10, 0.99) 100%);
-        z-index: -1;
-    }
-    
-    .grid-overlay {
-        position: fixed;
-        inset: 0;
-        background-image: linear-gradient(rgba(255,255,255,0.02) 1px, transparent 1px), linear-gradient(90deg, rgba(255,255,255,0.02) 1px, transparent 1px);
-        background-size: 30px 30px;
-        z-index: -1;
-        pointer-events: none;
-    }
-
-    .bg-mesh {
-        position: fixed;
-        inset: 0;
-        z-index: -1;
-        background-color: var(--bg-dark);
-        background-image: 
-            radial-gradient(at 0% 0%, rgba(59, 130, 246, 0.15) 0px, transparent 50%),
-            radial-gradient(at 100% 0%, rgba(139, 92, 246, 0.15) 0px, transparent 50%),
-            radial-gradient(at 100% 100%, rgba(16, 185, 129, 0.1) 0px, transparent 50%),
-            radial-gradient(at 0% 100%, rgba(244, 63, 94, 0.1) 0px, transparent 50%);
-        filter: blur(80px);
-        animation: mesh-float 20s ease infinite alternate;
-    }
-
+    .grid-overlay { position: fixed; inset: 0; background-image: linear-gradient(rgba(255,255,255,0.02) 1px, transparent 1px), linear-gradient(90deg, rgba(255,255,255,0.02) 1px, transparent 1px); background-size: 30px 30px; z-index: -1; pointer-events: none; }
+    .bg-mesh { position: fixed; inset: 0; z-index: -1; background-color: var(--bg-dark); background-image: radial-gradient(at 0% 0%, rgba(59, 130, 246, 0.15) 0px, transparent 50%), radial-gradient(at 100% 0%, rgba(139, 92, 246, 0.15) 0px, transparent 50%), radial-gradient(at 100% 100%, rgba(16, 185, 129, 0.1) 0px, transparent 50%), radial-gradient(at 0% 100%, rgba(244, 63, 94, 0.1) 0px, transparent 50%); filter: blur(80px); animation: mesh-float 20s ease infinite alternate; }
     @keyframes mesh-float { 0% { transform: scale(1); } 100% { transform: scale(1.1); } }
-
     .bg-orb { position: fixed; border-radius: 50%; filter: blur(60px); z-index: -1; opacity: 0.4; }
     .orb-1 { top: 10%; left: 10%; width: 30vw; height: 30vw; background: rgba(59, 130, 246, 0.3); animation: float 15s infinite alternate; }
     .orb-2 { bottom: 10%; right: 10%; width: 40vw; height: 40vw; background: rgba(139, 92, 246, 0.2); animation: float 18s infinite alternate-reverse; }
-    
     @keyframes float { 0% { transform: translate(0, 0) rotate(0deg); } 100% { transform: translate(5%, 5%) rotate(10deg); } }
 
-    .glass-panel { 
-        background: rgba(15, 23, 42, 0.6); 
-        backdrop-filter: blur(16px); 
-        -webkit-backdrop-filter: blur(16px);
-        border: 1px solid rgba(255, 255, 255, 0.08); 
-        box-shadow: 0 4px 24px -1px rgba(0, 0, 0, 0.2); 
-        transition: all 0.4s cubic-bezier(0.23, 1, 0.32, 1);
-    }
-    
-    .glass-panel:hover { 
-        background: rgba(15, 23, 42, 0.7);
-        border-color: rgba(255, 255, 255, 0.15);
-        box-shadow: 0 12px 40px -4px rgba(0, 0, 0, 0.4);
-        transform: translateY(-2px);
-    }
-
+    .glass-panel { background: rgba(15, 23, 42, 0.6); backdrop-filter: blur(16px); -webkit-backdrop-filter: blur(16px); border: 1px solid rgba(255, 255, 255, 0.08); box-shadow: 0 4px 24px -1px rgba(0, 0, 0, 0.2); transition: all 0.4s cubic-bezier(0.23, 1, 0.32, 1); }
+    .glass-panel:hover { background: rgba(15, 23, 42, 0.7); border-color: rgba(255, 255, 255, 0.15); box-shadow: 0 12px 40px -4px rgba(0, 0, 0, 0.4); transform: translateY(-2px); }
     .glass-input { background: rgba(0, 0, 0, 0.6); border: 1px solid rgba(255, 255, 255, 0.15); transition: all 0.3s ease; }
     .glass-input:focus { border-color: #3b82f6; box-shadow: 0 0 20px rgba(59, 130, 246, 0.3); outline: none; background: rgba(0, 0, 0, 0.8); }
     
-    ::-webkit-scrollbar { width: 6px; height: 6px; } 
-    ::-webkit-scrollbar-track { background: transparent; } 
-    ::-webkit-scrollbar-thumb { background: rgba(255, 255, 255, 0.15); border-radius: 10px; }
-    
-    .hide-scroll::-webkit-scrollbar { display: none; }
-    .hide-scroll { -ms-overflow-style: none; scrollbar-width: none; }
+    ::-webkit-scrollbar { width: 6px; height: 6px; } ::-webkit-scrollbar-track { background: transparent; } ::-webkit-scrollbar-thumb { background: rgba(255, 255, 255, 0.15); border-radius: 10px; }
+    .hide-scroll::-webkit-scrollbar { display: none; } .hide-scroll { -ms-overflow-style: none; scrollbar-width: none; }
 
     .view-container { position: relative; width: 100%; overflow: hidden; min-height: 80vh; }
     .view-card { transition: all 0.5s cubic-bezier(0.4, 0, 0.2, 1); position: absolute; top: 0; left: 0; width: 100%; opacity: 0; pointer-events: none; transform: translateX(50px) scale(0.95); }
     .view-card.active { position: relative; opacity: 1; pointer-events: auto; transform: translateX(0) scale(1); z-index: 10; }
-    .view-card.prev { transform: translateX(-50px) scale(0.95); }
-    .view-card.next { transform: translateX(50px) scale(0.95); }
+    .view-card.prev { transform: translateX(-50px) scale(0.95); } .view-card.next { transform: translateX(50px) scale(0.95); }
 
     .nav-btn { transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1); position: relative; overflow: hidden; }
     .nav-btn::after { content: ''; position: absolute; bottom: 0; left: 50%; width: 0; height: 2px; background: var(--primary); transition: all 0.3s ease; transform: translateX(-50%); }
     .nav-btn.active::after { width: 60%; }
 
-    /* Custom JS Driven Global Tooltip */
     #globalTooltip { position: fixed; background: rgba(10, 15, 25, 0.98); backdrop-filter: blur(12px); border: 1px solid rgba(59, 130, 246, 0.5); color: #e2e8f0; padding: 12px 16px; border-radius: 8px; width: max-content; max-width: 280px; white-space: normal; line-height: 1.5; font-size: 0.8rem; font-weight: 500; font-family: 'Fredoka', sans-serif; z-index: 99999; box-shadow: 0 10px 40px rgba(0,0,0,0.9); opacity: 0; pointer-events: none; transition: opacity 0.2s ease; transform: translateX(-50%); }
     .info-icon { display: inline-flex; align-items: center; justify-content: center; margin-left: 8px; color: #60a5fa; cursor: help; position: relative; width: 16px; height: 16px; background: rgba(59, 130, 246, 0.2); border-radius: 50%; text-align: center; line-height: 1; font-size: 10px; font-weight: 900; transition: all 0.2s; flex-shrink: 0; }
     .info-icon:hover { background: rgba(59, 130, 246, 0.5); color: #fff; transform: scale(1.1); }
@@ -122,40 +58,24 @@
     @media (min-width: 768px) { .ledger-item .action-btn { opacity: 0; transform: scale(0.8); } .ledger-item:hover .action-btn { opacity: 1; transform: scale(1); } }
     
     .kanban-col { min-height: 200px; background: rgba(0,0,0,0.4); border-radius: 16px; padding: 12px; border: 1px solid rgba(255,255,255,0.05); }
-    
-    /* Workspace Active Button Styles */
-    .tool-active { background-color: rgba(59, 130, 246, 0.6) !important; border-color: rgba(59, 130, 246, 0.8) !important; color: #ffffff !important; box-shadow: inset 0 2px 4px rgba(0,0,0,0.4); transform: translateY(1px); }
+    .tool-active { background-color: rgba(59, 130, 246, 0.4) !important; border-color: rgba(59, 130, 246, 0.6) !important; color: #ffffff !important; box-shadow: inset 0 2px 4px rgba(0,0,0,0.3); transform: translateY(1px); }
 
-    #workspaceNotes {
-        background-color: rgba(5, 5, 10, 0.7);
-        background-image: linear-gradient(rgba(255,255,255,0.03) 1px, transparent 1px), linear-gradient(90deg, rgba(255,255,255,0.03) 1px, transparent 1px);
-        background-size: 24px 24px;
-        border-radius: 12px;
-        padding: 1.5rem;
-    }
+    #workspaceNotes { background-color: rgba(5, 5, 10, 0.7); background-image: linear-gradient(rgba(255,255,255,0.03) 1px, transparent 1px), linear-gradient(90deg, rgba(255,255,255,0.03) 1px, transparent 1px); background-size: 24px 24px; border-radius: 12px; padding: 1.5rem; }
     #workspaceNotes[contenteditable="true"]:empty:before { content: "Type notes, tasks, or start writing..."; color: #6b7280; display: block; }
     #workspaceNotes h1 { font-size: 2rem; font-weight: 900; color: #fff; margin-top: 1rem; margin-bottom: 0.5rem; border-bottom: 1px solid rgba(255,255,255,0.1); padding-bottom: 4px; }
     #workspaceNotes h2 { font-size: 1.5rem; font-weight: 700; color: #e5e7eb; margin-top: 0.75rem; margin-bottom: 0.25rem; }
     #workspaceNotes ul { list-style-type: disc; margin-left: 1.5rem; margin-bottom: 0.5rem; }
-    
     .chk-item { display: flex; align-items: center; margin-bottom: 6px; padding: 6px 8px; border-radius: 8px; transition: background 0.2s; border: 1px solid transparent; }
     .chk-item:hover { background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1); }
     .chk-item input[type="checkbox"] { accent-color: #3b82f6; width: 18px; height: 18px; cursor: pointer; margin-right: 12px; border-radius: 4px; flex-shrink: 0; }
     .chk-item label { flex-grow: 1; outline: none; min-width: 50px; cursor: text; line-height: 1.5; font-size: 1rem; }
     .chk-item input[type="checkbox"]:checked + label { text-decoration: line-through; color: #6b7280; opacity: 0.5; }
 
-    /* Apple Wallet Style Stack */
     .wallet-stack { position: relative; height: 420px; display: flex; justify-content: center; align-items: flex-end; margin-bottom: 2rem; user-select: none; }
-    .wallet-card { 
-        position: absolute; width: 100%; max-width: 700px; height: 350px; 
-        transition: all 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275); 
-        cursor: pointer; transform-origin: bottom center; 
-        border-top: 1px solid rgba(255,255,255,0.2); 
-    }
+    .wallet-card { position: absolute; width: 100%; max-width: 700px; height: 350px; transition: all 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275); cursor: pointer; transform-origin: bottom center; border-top: 1px solid rgba(255,255,255,0.2); }
     .wallet-card:hover:not(.active-card) { transform: translateY(-40px) scale(0.98) !important; box-shadow: 0 -10px 40px rgba(0,0,0,0.5); }
     
     .truncate-strict { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; min-width: 0; }
-
     .preview-card { transition: all 0.2s ease; cursor: pointer; }
     .preview-card:hover { transform: translateY(-3px); border-color: rgba(59, 130, 246, 0.5); }
   </style>
@@ -912,6 +832,72 @@
       </div>
   </div>
 
+  <!-- WISHLIST & MEDIA EDIT MODAL -->
+  <div id="editWishlistModal" class="hidden fixed inset-0 bg-black/90 backdrop-blur-xl z-[100] flex items-center justify-center p-4 transition-opacity">
+      <div class="glass-panel modal-active rounded-3xl p-8 w-full max-w-sm border border-white/20 shadow-[0_0_60px_rgba(59,130,246,0.3)] relative overflow-hidden bg-black/60">
+          <div class="absolute inset-0 bg-gradient-to-br from-blue-600/10 to-transparent pointer-events-none"></div>
+          <div class="flex justify-between items-center mb-6 border-b border-white/10 pb-4 relative z-10">
+             <h3 class="text-white font-black uppercase tracking-widest text-sm flex items-center drop-shadow-sm"><i data-lucide="edit-2" class="w-5 h-5 mr-3 text-blue-400"></i> Edit Item Details</h3>
+             <button onclick="closeEditWishlistModal()" class="text-gray-400 hover:text-white transition-colors bg-white/10 hover:bg-white/20 p-2 rounded-xl border border-white/10"><i data-lucide="x" class="w-5 h-5"></i></button>
+          </div>
+          <input type="hidden" id="ewId">
+          <input type="hidden" id="ewIsMedia" value="false">
+          <div class="space-y-5 relative z-10">
+              <div>
+                  <label class="block text-[10px] font-bold text-gray-400 uppercase tracking-wider mb-2 pl-1">Title</label>
+                  <input type="text" id="ewTitle" class="w-full glass-input rounded-xl p-4 text-sm text-white font-medium hover:border-blue-500/50 transition-colors shadow-inner truncate-strict">
+              </div>
+              <div class="grid grid-cols-2 gap-4">
+                  <div>
+                      <label class="block text-[10px] font-bold text-gray-400 uppercase tracking-wider mb-2 pl-1">Price (₹)</label>
+                      <input type="number" id="ewPrice" class="w-full glass-input rounded-xl p-4 text-sm text-white font-black hover:border-blue-500/50 transition-colors shadow-inner">
+                  </div>
+                  <div>
+                      <label class="block text-[10px] font-bold text-gray-400 uppercase tracking-wider mb-2 pl-1" id="ewStoreLabel">Store Name</label>
+                      <input type="text" id="ewStore" class="w-full glass-input rounded-xl p-4 text-sm text-white font-bold hover:border-blue-500/50 transition-colors shadow-inner uppercase tracking-wider truncate-strict" placeholder="e.g. AMAZON">
+                  </div>
+              </div>
+              <div class="relative min-w-0">
+                  <label class="block text-[10px] font-bold text-gray-400 uppercase tracking-wider mb-2 pl-1">Category</label>
+                  <select id="ewCategory" class="w-full glass-input rounded-xl p-4 pr-8 text-sm text-white font-bold hover:border-blue-500/50 transition-colors shadow-inner uppercase tracking-wider appearance-none truncate-strict">
+                      <!-- Populated dynamically -->
+                  </select>
+                  <i data-lucide="chevron-down" class="absolute right-3 top-10 transform w-4 h-4 text-gray-400 pointer-events-none"></i>
+              </div>
+
+              <div id="ewMediaExtras" class="hidden space-y-5">
+                  <div class="relative min-w-0">
+                      <label class="block text-[10px] font-bold text-gray-400 uppercase tracking-wider mb-2 pl-1">Status</label>
+                      <select id="ewStatus" class="w-full glass-input rounded-xl p-4 pr-8 text-sm text-white font-bold hover:border-blue-500/50 transition-colors shadow-inner uppercase tracking-wider appearance-none truncate-strict">
+                        <option value="Planned">📌 PLANNED</option>
+                        <option value="In Progress">⏳ IN PROGRESS</option>
+                        <option value="Completed">✅ VIEWED</option>
+                      </select>
+                      <i data-lucide="chevron-down" class="absolute right-3 top-10 transform w-4 h-4 text-gray-400 pointer-events-none"></i>
+                  </div>
+                  <div id="ewRatingContainer" class="hidden relative min-w-0">
+                      <label class="block text-[10px] font-bold text-gray-400 uppercase tracking-wider mb-2 pl-1">Rating</label>
+                      <select id="ewRating" class="w-full glass-input rounded-xl p-4 pr-8 text-sm text-white font-bold hover:border-blue-500/50 transition-colors shadow-inner uppercase tracking-wider appearance-none truncate-strict">
+                        <option value="Unrated">UNRATED</option>
+                        <option value="5">⭐⭐⭐⭐⭐</option>
+                        <option value="4">⭐⭐⭐⭐</option>
+                        <option value="3">⭐⭐⭐</option>
+                        <option value="2">⭐⭐</option>
+                        <option value="1">⭐</option>
+                      </select>
+                      <i data-lucide="chevron-down" class="absolute right-3 top-10 transform w-4 h-4 text-gray-400 pointer-events-none"></i>
+                  </div>
+              </div>
+
+              <div>
+                  <label class="block text-[10px] font-bold text-gray-400 uppercase tracking-wider mb-2 pl-1">Image Link</label>
+                  <input type="url" id="ewImage" class="w-full glass-input rounded-xl p-4 text-sm text-white font-medium hover:border-blue-500/50 transition-colors shadow-inner truncate-strict">
+              </div>
+              <button onclick="saveEditWishlist()" class="w-full mt-4 py-4 rounded-xl text-white bg-gradient-to-r from-blue-600 to-blue-500 hover:to-blue-400 text-sm font-black transition-all shadow-[0_0_20px_rgba(59,130,246,0.4)] active:scale-[0.98] border border-white/20 uppercase tracking-widest">Save Changes</button>
+          </div>
+      </div>
+  </div>
+
   <script>
     lucide.createIcons();
     Chart.register(ChartDataLabels);
@@ -930,11 +916,10 @@
     let searchQuery = '';
     let currentFilter = 'all';
     
-    // COMPRESSED BACKUP OF YOUR 88 TRANSACTIONS TO AVOID CHARACTER LIMITS
-    const rawTx = [
-      [1786233600000,"expense",460.0,"UPI","Food & Dining",""],[1786147200000,"expense",418.75,"UPI","Groceries",""],[1786147200000,"expense",95.0,"UPI","Food & Dining",""],[1786147200000,"expense",719.0,"UPI","Subscriptions",""],[1786147200000,"expense",55.0,"UPI","Groceries",""],[1786147200000,"expense",65.0,"UPI","Transport",""],[1786060800000,"expense",163.0,"UPI","Groceries",""],[1785974400000,"expense",130.0,"UPI","Food & Dining",""],[1785801600000,"expense",240.0,"UPI","Food & Dining",""],[1785715200000,"income",39.84,"UPI","Other",""],[1785715200000,"expense",115.0,"UPI","Groceries",""],[1785715200000,"expense",161.72,"UPI","Food & Dining",""],[1785628800000,"expense",64.0,"UPI","Transport",""],[1785628800000,"expense",32.0,"UPI","Transport",""],[1785628800000,"expense",16.0,"UPI","Transport",""],[1785628800000,"income",35.0,"UPI","Other",""],[1785628800000,"expense",125.0,"UPI","Groceries",""],[1785628800000,"expense",13.0,"UPI","Transport",""],[1785628800000,"expense",35.0,"UPI","Transport",""],[1785628800000,"expense",23.0,"UPI","Transport",""],[1785628800000,"expense",27.0,"UPI","Transport",""],[1785542400000,"expense",9750.0,"UPI","Rent",""],[1785542400000,"expense",131.0,"UPI","Food & Dining",""],[1785542400000,"expense",20000.0,"UPI","Other",""],[1785542400000,"income",50080.0,"UPI","Salary",""],[1785369600000,"expense",165.0,"UPI","Food & Dining",""],[1785369600000,"expense",167.72,"UPI","Food & Dining",""],[1785283200000,"expense",198.0,"UPI","Food & Dining",""],[1785283200000,"expense",153.0,"UPI","Shopping","Amazon India (SMS)"],[1785196800000,"expense",50.0,"UPI","Groceries",""],[1785110400000,"expense",120.0,"UPI","Groceries",""],[1785110400000,"expense",511.97,"UPI","Entertainment",""],[1785024000000,"expense",421.0,"UPI","Food & Dining",""],[1785024000000,"expense",35.0,"UPI","Groceries",""],[1785024000000,"expense",164.0,"UPI","Food & Dining",""],[1784937600000,"expense",60.0,"UPI","Groceries",""],[1784937600000,"expense",127.0,"UPI","Food & Dining",""],[1784764800000,"expense",80.0,"UPI","Groceries",""],[1784678400000,"expense",120.0,"UPI","Food & Dining",""],[1784678400000,"expense",60.0,"UPI","Food & Dining",""],[1784592000000,"expense",144.0,"UPI","Food & Dining",""],[1784592000000,"income",2800.0,"UPI","Refund",""],[1784592000000,"expense",30.0,"UPI","Food & Dining",""],[1784505600000,"expense",15.0,"UPI","Groceries",""],[1784505600000,"expense",45.0,"UPI","Food & Dining",""],[1784419200000,"expense",289.0,"UPI","Groceries",""],[1784419200000,"expense",167.0,"UPI","Food & Dining",""],[1784419200000,"expense",60.0,"UPI","Food & Dining",""],[1784332800000,"expense",665.0,"UPI","Electricity charges",""],[1784332800000,"expense",60.0,"UPI","Food & Dining",""],[1784332800000,"expense",35.0,"UPI","Groceries","THANGAM FRUITS AND VEGETABLES (SMS)"],[1784332800000,"expense",40.0,"UPI","Transport","METROPOLITAN TRANSPORT (SMS)"],[1784332800000,"expense",23.0,"UPI","Other","Cumta info (SMS)"],[1784332800000,"income",62.0,"UPI","Other","SHIVAYOGESHJ (SMS)"],[1784332800000,"expense",32.0,"UPI","Transport","Rapido (SMS)"],[1784332800000,"expense",32.0,"UPI","Transport","Rapido (SMS)"],[1784332800000,"expense",206.0,"UPI","Entertainment","MOHAMED IMRAN FAREET (SMS)"],[1784332800000,"expense",681.17,"UPI","Food & Dining","Dominos Pizza (SMS)"],[1784332800000,"expense",10.0,"UPI","Transport","Indian Railway (SMS)"],[1784332800000,"expense",20.0,"UPI","Other","SHIVAYOGESH J (SMS)"],[1784332800000,"expense",13.0,"UPI","Transport",""],[1784332800000,"expense",33.0,"UPI","Transport",""],[1784332800000,"expense",5.0,"UPI","Transport",""],[1784246400000,"expense",1654.0,"UPI","Shopping","Amazon India (SMS)"],[1784246400000,"expense",60.0,"UPI","Groceries",""],[1783987200000,"expense",105.0,"UPI","Food & Dining","SWIGGY (SMS)"],[1783900800000,"expense",60.0,"UPI","Groceries",""],[1783814400000,"expense",150.0,"UPI","Other","Haircut"],[1783728000000,"expense",20000.0,"UPI","Other",""],[1783555200000,"expense",211.0,"UPI","Food & Dining","Swiggy Ltd (SMS)"],[1783468800000,"expense",992.25,"UPI","Transport","AbhiBus (SMS)"],[1783468800000,"expense",894.0,"UPI","Transport","ABHIBUS COM (SMS)"],[1783382400000,"expense",30.0,"UPI","Food & Dining","THANGAM FRUITS AND VEGETABLES (SMS)"],[1783382400000,"expense",115.0,"UPI","Food & Dining","Swiggy Ltd (SMS)"],[1783382400000,"expense",11.0,"UPI","Other",""],[1783382400000,"expense",10.0,"UPI","Other",""],[1783382400000,"expense",35.0,"UPI","Groceries","THANGAM FRUITS AND VEGETABLES (SMS)"],[1783209600000,"expense",128.0,"UPI","Food & Dining","SWIGGY"],[1783209600000,"expense",595.0,"UPI","Food & Dining","SWIGGY"],[1783209600000,"expense",147.0,"UPI","Groceries",""],[1783123200000,"expense",3250.0,"UPI","Rent",""],[1783123200000,"expense",110.0,"UPI","Groceries",""],[1783036800000,"expense",255.0,"UPI","Food & Dining",""],[1782950400000,"expense",134.0,"UPI","Other",""],[1782950400000,"expense",20.0,"UPI","Groceries",""],[1782864000000,"income",51091.0,"UPI","Salary",""],[1782864000000,"expense",40.0,"UPI","Groceries",""],[1782864000000,"expense",122.0,"UPI","Food & Dining","SWIGGY"]
-    ];
-    let transactions = rawTx.map(t => ({id: String(t[0]), type: t[1], amount: t[2], account: t[3], category: t[4], note: t[5], timestamp: t[0], isRecurring: false}));
+    // HEAVILY COMPRESSED BACKUP OF YOUR 88 TRANSACTIONS TO AVOID CHARACTER LIMITS
+    const rawData = '[{"i":"1786233600000","t":"e","a":460.0,"ac":"UPI","c":"Food & Dining","n":"","ts":1786233600000},{"i":"1786147200001","t":"e","a":418.75,"ac":"UPI","c":"Groceries","n":"","ts":1786147200000},{"i":"1786147200002","t":"e","a":95.0,"ac":"UPI","c":"Food & Dining","n":"","ts":1786147200000},{"i":"1786147200003","t":"e","a":719.0,"ac":"UPI","c":"Subscriptions","n":"","ts":1786147200000},{"i":"1786147200004","t":"e","a":55.0,"ac":"UPI","c":"Groceries","n":"","ts":1786147200000},{"i":"1786147200005","t":"e","a":65.0,"ac":"UPI","c":"Transport","n":"","ts":1786147200000},{"i":"1786060800006","t":"e","a":163.0,"ac":"UPI","c":"Groceries","n":"","ts":1786060800000},{"i":"1785974400007","t":"e","a":130.0,"ac":"UPI","c":"Food & Dining","n":"","ts":1785974400000},{"i":"1785801600008","t":"e","a":240.0,"ac":"UPI","c":"Food & Dining","n":"","ts":1785801600000},{"i":"1785715200009","t":"i","a":39.84,"ac":"UPI","c":"Other","n":"","ts":1785715200000},{"i":"1785715200010","t":"e","a":115.0,"ac":"UPI","c":"Groceries","n":"","ts":1785715200000},{"i":"1785715200011","t":"e","a":161.72,"ac":"UPI","c":"Food & Dining","n":"","ts":1785715200000},{"i":"1785628800012","t":"e","a":64.0,"ac":"UPI","c":"Transport","n":"","ts":1785628800000},{"i":"1785628800013","t":"e","a":32.0,"ac":"UPI","c":"Transport","n":"","ts":1785628800000},{"i":"1785628800014","t":"e","a":16.0,"ac":"UPI","c":"Transport","n":"","ts":1785628800000},{"i":"1785628800015","t":"i","a":35.0,"ac":"UPI","c":"Other","n":"","ts":1785628800000},{"i":"1785628800016","t":"e","a":125.0,"ac":"UPI","c":"Groceries","n":"","ts":1785628800000},{"i":"1785628800017","t":"e","a":13.0,"ac":"UPI","c":"Transport","n":"","ts":1785628800000},{"i":"1785628800018","t":"e","a":35.0,"ac":"UPI","c":"Transport","n":"","ts":1785628800000},{"i":"1785628800019","t":"e","a":23.0,"ac":"UPI","c":"Transport","n":"","ts":1785628800000},{"i":"1785628800020","t":"e","a":27.0,"ac":"UPI","c":"Transport","n":"","ts":1785628800000},{"i":"1785542400021","t":"e","a":9750.0,"ac":"UPI","c":"Rent","n":"","ts":1785542400000},{"i":"1785542400022","t":"e","a":131.0,"ac":"UPI","c":"Food & Dining","n":"","ts":1785542400000},{"i":"1785542400023","t":"e","a":20000.0,"ac":"UPI","c":"Other","n":"","ts":1785542400000},{"i":"1785542400024","t":"i","a":50080.0,"ac":"UPI","c":"Salary","n":"","ts":1785542400000},{"i":"1785369600025","t":"e","a":165.0,"ac":"UPI","c":"Food & Dining","n":"","ts":1785369600000},{"i":"1785369600026","t":"e","a":167.72,"ac":"UPI","c":"Food & Dining","n":"","ts":1785369600000},{"i":"1785283200027","t":"e","a":198.0,"ac":"UPI","c":"Food & Dining","n":"","ts":1785283200000},{"i":"1785283200028","t":"e","a":153.0,"ac":"UPI","c":"Shopping","n":"Amazon India (SMS)","ts":1785283200000},{"i":"1785196800029","t":"e","a":50.0,"ac":"UPI","c":"Groceries","n":"","ts":1785196800000},{"i":"1785110400030","t":"e","a":120.0,"ac":"UPI","c":"Groceries","n":"","ts":1785110400000},{"i":"1785110400031","t":"e","a":511.97,"ac":"UPI","c":"Entertainment","n":"","ts":1785110400000},{"i":"1785024000032","t":"e","a":421.0,"ac":"UPI","c":"Food & Dining","n":"","ts":1785024000000},{"i":"1785024000033","t":"e","a":35.0,"ac":"UPI","c":"Groceries","n":"","ts":1785024000000},{"i":"1785024000034","t":"e","a":164.0,"ac":"UPI","c":"Food & Dining","n":"","ts":1785024000000},{"i":"1784937600035","t":"e","a":60.0,"ac":"UPI","c":"Groceries","n":"","ts":1784937600000},{"i":"1784937600036","t":"e","a":127.0,"ac":"UPI","c":"Food & Dining","n":"","ts":1784937600000},{"i":"1784764800037","t":"e","a":80.0,"ac":"UPI","c":"Groceries","n":"","ts":1784764800000},{"i":"1784678400038","t":"e","a":120.0,"ac":"UPI","c":"Food & Dining","n":"","ts":1784678400000},{"i":"1784678400039","t":"e","a":60.0,"ac":"UPI","c":"Food & Dining","n":"","ts":1784678400000},{"i":"1784592000040","t":"e","a":144.0,"ac":"UPI","c":"Food & Dining","n":"","ts":1784592000000},{"i":"1784592000041","t":"i","a":2800.0,"ac":"UPI","c":"Refund","n":"","ts":1784592000000},{"i":"1784592000042","t":"e","a":30.0,"ac":"UPI","c":"Food & Dining","n":"","ts":1784592000000},{"i":"1784505600043","t":"e","a":15.0,"ac":"UPI","c":"Groceries","n":"","ts":1784505600000},{"i":"1784505600044","t":"e","a":45.0,"ac":"UPI","c":"Food & Dining","n":"","ts":1784505600000},{"i":"1784419200045","t":"e","a":289.0,"ac":"UPI","c":"Groceries","n":"","ts":1784419200000},{"i":"1784419200046","t":"e","a":167.0,"ac":"UPI","c":"Food & Dining","n":"","ts":1784419200000},{"i":"1784419200047","t":"e","a":60.0,"ac":"UPI","c":"Food & Dining","n":"","ts":1784419200000},{"i":"1784332800048","t":"e","a":665.0,"ac":"UPI","c":"Electricity charges","n":"","ts":1784332800000},{"i":"1784332800049","t":"e","a":60.0,"ac":"UPI","c":"Food & Dining","n":"","ts":1784332800000},{"i":"1784332800050","t":"e","a":35.0,"ac":"UPI","c":"Groceries","n":"THANGAM FRUITS AND VEGETABLES (SMS)","ts":1784332800000},{"i":"1784332800051","t":"e","a":40.0,"ac":"UPI","c":"Transport","n":"METROPOLITAN TRANSPORT (SMS)","ts":1784332800000},{"i":"1784332800052","t":"e","a":23.0,"ac":"UPI","c":"Other","n":"Cumta info (SMS)","ts":1784332800000},{"i":"1784332800053","t":"i","a":62.0,"ac":"UPI","c":"Other","n":"SHIVAYOGESHJ (SMS)","ts":1784332800000},{"i":"1784332800054","t":"e","a":32.0,"ac":"UPI","c":"Transport","n":"Rapido (SMS)","ts":1784332800000},{"i":"1784332800055","t":"e","a":32.0,"ac":"UPI","c":"Transport","n":"Rapido (SMS)","ts":1784332800000},{"i":"1784332800056","t":"e","a":206.0,"ac":"UPI","c":"Entertainment","n":"MOHAMED IMRAN FAREET (SMS)","ts":1784332800000},{"i":"1784332800057","t":"e","a":681.17,"ac":"UPI","c":"Food & Dining","n":"Dominos Pizza (SMS)","ts":1784332800000},{"i":"1784332800058","t":"e","a":10.0,"ac":"UPI","c":"Transport","n":"Indian Railway (SMS)","ts":1784332800000},{"i":"1784332800059","t":"e","a":20.0,"ac":"UPI","c":"Other","n":"SHIVAYOGESH J (SMS)","ts":1784332800000},{"i":"1784332800060","t":"e","a":13.0,"ac":"UPI","c":"Transport","n":"","ts":1784332800000},{"i":"1784332800061","t":"e","a":33.0,"ac":"UPI","c":"Transport","n":"","ts":1784332800000},{"i":"1784332800062","t":"e","a":5.0,"ac":"UPI","c":"Transport","n":"","ts":1784332800000},{"i":"1784246400063","t":"e","a":1654.0,"ac":"UPI","c":"Shopping","n":"Amazon India (SMS)","ts":1784246400000},{"i":"1784246400064","t":"e","a":60.0,"ac":"UPI","c":"Groceries","n":"","ts":1784246400000},{"i":"1783987200065","t":"e","a":105.0,"ac":"UPI","c":"Food & Dining","n":"SWIGGY (SMS)","ts":1783987200000},{"i":"1783900800066","t":"e","a":60.0,"ac":"UPI","c":"Groceries","n":"","ts":1783900800000},{"i":"1783814400067","t":"e","a":150.0,"ac":"UPI","c":"Other","n":"Haircut","ts":1783814400000},{"i":"1783728000068","t":"e","a":20000.0,"ac":"UPI","c":"Other","n":"","ts":1783728000000},{"i":"1783555200069","t":"e","a":211.0,"ac":"UPI","c":"Food & Dining","n":"Swiggy Ltd (SMS)","ts":1783555200000},{"i":"1783468800070","t":"e","a":992.25,"ac":"UPI","c":"Transport","n":"AbhiBus (SMS)","ts":1783468800000},{"i":"1783468800071","t":"e","a":894.0,"ac":"UPI","c":"Transport","n":"ABHIBUS COM (SMS)","ts":1783468800000},{"i":"1783382400072","t":"e","a":30.0,"ac":"UPI","c":"Food & Dining","n":"THANGAM FRUITS AND VEGETABLES (SMS)","ts":1783382400000},{"i":"1783382400073","t":"e","a":115.0,"ac":"UPI","c":"Food & Dining","n":"Swiggy Ltd (SMS)","ts":1783382400000},{"i":"1783382400074","t":"e","a":11.0,"ac":"UPI","c":"Other","n":"","ts":1783382400000},{"i":"1783382400075","t":"e","a":10.0,"ac":"UPI","c":"Other","n":"","ts":1783382400000},{"i":"1783382400076","t":"e","a":35.0,"ac":"UPI","c":"Groceries","n":"THANGAM FRUITS AND VEGETABLES (SMS)","ts":1783382400000},{"i":"1783209600077","t":"e","a":128.0,"ac":"UPI","c":"Food & Dining","n":"SWIGGY","ts":1783209600000},{"i":"1783209600078","t":"e","a":595.0,"ac":"UPI","c":"Food & Dining","n":"SWIGGY","ts":1783209600000},{"i":"1783209600079","t":"e","a":147.0,"ac":"UPI","c":"Groceries","n":"","ts":1783209600000},{"i":"1783123200080","t":"e","a":3250.0,"ac":"UPI","c":"Rent","n":"","ts":1783123200000},{"i":"1783123200081","t":"e","a":110.0,"ac":"UPI","c":"Groceries","n":"","ts":1783123200000},{"i":"1783036800082","t":"e","a":255.0,"ac":"UPI","c":"Food & Dining","n":"","ts":1783036800000},{"i":"1782950400083","t":"e","a":134.0,"ac":"UPI","c":"Other","n":"","ts":1782950400000},{"i":"1782950400084","t":"e","a":20.0,"ac":"UPI","c":"Groceries","n":"","ts":1782950400000},{"i":"1782864000085","t":"i","a":51091.0,"ac":"UPI","c":"Salary","n":"","ts":1782864000000},{"i":"1782864000086","t":"e","a":40.0,"ac":"UPI","c":"Groceries","n":"","ts":1782864000000},{"i":"1782864000087","t":"e","a":122.0,"ac":"UPI","c":"Food & Dining","n":"SWIGGY","ts":1782864000000}]';
+    
+    let transactions = JSON.parse(rawData).map(t => ({id: t.i, type: t.t === 'e' ? 'expense' : 'income', amount: t.a, account: t.ac, category: t.c, note: t.n, timestamp: t.ts, isRecurring: false}));
     
     let wishlistItems = []; 
     let mediaItems = []; 
@@ -1287,6 +1272,7 @@
             
             if (txRes.ok) {
                 const dbTx = await txRes.json();
+                
                 const txMap = new Map();
                 transactions.forEach(t => txMap.set(t.id, t));
                 if(dbTx && dbTx.length > 0) {
@@ -1725,7 +1711,7 @@
 
       let hs = 50 + (sr > 20 ? 20 : sr > 5 ? 10 : 0) + (run > 30 ? 20 : run > 15 ? 10 : 0) + (tl < (pInc * 0.2) ? 10 : 0);
       hs = Math.min(100, Math.max(10, Math.round(hs)));
-      document.getElementById('healthScore').innerText = `${hs}/100`; document.getElementById('healthScore').className = `text-xl md:text-2xl font-black drop-shadow-sm truncate w-full ${hs > 75 ? 'text-emerald-400' : (hs > 40 ? 'text-orange-400' : 'text-rose-400')}`;
+      document.getElementById('healthScore').innerText = `${hs}/100`; document.getElementById('healthScore').className = `text-xl md:text-2xl font-black drop-shadow-sm truncate whitespace-nowrap w-full uppercase ${hs > 75 ? 'text-emerald-400' : (hs > 40 ? 'text-orange-400' : 'text-rose-400')}`;
       
       const wIcn = document.getElementById('weatherIcon'), wTxt = document.getElementById('weatherText');
       if(hs > 75) { wIcn.innerHTML = `<i data-lucide="sun" class="w-4 h-4 text-yellow-400 mr-2"></i>`; wTxt.innerText = 'Stable'; wTxt.className = 'text-[10px] text-yellow-400 uppercase font-bold tracking-widest'; } 
