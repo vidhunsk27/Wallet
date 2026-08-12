@@ -16,78 +16,6 @@
   <style>
     @import url('https://fonts.googleapis.com/css2?family=Fredoka:wght@300;400;500;600;700&display=swap');
     
-    :root { --primary: #3b82f6; --secondary: #8b5cf6; --accent: #10b981; --bg-dark: #020617; }
-    body { font-family: 'Fredoka', sans-serif; background-color: var(--bg-dark); color: #f3f4f6; -webkit-overflow-scrolling: touch; overflow-x: hidden; min-height: 100vh; perspective: 1000px; }
-    body::before { content: ''; position: fixed; inset: 0; background: linear-gradient(135deg, rgba(10, 15, 30, 0.96) 0%, rgba(5, 5, 10, 0.99) 100%); z-index: -1; }
-    
-    .grid-overlay { position: fixed; inset: 0; background-image: linear-gradient(rgba(255,255,255,0.02) 1px, transparent 1px), linear-gradient(90deg, rgba(255,255,255,0.02) 1px, transparent 1px); background-size: 30px 30px; z-index: -1; pointer-events: none; }
-    .bg-mesh { position: fixed; inset: 0; z-index: -1; background-color: var(--bg-dark); background-image: radial-gradient(at 0% 0%, rgba(59, 130, 246, 0.15) 0px, transparent 50%), radial-gradient(at 100% 0%, rgba(139, 92, 246, 0.15) 0px, transparent 50%), radial-gradient(at 100% 100%, rgba(16, 185, 129, 0.1) 0px, transparent 50%), radial-gradient(at 0% 100%, rgba(244, 63, 94, 0.1) 0px, transparent 50%); filter: blur(80px); animation: mesh-float 20s ease infinite alternate; }
-    @keyframes mesh-float { 0% { transform: scale(1); } 100% { transform: scale(1.1); } }
-    .bg-orb { position: fixed; border-radius: 50%; filter: blur(60px); z-index: -1; opacity: 0.4; }
-    .orb-1 { top: 10%; left: 10%; width: 30vw; height: 30vw; background: rgba(59, 130, 246, 0.3); animation: float 15s infinite alternate; }
-    .orb-2 { bottom: 10%; right: 10%; width: 40vw; height: 40vw; background: rgba(139, 92, 246, 0.2); animation: float 18s infinite alternate-reverse; }
-    @keyframes float { 0% { transform: translate(0, 0) rotate(0deg); } 100% { transform: translate(5%, 5%) rotate(10deg); } }
-
-    .glass-panel { background: rgba(15, 23, 42, 0.6); backdrop-filter: blur(16px); -webkit-backdrop-filter: blur(16px); border: 1px solid rgba(255, 255, 255, 0.08); box-shadow: 0 4px 24px -1px rgba(0, 0, 0, 0.2); transition: all 0.4s cubic-bezier(0.23, 1, 0.32, 1); }
-    .glass-panel:hover { background: rgba(15, 23, 42, 0.7); border-color: rgba(255, 255, 255, 0.15); box-shadow: 0 12px 40px -4px rgba(0, 0, 0, 0.4); transform: translateY(-2px); }
-    .glass-input { background: rgba(0, 0, 0, 0.6); border: 1px solid rgba(255, 255, 255, 0.15); transition: all 0.3s ease; }
-    .glass-input:focus { border-color: #3b82f6; box-shadow: 0 0 20px rgba(59, 130, 246, 0.3); outline: none; background: rgba(0, 0, 0, 0.8); }
-    
-    ::-webkit-scrollbar { width: 6px; height: 6px; } ::-webkit-scrollbar-track { background: transparent; } ::-webkit-scrollbar-thumb { background: rgba(255, 255, 255, 0.15); border-radius: 10px; }
-    .hide-scroll::-webkit-scrollbar { display: none; } .hide-scroll { -ms-overflow-style: none; scrollbar-width: none; }
-
-    .view-container { position: relative; width: 100%; overflow: hidden; min-height: 80vh; }
-    .view-card { transition: all 0.5s cubic-bezier(0.4, 0, 0.2, 1); position: absolute; top: 0; left: 0; width: 100%; opacity: 0; pointer-events: none; transform: translateX(50px) scale(0.95); }
-    .view-card.active { position: relative; opacity: 1; pointer-events: auto; transform: translateX(0) scale(1); z-index: 10; }
-    .view-card.prev { transform: translateX(-50px) scale(0.95); } .view-card.next { transform: translateX(50px) scale(0.95); }
-
-    .nav-btn { transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1); position: relative; overflow: hidden; }
-    .nav-btn::after { content: ''; position: absolute; bottom: 0; left: 50%; width: 0; height: 2px; background: var(--primary); transition: all 0.3s ease; transform: translateX(-50%); }
-    .nav-btn.active::after { width: 60%; }
-
-    /* Custom JS Driven Global Tooltip */
-    #globalTooltip { position: fixed; background: rgba(10, 15, 25, 0.98); backdrop-filter: blur(12px); border: 1px solid rgba(59, 130, 246, 0.5); color: #e2e8f0; padding: 12px 16px; border-radius: 8px; width: max-content; max-width: 280px; white-space: normal; line-height: 1.5; font-size: 0.8rem; font-weight: 500; font-family: 'Fredoka', sans-serif; z-index: 99999; box-shadow: 0 10px 40px rgba(0,0,0,0.9); opacity: 0; pointer-events: none; transition: opacity 0.2s ease; transform: translateX(-50%); }
-    .info-icon { display: inline-flex; align-items: center; justify-content: center; margin-left: 8px; color: #60a5fa; cursor: help; position: relative; width: 16px; height: 16px; background: rgba(59, 130, 246, 0.2); border-radius: 50%; text-align: center; line-height: 1; font-size: 10px; font-weight: 900; transition: all 0.2s; flex-shrink: 0; }
-    .info-icon:hover { background: rgba(59, 130, 246, 0.5); color: #fff; transform: scale(1.1); }
-
-    .modal-active { animation: modalPop 0.4s cubic-bezier(0.16, 1, 0.3, 1) forwards; }
-    @keyframes modalPop { 0% { opacity: 0; transform: scale(0.95) translateY(20px); } 100% { opacity: 1; transform: scale(1) translateY(0); } }
-
-    .ledger-item { transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1); border: 1px solid transparent; background: rgba(255,255,255,0.02); }
-    .ledger-item:hover { transform: translateY(-2px); box-shadow: 0 10px 25px rgba(0,0,0,0.4); border-color: rgba(255,255,255,0.08); background-color: rgba(255,255,255,0.05); }
-    .ledger-item .action-btn { opacity: 1; transform: scale(1); transition: all 0.2s; }
-    @media (min-width: 768px) { .ledger-item .action-btn { opacity: 0; transform: scale(0.8); } .ledger-item:hover .action-btn { opacity: 1; transform: scale(1); } }
-    
-    .kanban-col { min-height: 200px; background: rgba(0,0,0,0.4); border-radius: 16px; padding: 12px; border: 1px solid rgba(255,255,255,0.05); }
-    
-    /* Workspace Active Button Styles */
-    .tool-active { background-color: rgba(59, 130, 246, 0.6) !important; border-color: rgba(59, 130, 246, 0.8) !important; color: #ffffff !important; box-shadow: inset 0 2px 4px rgba(0,0,0,0.4); transform: translateY(1px); }
-
-    #workspaceNotes { background-color: rgba(5, 5, 10, 0.7); background-image: linear-gradient(rgba(255,255,255,0.03) 1px, transparent 1px), linear-gradient(90deg, rgba(255,255,255,0.03) 1px, transparent 1px); background-size: 24px 24px; border-radius: 12px; padding: 1.5rem; }
-    #workspaceNotes[contenteditable="true"]:empty:before { content: "Type notes, tasks, or start writing..."; color: #6b7280; display: block; }
-    #workspaceNotes h1 { font-size: 2rem; font-weight: 900; color: #fff; margin-top: 1rem; margin-bottom: 0.5rem; border-bottom: 1px solid rgba(255,255,255,0.1); padding-bottom: 4px; }
-    #workspaceNotes h2 { font-size: 1.5rem; font-weight: 700; color: #e5e7eb; margin-top: 0.75rem; margin-bottom: 0.25rem; }
-    #workspaceNotes ul { list-style-type: disc; margin-left: 1.5rem; margin-bottom: 0.5rem; }
-    .chk-item { display: flex; align-items: center; margin-bottom: 6px; padding: 6px 8px; border-radius: 8px; transition: background 0.2s; border: 1px solid transparent; }
-    .chk-item:hover { background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1); }
-    .chk-item input[type="checkbox"] { accent-color: #3b82f6; width: 18px; height: 18px; cursor: pointer; margin-right: 12px; border-radius: 4px; flex-shrink: 0; }
-    .chk-item label { flex-grow: 1; outline: none; min-width: 50px; cursor: text; line-height: 1.5; font-size: 1rem; }
-    .chk-item input[type="checkbox"]:checked + label { text-decoration: line-through; color: #6b7280; opacity: 0.5; }
-
-    /* Apple Wallet Style Stack */
-    .wallet-stack { position: relative; height: 420px; display: flex; justify-content: center; align-items: flex-end; margin-bottom: 2rem; user-select: none; }
-    .wallet-card { 
-        position: absolute; width: 100%; max-width: 700px; height: 350px; 
-        transition: all 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275); 
-        cursor: pointer; transform-origin: bottom center; 
-        border-top: 1px solid rgba(255,255,255,0.2); 
-    }
-    .wallet-card:hover:not(.active-card) { transform: translateY(-40px) scale(0.98) !important; box-shadow: 0 -10px 40px rgba(0,0,0,0.5); }
-    
-    .truncate-strict { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; min-width: 0; }
-    .preview-card { transition: all 0.2s ease; cursor: pointer; }
-    .preview-card:hover { transform: translateY(-3px); border-color: rgba(59, 130, 246, 0.5); }
-  
     /* ================= ANDREW-STYLE SPIDER-WEB THEME ================= */
     :root {
       --primary: #e3262e;
@@ -98,78 +26,152 @@
       --spider-ink: #03070d;
       --spider-silver: #d7e2ea;
     }
-    body {
-      background-color: var(--spider-ink);
-      color: #eef4f8;
+    
+    body { 
+        font-family: 'Fredoka', sans-serif; 
+        background-color: var(--spider-ink);
+        color: #eef4f8; 
+        -webkit-overflow-scrolling: touch; 
+        overflow-x: hidden; 
+        min-height: 100vh;
+        perspective: 1000px;
     }
+    
     body::before {
+      content: '';
+      position: fixed;
+      inset: 0;
       background:
         radial-gradient(circle at 50% 5%, rgba(227,38,46,.16), transparent 35%),
         linear-gradient(145deg, rgba(2,8,16,.98), rgba(3,10,20,.98) 48%, rgba(20,3,7,.98));
+      z-index: -1;
     }
+    
+    .grid-overlay {
+      position: fixed;
+      inset: 0;
+      background-image:
+        linear-gradient(rgba(227,38,46,.035) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(23,105,170,.035) 1px, transparent 1px);
+      background-size: 28px 28px;
+      z-index: -1;
+      pointer-events: none;
+    }
+
     .bg-mesh {
-      background-color: #03070d;
+      position: fixed;
+      inset: 0;
+      z-index: -1;
+      background-color: transparent;
       background-image:
         radial-gradient(at 8% 8%, rgba(227,38,46,.22) 0px, transparent 42%),
         radial-gradient(at 92% 12%, rgba(23,105,170,.22) 0px, transparent 42%),
         radial-gradient(at 80% 92%, rgba(227,38,46,.12) 0px, transparent 48%),
         radial-gradient(at 12% 88%, rgba(23,105,170,.12) 0px, transparent 48%);
       filter: blur(70px);
+      animation: mesh-float 20s ease infinite alternate;
     }
-    .grid-overlay {
-      background-image:
-        linear-gradient(rgba(227,38,46,.035) 1px, transparent 1px),
-        linear-gradient(90deg, rgba(23,105,170,.035) 1px, transparent 1px);
-      background-size: 28px 28px;
-    }
-    .glass-panel {
-      background: linear-gradient(145deg, rgba(8,16,27,.78), rgba(15,8,12,.72));
-      border-color: rgba(227,38,46,.16);
-      box-shadow: 0 4px 28px rgba(0,0,0,.38), inset 0 1px 0 rgba(255,255,255,.025);
-    }
-    .glass-panel:hover {
-      background: linear-gradient(145deg, rgba(10,20,32,.86), rgba(20,8,13,.82));
-      border-color: rgba(227,38,46,.38);
-      box-shadow: 0 14px 44px rgba(0,0,0,.5), 0 0 28px rgba(227,38,46,.07);
-    }
-    .glass-input:focus {
-      border-color: var(--spider-red);
-      box-shadow: 0 0 20px rgba(227,38,46,.22);
-    }
-    .nav-btn::after { background: linear-gradient(90deg, var(--spider-red), var(--spider-blue)); }
-    .nav-btn.active {
-      background: linear-gradient(135deg, rgba(227,38,46,.88), rgba(176,20,28,.88)) !important;
-      border-color: rgba(255,255,255,.24) !important;
-      box-shadow: 0 0 22px rgba(227,38,46,.24);
-    }
-    .ledger-item:hover {
-      border-color: rgba(227,38,46,.24);
-      box-shadow: 0 10px 28px rgba(0,0,0,.45), 0 0 18px rgba(227,38,46,.06);
-    }
-    .spider-sheen {
-      position: relative;
-      overflow: hidden;
-    }
+
+    @keyframes mesh-float { 0% { transform: scale(1); } 100% { transform: scale(1.05); } }
+
+    .spider-sheen { position: relative; overflow: hidden; }
     .spider-sheen::before {
-      content: "";
-      position: absolute;
-      inset: 0;
-      pointer-events: none;
-      opacity: .34;
+      content: ""; position: absolute; inset: 0; pointer-events: none; opacity: .34;
       background:
         repeating-conic-gradient(from 0deg at 50% 50%, transparent 0deg 14deg, rgba(220,230,240,.08) 14.5deg 15deg, transparent 15.5deg 30deg),
         radial-gradient(circle at 50% 50%, transparent 0 32%, rgba(220,230,240,.05) 32.5% 33%, transparent 33.5% 49%, rgba(220,230,240,.04) 49.5% 50%, transparent 50.5%);
       mask-image: radial-gradient(circle at center, black, transparent 72%);
     }
-    .spider-accent { color: var(--spider-red) !important; }
-    .spider-blue { color: #4ea3df !important; }
-    .spider-badge {
-      background: linear-gradient(135deg, #e3262e, #8e1118);
-      box-shadow: 0 0 22px rgba(227,38,46,.28);
-    }
-    .wallet-card { border-color: rgba(227,38,46,.18); }
-    canvas { max-width: 100%; }
 
+    .glass-panel { 
+      background: linear-gradient(145deg, rgba(8,16,27,.78), rgba(15,8,12,.72));
+      backdrop-filter: blur(16px); -webkit-backdrop-filter: blur(16px);
+      border: 1px solid rgba(227,38,46,.16);
+      box-shadow: 0 4px 28px rgba(0,0,0,.38), inset 0 1px 0 rgba(255,255,255,.025);
+      transition: all 0.4s cubic-bezier(0.23, 1, 0.32, 1);
+    }
+    
+    .glass-panel:hover { 
+      background: linear-gradient(145deg, rgba(10,20,32,.86), rgba(20,8,13,.82));
+      border-color: rgba(227,38,46,.38);
+      box-shadow: 0 14px 44px rgba(0,0,0,.5), 0 0 28px rgba(227,38,46,.07);
+      transform: translateY(-2px);
+    }
+
+    .glass-input { background: rgba(0, 0, 0, 0.6); border: 1px solid rgba(255, 255, 255, 0.15); transition: all 0.3s ease; }
+    .glass-input:focus { border-color: var(--spider-red); box-shadow: 0 0 20px rgba(227,38,46,.22); outline: none; background: rgba(0, 0, 0, 0.8); }
+    
+    ::-webkit-scrollbar { width: 8px; height: 8px; } 
+    ::-webkit-scrollbar-track { background: transparent; } 
+    ::-webkit-scrollbar-thumb { background: rgba(227,38,46, 0.3); border-radius: 10px; }
+    ::-webkit-scrollbar-thumb:hover { background: rgba(227,38,46, 0.6); }
+
+    .hide-scroll::-webkit-scrollbar { display: none; }
+    .hide-scroll { -ms-overflow-style: none; scrollbar-width: none; }
+
+    /* Custom Entry Animations */
+    @keyframes slideUpFade {
+        0% { opacity: 0; transform: translateY(30px); }
+        100% { opacity: 1; transform: translateY(0); }
+    }
+    .animate-slide-up { animation: slideUpFade 0.6s cubic-bezier(0.16, 1, 0.3, 1) forwards; opacity: 0; }
+
+    .view-container { position: relative; width: 100%; overflow: hidden; min-height: 80vh; }
+    .view-card { transition: all 0.5s cubic-bezier(0.4, 0, 0.2, 1); position: absolute; top: 0; left: 0; width: 100%; opacity: 0; pointer-events: none; transform: translateX(50px) scale(0.95); }
+    .view-card.active { position: relative; opacity: 1; pointer-events: auto; transform: translateX(0) scale(1); z-index: 10; }
+    .view-card.prev { transform: translateX(-50px) scale(0.95); } .view-card.next { transform: translateX(50px) scale(0.95); }
+
+    .nav-btn { transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1); position: relative; overflow: hidden; }
+    .nav-btn::after { content: ''; position: absolute; bottom: 0; left: 50%; width: 0; height: 2px; background: linear-gradient(90deg, var(--spider-red), var(--spider-blue)); transition: all 0.3s ease; transform: translateX(-50%); }
+    .nav-btn.active::after { width: 60%; }
+    .nav-btn.active {
+      background: linear-gradient(135deg, rgba(227,38,46,.88), rgba(176,20,28,.88)) !important;
+      border-color: rgba(255,255,255,.24) !important;
+      box-shadow: 0 0 22px rgba(227,38,46,.24);
+    }
+
+    #globalTooltip { position: fixed; background: rgba(10, 15, 25, 0.98); backdrop-filter: blur(12px); border: 1px solid rgba(227,38,46, 0.5); color: #e2e8f0; padding: 12px 16px; border-radius: 8px; width: max-content; max-width: 280px; white-space: normal; line-height: 1.5; font-size: 0.8rem; font-weight: 500; font-family: 'Fredoka', sans-serif; z-index: 99999; box-shadow: 0 10px 40px rgba(0,0,0,0.9); opacity: 0; pointer-events: none; transition: opacity 0.2s ease; transform: translateX(-50%); }
+    .info-icon { display: inline-flex; align-items: center; justify-content: center; margin-left: 8px; color: #4ea3df; cursor: help; position: relative; width: 16px; height: 16px; background: rgba(23,105,170, 0.2); border-radius: 50%; text-align: center; line-height: 1; font-size: 10px; font-weight: 900; transition: all 0.2s; flex-shrink: 0; }
+    .info-icon:hover { background: rgba(227,38,46, 0.6); color: #fff; transform: scale(1.1); }
+
+    .modal-active { animation: modalPop 0.4s cubic-bezier(0.16, 1, 0.3, 1) forwards; }
+    @keyframes modalPop { 0% { opacity: 0; transform: scale(0.95) translateY(20px); } 100% { opacity: 1; transform: scale(1) translateY(0); } }
+
+    .ledger-item { transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1); border: 1px solid transparent; background: rgba(255,255,255,0.02); }
+    .ledger-item:hover { border-color: rgba(227,38,46,.24); box-shadow: 0 10px 28px rgba(0,0,0,.45), 0 0 18px rgba(227,38,46,.06); background-color: rgba(255,255,255,0.05); transform: translateY(-2px); }
+    .ledger-item .action-btn { opacity: 1; transform: scale(1); transition: all 0.2s; }
+    @media (min-width: 768px) { .ledger-item .action-btn { opacity: 0; transform: scale(0.8); } .ledger-item:hover .action-btn { opacity: 1; transform: scale(1); } }
+    
+    .kanban-col { min-height: 200px; background: rgba(0,0,0,0.4); border-radius: 16px; padding: 12px; border: 1px solid rgba(255,255,255,0.05); }
+    .tool-active { background-color: rgba(227, 38, 46, 0.6) !important; border-color: rgba(227, 38, 46, 0.8) !important; color: #ffffff !important; box-shadow: inset 0 2px 4px rgba(0,0,0,0.4); transform: translateY(1px); }
+
+    #workspaceNotes { background-color: rgba(5, 5, 10, 0.7); background-image: linear-gradient(rgba(255,255,255,0.03) 1px, transparent 1px), linear-gradient(90deg, rgba(255,255,255,0.03) 1px, transparent 1px); background-size: 24px 24px; border-radius: 12px; padding: 1.5rem; }
+    #workspaceNotes[contenteditable="true"]:empty:before { content: "Type notes, tasks, or start writing..."; color: #6b7280; display: block; }
+    #workspaceNotes h1 { font-size: 2rem; font-weight: 900; color: #fff; margin-top: 1rem; margin-bottom: 0.5rem; border-bottom: 1px solid rgba(255,255,255,0.1); padding-bottom: 4px; }
+    #workspaceNotes h2 { font-size: 1.5rem; font-weight: 700; color: #e5e7eb; margin-top: 0.75rem; margin-bottom: 0.25rem; }
+    #workspaceNotes ul { list-style-type: disc; margin-left: 1.5rem; margin-bottom: 0.5rem; }
+    .chk-item { display: flex; align-items: center; margin-bottom: 6px; padding: 6px 8px; border-radius: 8px; transition: background 0.2s; border: 1px solid transparent; }
+    .chk-item:hover { background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1); }
+    .chk-item input[type="checkbox"] { accent-color: var(--spider-red); width: 18px; height: 18px; cursor: pointer; margin-right: 12px; border-radius: 4px; flex-shrink: 0; }
+    .chk-item label { flex-grow: 1; outline: none; min-width: 50px; cursor: text; line-height: 1.5; font-size: 1rem; }
+    .chk-item input[type="checkbox"]:checked + label { text-decoration: line-through; color: #6b7280; opacity: 0.5; }
+
+    .wallet-stack { position: relative; height: 420px; display: flex; justify-content: center; align-items: flex-end; margin-bottom: 2rem; user-select: none; }
+    .wallet-card { 
+        position: absolute; width: 100%; max-width: 700px; height: 350px; 
+        transition: all 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275); 
+        cursor: pointer; transform-origin: bottom center; 
+        border-top: 1px solid rgba(255,255,255,0.2); 
+        border-color: rgba(227,38,46,.18);
+    }
+    .wallet-card:hover:not(.active-card) { transform: translateY(-40px) scale(0.98) !important; box-shadow: 0 -10px 40px rgba(0,0,0,0.5); }
+    
+    .truncate-strict { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; min-width: 0; }
+    .preview-card { transition: all 0.2s ease; cursor: pointer; }
+    .preview-card:hover { transform: translateY(-3px); border-color: rgba(227, 38, 46, 0.5); }
+    
+    .chart-carousel-card { min-width: 90vw; height: 380px; scroll-snap-align: center; flex-shrink: 0; display: flex; flex-direction: column; }
+    @media (min-width: 768px) { .chart-carousel-card { min-width: 45vw; } }
   </style>
 </head>
 <body class="p-3 md:p-8 pb-24 relative spider-sheen">
@@ -177,23 +179,22 @@
   <div id="globalTooltip"></div>
   <div class="grid-overlay"></div>
   <div class="bg-mesh"></div>
-  <div class="bg-orb orb-1"></div><div class="bg-orb orb-2"></div>
 
   <div class="max-w-7xl mx-auto space-y-4 md:space-y-6 relative z-10">
     
-    <header class="flex flex-col sm:flex-row justify-between items-center gap-4 glass-panel rounded-3xl p-4 px-6">
+    <header class="flex flex-col sm:flex-row justify-between items-center gap-4 glass-panel rounded-3xl p-4 px-6 animate-slide-up" style="animation-delay: 0s;">
       <div class="flex items-center space-x-4">
         <div class="relative group cursor-pointer">
-          <div class="w-12 h-12 bg-gradient-to-br from-blue-500 to-purple-600 rounded-full flex items-center justify-center shadow-[0_0_20px_rgba(59,130,246,0.4)] text-white font-black text-xl border border-white/20 transition-all duration-500 ease-out">V</div>
+          <div class="w-12 h-12 bg-gradient-to-br from-red-600 to-blue-800 rounded-full flex items-center justify-center shadow-[0_0_20px_rgba(227,38,46,0.4)] text-white font-black text-xl border border-white/20 transition-all duration-500 ease-out">V</div>
           <div class="absolute bottom-0 right-0 w-3.5 h-3.5 bg-emerald-500 border-2 border-[#050505] rounded-full shadow-[0_0_8px_rgba(16,185,129,0.8)]"></div>
         </div>
         <div>
-          <h1 class="text-2xl font-black tracking-tight text-white">Welcome back, <span class="text-transparent bg-clip-text bg-gradient-to-r from-red-400 via-white to-blue-400">Vidhun</span></h1>
-          <p class="text-[10px] text-gray-400 font-bold uppercase tracking-widest flex items-center mt-0.5"><i data-lucide="shield-check" class="w-3 h-3 mr-1 text-emerald-400"></i> Mark 2 • Web-Slinger Financial Command Center</p>
+          <h1 class="text-2xl font-black tracking-tight text-white">Welcome back, <span class="text-transparent bg-clip-text bg-gradient-to-r from-red-500 via-white to-blue-400">Vidhun</span></h1>
+          <p class="text-[10px] text-gray-400 font-bold uppercase tracking-widest flex items-center mt-0.5"><i data-lucide="shield-check" class="w-3 h-3 mr-1 text-emerald-400"></i> Mark 2 • Web-Slinger Command Center</p>
         </div>
       </div>
       <div class="flex space-x-1 bg-black/40 p-1.5 rounded-2xl border border-white/5 w-full sm:w-auto shadow-inner overflow-x-auto scrollbar-hide">
-        <button id="navDashboard" onclick="switchMainView('dashboard')" class="nav-btn active flex-1 sm:flex-none px-4 md:px-5 py-2.5 rounded-xl font-bold text-sm bg-blue-600 text-white shadow-lg transition-all border border-blue-400/50 uppercase tracking-wider"><i data-lucide="activity" class="inline w-4 h-4 mr-1.5"></i> Ledger</button>
+        <button id="navDashboard" onclick="switchMainView('dashboard')" class="nav-btn active flex-1 sm:flex-none px-4 md:px-5 py-2.5 rounded-xl font-bold text-sm text-white shadow-lg transition-all uppercase tracking-wider"><i data-lucide="activity" class="inline w-4 h-4 mr-1.5"></i> Ledger</button>
         <button id="navWishlist" onclick="switchMainView('wishlist')" class="nav-btn flex-1 sm:flex-none px-4 md:px-5 py-2.5 rounded-xl font-bold text-sm text-gray-400 hover:text-white hover:bg-white/10 transition-all border border-transparent uppercase tracking-wider"><i data-lucide="target" class="inline w-4 h-4 mr-1.5"></i> Wishlist</button>
         <button id="navMedia" onclick="switchMainView('media')" class="nav-btn flex-1 sm:flex-none px-4 md:px-5 py-2.5 rounded-xl font-bold text-sm text-gray-400 hover:text-white hover:bg-white/10 transition-all border border-transparent uppercase tracking-wider"><i data-lucide="clapperboard" class="inline w-4 h-4 mr-1.5"></i> Watch & Read</button>
         <button id="navWorkspace" onclick="switchMainView('workspace')" class="nav-btn flex-1 sm:flex-none px-4 md:px-5 py-2.5 rounded-xl font-bold text-sm text-gray-400 hover:text-white hover:bg-white/10 transition-all border border-transparent uppercase tracking-wider"><i data-lucide="layout-dashboard" class="inline w-4 h-4 mr-1.5"></i> Workspace</button>
@@ -205,7 +206,7 @@
     <!-- DASHBOARD VIEW -->
     <div id="viewDashboard" class="view-card active space-y-4 md:space-y-6">
       
-      <div id="pendingContainer" class="hidden mb-4">
+      <div id="pendingContainer" class="hidden mb-4 animate-slide-up" style="animation-delay: 0.1s;">
           <div class="bg-gray-900 border border-blue-500/40 rounded-2xl p-4 md:p-6 shadow-[0_0_40px_rgba(59,130,246,0.2)] relative overflow-hidden transition-all">
                <div class="absolute inset-0 bg-gradient-to-r from-blue-600/10 to-purple-600/10 pointer-events-none"></div>
                <h3 class="text-xs font-bold text-blue-400 mb-4 uppercase tracking-widest flex items-center">
@@ -216,7 +217,7 @@
       </div>
 
       <!-- HORIZONTAL METRIC CARDS -->
-      <div class="flex overflow-x-auto snap-x snap-mandatory gap-4 md:gap-6 pb-4 hide-scroll relative z-20">
+      <div class="flex overflow-x-auto snap-x snap-mandatory gap-4 md:gap-6 pb-4 hide-scroll relative z-20 animate-slide-up" style="animation-delay: 0.1s;">
         
         <div class="glass-panel rounded-3xl p-6 md:p-8 flex flex-col h-full bg-gradient-to-br from-white/5 to-transparent min-w-[85vw] sm:min-w-[45vw] md:min-w-[calc(33.33%-16px)] snap-center flex-shrink-0">
           <div class="flex justify-between items-start mb-4">
@@ -307,7 +308,7 @@
       </div>
 
       <!-- Quick Metrics Grid -->
-      <div class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-4 md:gap-6 mt-2 uppercase">
+      <div class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-4 md:gap-6 mt-2 uppercase animate-slide-up" style="animation-delay: 0.2s;">
         <div class="glass-panel rounded-2xl p-4 flex flex-col items-center justify-center text-center bg-white/5 border border-white/10">
           <p class="text-[10px] text-gray-400 font-bold tracking-widest mb-1 flex items-center justify-center w-full"><i data-lucide="activity" class="w-3 h-3 mr-1"></i> Health <span class="info-icon" data-info="Algorithm: Base 50 + Savings Velocity Bonus + Liquid Runway Bonus + Low Debt Ratio Bonus.">i</span></p>
           <p id="healthScore" class="text-xl md:text-2xl font-black text-emerald-400 drop-shadow-sm truncate whitespace-nowrap w-full uppercase">0/100</p>
@@ -341,13 +342,13 @@
         </div>
       </div>
 
-      <!-- WALLET STACK CHARTS SECTION -->
-      <div class="wallet-stack mt-12" id="walletStack">
+      <!-- SWIPEABLE CHARTS CAROUSEL (Horizontal Scroll) -->
+      <div class="flex overflow-x-auto snap-x snap-mandatory gap-4 md:gap-6 pb-4 hide-scroll relative z-20 mt-8 animate-slide-up" style="animation-delay: 0.3s;">
           
-          <!-- Card 1: Pie Chart -->
-          <div class="wallet-card glass-panel rounded-3xl p-5 md:p-6 bg-gradient-to-br from-blue-900/40 to-black/90 border border-blue-500/30 active-card" onclick="bringToFront(this)" style="transform: translateY(10px) scale(1.05); z-index: 5;">
+          <!-- Chart 1: Distribution Pie Chart -->
+          <div class="chart-carousel-card glass-panel rounded-3xl p-5 md:p-6 bg-gradient-to-br from-blue-900/40 to-black/90 border border-blue-500/30">
               <div class="flex justify-between items-center mb-4 gap-2">
-                <h3 class="text-xs font-bold text-blue-300 uppercase tracking-widest flex items-center flex-shrink-0">Distribution <span class="info-icon" data-info="Categorical breakdown of your spending. SWIPE CARDS UP OR DOWN to view other analytics.">i</span></h3>
+                <h3 class="text-xs font-bold text-blue-300 uppercase tracking-widest flex items-center flex-shrink-0">Distribution <span class="info-icon" data-info="Categorical breakdown of your spending.">i</span></h3>
                 <div class="flex items-center gap-2 min-w-0">
                     <div class="relative min-w-0">
                         <select id="pieChartMonthFilter" onchange="updatePieChart(this.value); event.stopPropagation();" class="bg-black/50 text-[10px] font-bold text-white uppercase rounded-xl px-2 py-1.5 pr-6 border border-white/10 outline-none hover:border-blue-500/50 cursor-pointer w-[110px] truncate-strict appearance-none">
@@ -371,8 +372,8 @@
               </div>
           </div>
 
-          <!-- Card 2: C.A.S.P.E.R. AI Insights -->
-          <div class="wallet-card glass-panel rounded-3xl p-5 md:p-6 bg-gradient-to-br from-purple-900/40 to-black/90 border border-purple-500/30" onclick="bringToFront(this)" style="transform: translateY(0px) scale(1); z-index: 4; filter: brightness(0.9);">
+          <!-- Chart 2: C.A.S.P.E.R. AI Insights -->
+          <div class="chart-carousel-card glass-panel rounded-3xl p-5 md:p-6 bg-gradient-to-br from-purple-900/40 to-black/90 border border-purple-500/30">
               <div class="flex justify-between items-center mb-4 gap-2">
                 <h3 class="text-xs font-bold text-purple-300 uppercase tracking-widest flex items-center flex-shrink-0">C.A.S.P.E.R. ENGINE <span class="info-icon" data-info="Calculated Asset Security and Personal Expense Recorder. Hit 'Analyze' for a budget summary, or 'Forecast' for predictive month-over-month trajectory analysis.">i</span></h3>
                 <div class="flex flex-wrap items-center gap-2 min-w-0 justify-end">
@@ -392,8 +393,8 @@
               </div>
           </div>
 
-          <!-- Card 3: Spending Radar -->
-          <div class="wallet-card glass-panel rounded-3xl p-5 md:p-6 bg-gradient-to-br from-emerald-900/30 to-black/90 border border-emerald-500/30" onclick="bringToFront(this)" style="transform: translateY(-10px) scale(0.95); z-index: 3; filter: brightness(0.75);">
+          <!-- Chart 3: Spending Radar -->
+          <div class="chart-carousel-card glass-panel rounded-3xl p-5 md:p-6 bg-gradient-to-br from-emerald-900/30 to-black/90 border border-emerald-500/30">
               <div class="flex justify-between items-center mb-4">
                   <h3 class="text-xs font-bold text-emerald-300 uppercase tracking-widest flex items-center">Spending Radar <span class="info-icon" data-info="A multidimensional view comparing your top 5 spending categories.">i</span></h3>
                   <div class="flex gap-2">
@@ -403,8 +404,8 @@
               <div class="h-[250px] relative flex justify-center w-full"><canvas id="radarChart"></canvas></div>
           </div>
           
-          <!-- Card 4: Net Worth & Cashflow -->
-          <div class="wallet-card glass-panel rounded-3xl p-5 md:p-6 bg-gradient-to-br from-rose-900/30 to-black/90 border border-rose-500/30" onclick="bringToFront(this)" style="transform: translateY(-20px) scale(0.9); z-index: 2; filter: brightness(0.6);">
+          <!-- Chart 4: Net Worth -->
+          <div class="chart-carousel-card glass-panel rounded-3xl p-5 md:p-6 bg-gradient-to-br from-rose-900/30 to-black/90 border border-rose-500/30">
               <div class="flex justify-between items-center mb-4">
                   <h3 class="text-xs font-bold text-rose-300 uppercase tracking-widest flex items-center">Cumulative Net Worth <span class="info-icon" data-info="Cumulative track of your total retained wealth over time (All-Time Income minus All-Time Expenses).">i</span></h3>
                   <button onclick="openChartModal('trendChart', 'Cumulative Net Worth Over Time'); event.stopPropagation();" class="text-gray-400 hover:text-white transition-colors bg-white/10 hover:bg-white/20 p-1.5 rounded-lg border border-white/10"><i data-lucide="maximize-2" class="w-4 h-4"></i></button>
@@ -413,9 +414,9 @@
           </div>
       </div>
 
-      <!-- Remaining Lower Charts Grid -->
-      <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 md:gap-6 mt-6">
-          <div class="glass-panel rounded-3xl p-5 md:p-6 bg-gradient-to-b from-transparent to-white/5 border border-white/10">
+      <!-- Lower Charts Grid -->
+      <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-2 gap-4 md:gap-6 mt-6">
+          <div class="glass-panel rounded-3xl p-5 md:p-6 bg-gradient-to-b from-transparent to-white/5 border border-white/10 animate-slide-up" style="animation-delay: 0.4s;">
               <div class="flex justify-between items-center mb-4">
                   <h3 class="text-xs font-bold text-gray-400 uppercase tracking-widest flex items-center">Month Over Month <span class="info-icon" data-info="Bar chart comparing your total aggregate expenses across different calendar months.">i</span></h3>
                   <div class="flex gap-2">
@@ -424,8 +425,18 @@
               </div>
               <div class="h-52 relative flex justify-center w-full"><canvas id="monthlyTrendChart"></canvas></div>
           </div>
+
+          <div class="glass-panel rounded-3xl p-5 md:p-6 bg-gradient-to-b from-transparent to-white/5 border border-white/10 animate-slide-up" style="animation-delay: 0.45s;">
+              <div class="flex justify-between items-center mb-4">
+                  <h3 class="text-xs font-bold text-gray-400 uppercase tracking-widest flex items-center">Weekly Rhythm <span class="info-icon" data-info="Visualizes what days of the week you spend the most money historically.">i</span></h3>
+                  <div class="flex gap-2">
+                      <button onclick="openChartModal('weeklyRhythmChart', 'Weekly Rhythm')" class="text-gray-500 hover:text-white transition-colors bg-white/10 hover:bg-white/20 p-1.5 rounded-lg border border-white/10"><i data-lucide="maximize-2" class="w-4 h-4"></i></button>
+                  </div>
+              </div>
+              <div class="h-52 relative flex justify-center w-full"><canvas id="weeklyRhythmChart"></canvas></div>
+          </div>
           
-          <div class="glass-panel rounded-3xl p-5 md:p-6 bg-gradient-to-b from-transparent to-white/5 border border-white/10">
+          <div class="glass-panel rounded-3xl p-5 md:p-6 bg-gradient-to-b from-transparent to-white/5 border border-white/10 animate-slide-up" style="animation-delay: 0.5s;">
               <div class="flex justify-between items-center mb-4">
                   <h3 class="text-xs font-bold text-gray-400 uppercase tracking-widest flex items-center">7-Day Cashflow <span class="info-icon" data-info="Daily split of income vs. expenses for the most recent 7 days of activity in the selected period.">i</span></h3>
                   <div class="flex items-center gap-2 flex-shrink-0">
@@ -436,7 +447,7 @@
               <div class="h-52 relative flex justify-center w-full"><canvas id="cashflowChart"></canvas></div>
           </div>
 
-          <div class="glass-panel rounded-3xl p-5 md:p-6 bg-gradient-to-b from-transparent to-white/5 border border-white/10">
+          <div class="glass-panel rounded-3xl p-5 md:p-6 bg-gradient-to-b from-transparent to-white/5 border border-white/10 animate-slide-up" style="animation-delay: 0.55s;">
               <div class="flex justify-between items-center mb-4">
                   <h3 class="text-xs font-bold text-gray-400 uppercase tracking-widest flex items-center">Historical Flow <span class="info-icon" data-info="Long-term view comparing inbound and outbound cashflow across all historical data points.">i</span></h3>
                   <div class="flex items-center gap-2 min-w-0">
@@ -453,15 +464,16 @@
 
       <div class="grid grid-cols-1 lg:grid-cols-3 gap-4 md:gap-6 mt-6">
         <div class="lg:col-span-2">
-          <div class="glass-panel rounded-3xl p-4 md:p-6 bg-gradient-to-br from-white/5 to-transparent h-full">
+          <div class="glass-panel rounded-3xl p-4 md:p-6 bg-gradient-to-br from-white/5 to-transparent h-full animate-slide-up" style="animation-delay: 0.6s;">
             <div class="flex flex-col gap-4 mb-4">
                <div class="flex justify-between items-center">
-                 <h3 class="text-xs font-bold text-gray-400 uppercase tracking-widest flex items-center">Ledger Data <span class="spider-accent">•</span><span id="recordCount" class="ml-3 px-2.5 py-0.5 bg-black/50 border border-white/20 rounded-md text-[10px] font-bold text-white shadow-inner">0</span></h3>
+                 <h3 class="text-xs font-bold text-gray-400 uppercase tracking-widest flex items-center">Ledger Data <span class="spider-accent mx-2">•</span><span id="recordCount" class="px-2.5 py-0.5 bg-black/50 border border-white/20 rounded-md text-[10px] font-bold text-white shadow-inner">0</span></h3>
                  
                  <div class="flex items-center space-x-1.5">
                    <button onclick="openAIReport()" class="bg-purple-600/30 hover:bg-purple-600 text-purple-200 hover:text-white px-3 py-2 rounded-xl text-xs font-bold border border-purple-500/50 transition-all flex items-center shadow-md uppercase tracking-wider mr-1"><i data-lucide="sparkles" class="w-3.5 h-3.5 mr-1.5 text-purple-300"></i> Full Report</button>
                    <button onclick="exportPDF()" class="bg-red-500/10 hover:bg-red-500/30 text-red-400 p-2 rounded-xl border border-red-500/20 transition-colors" title="Export Dashboard PDF"><i data-lucide="file-text" class="w-5 h-5"></i></button>
-                   <button onclick="exportExcel()" class="bg-emerald-500/10 hover:bg-emerald-500/30 text-emerald-400 p-2 rounded-xl border border-emerald-500/20 transition-colors" title="Export Ledger Excel"><i data-lucide="file-spreadsheet" class="w-5 h-5"></i></button><button onclick="restoreEmbeddedExcelLedger()" class="bg-red-500/10 hover:bg-red-600/30 text-red-300 p-2 rounded-xl border border-red-500/20 transition-colors" title="Restore Wallet_Data.xlsx seed ledger"><i data-lucide="shield-check" class="w-5 h-5"></i></button>
+                   <button onclick="exportExcel()" class="bg-emerald-500/10 hover:bg-emerald-500/30 text-emerald-400 p-2 rounded-xl border border-emerald-500/20 transition-colors" title="Export Ledger Excel"><i data-lucide="file-spreadsheet" class="w-5 h-5"></i></button>
+                   <button onclick="restoreEmbeddedExcelLedger()" class="bg-red-500/10 hover:bg-red-600/30 text-red-300 p-2 rounded-xl border border-red-500/20 transition-colors" title="Restore Wallet_Data.xlsx seed ledger"><i data-lucide="shield-check" class="w-5 h-5"></i></button>
                    <label class="bg-white/10 hover:bg-white/20 text-gray-300 p-2 rounded-xl border border-white/10 cursor-pointer transition-colors" title="Restore JSON / Excel Backup"><i data-lucide="upload" class="w-5 h-5"></i><input type="file" id="importFile" accept=".json,.xlsx,.xls,.csv" class="hidden" onchange="importData(event)"></label>
                  </div>
                </div>
@@ -486,7 +498,7 @@
         </div>
 
         <div class="lg:col-span-1">
-          <div class="glass-panel rounded-3xl p-5 md:p-6 sticky top-6 bg-gradient-to-br from-white/5 to-transparent">
+          <div class="glass-panel rounded-3xl p-5 md:p-6 sticky top-6 bg-gradient-to-br from-white/5 to-transparent animate-slide-up" style="animation-delay: 0.65s;">
             <h3 class="text-xs font-bold text-gray-400 uppercase tracking-widest mb-6 flex items-center">Quick Entry <span class="info-icon" data-info="Manually add transactions here. You can also paste raw SMS text using the message button inside the amount box to let AI auto-fill the details.">i</span></h3>
             <div class="flex rounded-xl bg-black/50 p-1.5 mb-6 border border-white/10 shadow-inner relative z-10">
               <button id="tabExpense" class="flex-1 py-2 text-sm font-bold rounded-lg bg-white/10 text-white transition-all shadow-md tracking-wider uppercase border border-white/10" onclick="switchTab('expense')">Expense</button>
@@ -825,7 +837,6 @@
     </div>
     </main>
   </div>
-
   <!-- AI COMPREHENSIVE REPORT MODAL -->
   <div id="aiReportModal" class="hidden fixed inset-0 bg-black/95 backdrop-blur-xl z-[100] flex items-center justify-center p-4 transition-opacity overflow-y-auto">
       <div class="glass-panel modal-active rounded-3xl w-full max-w-6xl my-auto border border-white/20 shadow-[0_0_60px_rgba(59,130,246,0.3)] relative flex flex-col max-h-[95vh] bg-black/60">
@@ -1005,25 +1016,26 @@
     let monthlyBudgets = JSON.parse(localStorage.getItem('walletBudgets')) || { 'default': 25000 }; 
     let ccLimit = parseFloat(localStorage.getItem('walletCCLimit')) || 50000;
     
-    let selectedMonth = '2026-08'; 
-    
-    let searchQuery = '';
-    let currentFilter = 'all';
-    
-    const rawData = "[{\"i\":\"17862336000000000\",\"t\":\"e\",\"a\":460.0,\"ac\":\"UPI\",\"c\":\"Food & Dining\",\"n\":\"\",\"ts\":1786233600000},{\"i\":\"17861472000000001\",\"t\":\"e\",\"a\":418.75,\"ac\":\"UPI\",\"c\":\"Groceries\",\"n\":\"\",\"ts\":1786147200000},{\"i\":\"17861472000000002\",\"t\":\"e\",\"a\":95.0,\"ac\":\"UPI\",\"c\":\"Food & Dining\",\"n\":\"\",\"ts\":1786147200000},{\"i\":\"17861472000000003\",\"t\":\"e\",\"a\":719.0,\"ac\":\"UPI\",\"c\":\"Subscriptions\",\"n\":\"\",\"ts\":1786147200000},{\"i\":\"17861472000000004\",\"t\":\"e\",\"a\":55.0,\"ac\":\"UPI\",\"c\":\"Groceries\",\"n\":\"\",\"ts\":1786147200000},{\"i\":\"17861472000000005\",\"t\":\"e\",\"a\":65.0,\"ac\":\"UPI\",\"c\":\"Transport\",\"n\":\"\",\"ts\":1786147200000},{\"i\":\"17860608000000006\",\"t\":\"e\",\"a\":163.0,\"ac\":\"UPI\",\"c\":\"Groceries\",\"n\":\"\",\"ts\":1786060800000},{\"i\":\"17859744000000007\",\"t\":\"e\",\"a\":130.0,\"ac\":\"UPI\",\"c\":\"Food & Dining\",\"n\":\"\",\"ts\":1785974400000},{\"i\":\"17858016000000008\",\"t\":\"e\",\"a\":240.0,\"ac\":\"UPI\",\"c\":\"Food & Dining\",\"n\":\"\",\"ts\":1785801600000},{\"i\":\"17857152000000009\",\"t\":\"i\",\"a\":39.84,\"ac\":\"UPI\",\"c\":\"Other\",\"n\":\"\",\"ts\":1785715200000},{\"i\":\"17857152000000010\",\"t\":\"e\",\"a\":115.0,\"ac\":\"UPI\",\"c\":\"Groceries\",\"n\":\"\",\"ts\":1785715200000},{\"i\":\"17857152000000011\",\"t\":\"e\",\"a\":161.72,\"ac\":\"UPI\",\"c\":\"Food & Dining\",\"n\":\"\",\"ts\":1785715200000},{\"i\":\"17856288000000012\",\"t\":\"e\",\"a\":64.0,\"ac\":\"UPI\",\"c\":\"Transport\",\"n\":\"\",\"ts\":1785628800000},{\"i\":\"17856288000000013\",\"t\":\"e\",\"a\":32.0,\"ac\":\"UPI\",\"c\":\"Transport\",\"n\":\"\",\"ts\":1785628800000},{\"i\":\"17856288000000014\",\"t\":\"e\",\"a\":16.0,\"ac\":\"UPI\",\"c\":\"Transport\",\"n\":\"\",\"ts\":1785628800000},{\"i\":\"17856288000000015\",\"t\":\"i\",\"a\":35.0,\"ac\":\"UPI\",\"c\":\"Other\",\"n\":\"\",\"ts\":1785628800000},{\"i\":\"17856288000000016\",\"t\":\"e\",\"a\":125.0,\"ac\":\"UPI\",\"c\":\"Groceries\",\"n\":\"\",\"ts\":1785628800000},{\"i\":\"17856288000000017\",\"t\":\"e\",\"a\":13.0,\"ac\":\"UPI\",\"c\":\"Transport\",\"n\":\"\",\"ts\":1785628800000},{\"i\":\"17856288000000018\",\"t\":\"e\",\"a\":35.0,\"ac\":\"UPI\",\"c\":\"Transport\",\"n\":\"\",\"ts\":1785628800000},{\"i\":\"17856288000000019\",\"t\":\"e\",\"a\":23.0,\"ac\":\"UPI\",\"c\":\"Transport\",\"n\":\"\",\"ts\":1785628800000},{\"i\":\"17856288000000020\",\"t\":\"e\",\"a\":27.0,\"ac\":\"UPI\",\"c\":\"Transport\",\"n\":\"\",\"ts\":1785628800000},{\"i\":\"17855424000000021\",\"t\":\"e\",\"a\":9750.0,\"ac\":\"UPI\",\"c\":\"Rent\",\"n\":\"\",\"ts\":1785542400000},{\"i\":\"17855424000000022\",\"t\":\"e\",\"a\":131.0,\"ac\":\"UPI\",\"c\":\"Food & Dining\",\"n\":\"\",\"ts\":1785542400000},{\"i\":\"17855424000000023\",\"t\":\"e\",\"a\":20000.0,\"ac\":\"UPI\",\"c\":\"Other\",\"n\":\"\",\"ts\":1785542400000},{\"i\":\"17855424000000024\",\"t\":\"i\",\"a\":50080.0,\"ac\":\"UPI\",\"c\":\"Salary\",\"n\":\"\",\"ts\":1785542400000},{\"i\":\"17853696000000025\",\"t\":\"e\",\"a\":165.0,\"ac\":\"UPI\",\"c\":\"Food & Dining\",\"n\":\"\",\"ts\":1785369600000},{\"i\":\"17853696000000026\",\"t\":\"e\",\"a\":167.72,\"ac\":\"UPI\",\"c\":\"Food & Dining\",\"n\":\"\",\"ts\":1785369600000},{\"i\":\"17852832000000027\",\"t\":\"e\",\"a\":198.0,\"ac\":\"UPI\",\"c\":\"Food & Dining\",\"n\":\"\",\"ts\":1785283200000},{\"i\":\"17852832000000028\",\"t\":\"e\",\"a\":153.0,\"ac\":\"UPI\",\"c\":\"Shopping\",\"n\":\"Amazon India (SMS)\",\"ts\":1785283200000},{\"i\":\"17851968000000029\",\"t\":\"e\",\"a\":50.0,\"ac\":\"UPI\",\"c\":\"Groceries\",\"n\":\"\",\"ts\":1785196800000},{\"i\":\"17851104000000030\",\"t\":\"e\",\"a\":120.0,\"ac\":\"UPI\",\"c\":\"Groceries\",\"n\":\"\",\"ts\":1785110400000},{\"i\":\"17851104000000031\",\"t\":\"e\",\"a\":511.97,\"ac\":\"UPI\",\"c\":\"Entertainment\",\"n\":\"\",\"ts\":1785110400000},{\"i\":\"17850240000000032\",\"t\":\"e\",\"a\":421.0,\"ac\":\"UPI\",\"c\":\"Food & Dining\",\"n\":\"\",\"ts\":1785024000000},{\"i\":\"17850240000000033\",\"t\":\"e\",\"a\":35.0,\"ac\":\"UPI\",\"c\":\"Groceries\",\"n\":\"\",\"ts\":1785024000000},{\"i\":\"17850240000000034\",\"t\":\"e\",\"a\":164.0,\"ac\":\"UPI\",\"c\":\"Food & Dining\",\"n\":\"\",\"ts\":1785024000000},{\"i\":\"17849376000000035\",\"t\":\"e\",\"a\":60.0,\"ac\":\"UPI\",\"c\":\"Groceries\",\"n\":\"\",\"ts\":1784937600000},{\"i\":\"17849376000000036\",\"t\":\"e\",\"a\":127.0,\"ac\":\"UPI\",\"c\":\"Food & Dining\",\"n\":\"\",\"ts\":1784937600000},{\"i\":\"17847648000000037\",\"t\":\"e\",\"a\":80.0,\"ac\":\"UPI\",\"c\":\"Groceries\",\"n\":\"\",\"ts\":1784764800000},{\"i\":\"17846784000000038\",\"t\":\"e\",\"a\":120.0,\"ac\":\"UPI\",\"c\":\"Food & Dining\",\"n\":\"\",\"ts\":1784678400000},{\"i\":\"17846784000000039\",\"t\":\"e\",\"a\":60.0,\"ac\":\"UPI\",\"c\":\"Food & Dining\",\"n\":\"\",\"ts\":1784678400000},{\"i\":\"17845920000000040\",\"t\":\"e\",\"a\":144.0,\"ac\":\"UPI\",\"c\":\"Food & Dining\",\"n\":\"\",\"ts\":1784592000000},{\"i\":\"17845920000000041\",\"t\":\"i\",\"a\":2800.0,\"ac\":\"UPI\",\"c\":\"Refund\",\"n\":\"\",\"ts\":1784592000000},{\"i\":\"17845920000000042\",\"t\":\"e\",\"a\":30.0,\"ac\":\"UPI\",\"c\":\"Food & Dining\",\"n\":\"\",\"ts\":1784592000000},{\"i\":\"17845056000000043\",\"t\":\"e\",\"a\":15.0,\"ac\":\"UPI\",\"c\":\"Groceries\",\"n\":\"\",\"ts\":1784505600000},{\"i\":\"17845056000000044\",\"t\":\"e\",\"a\":45.0,\"ac\":\"UPI\",\"c\":\"Food & Dining\",\"n\":\"\",\"ts\":1784505600000},{\"i\":\"17844192000000045\",\"t\":\"e\",\"a\":289.0,\"ac\":\"UPI\",\"c\":\"Groceries\",\"n\":\"\",\"ts\":1784419200000},{\"i\":\"17844192000000046\",\"t\":\"e\",\"a\":167.0,\"ac\":\"UPI\",\"c\":\"Food & Dining\",\"n\":\"\",\"ts\":1784419200000},{\"i\":\"17844192000000047\",\"t\":\"e\",\"a\":60.0,\"ac\":\"UPI\",\"c\":\"Food & Dining\",\"n\":\"\",\"ts\":1784419200000},{\"i\":\"17843328000000048\",\"t\":\"e\",\"a\":665.0,\"ac\":\"UPI\",\"c\":\"Electricity charges\",\"n\":\"\",\"ts\":1784332800000},{\"i\":\"17843328000000049\",\"t\":\"e\",\"a\":60.0,\"ac\":\"UPI\",\"c\":\"Food & Dining\",\"n\":\"\",\"ts\":1784332800000},{\"i\":\"17843328000000050\",\"t\":\"e\",\"a\":35.0,\"ac\":\"UPI\",\"c\":\"Groceries\",\"n\":\"THANGAM FRUITS AND VEGETABLES (SMS)\",\"ts\":1784332800000},{\"i\":\"17843328000000051\",\"t\":\"e\",\"a\":40.0,\"ac\":\"UPI\",\"c\":\"Transport\",\"n\":\"METROPOLITAN TRANSPORT (SMS)\",\"ts\":1784332800000},{\"i\":\"17843328000000052\",\"t\":\"e\",\"a\":23.0,\"ac\":\"UPI\",\"c\":\"Other\",\"n\":\"Cumta info (SMS)\",\"ts\":1784332800000},{\"i\":\"17843328000000053\",\"t\":\"i\",\"a\":62.0,\"ac\":\"UPI\",\"c\":\"Other\",\"n\":\"SHIVAYOGESHJ (SMS)\",\"ts\":1784332800000},{\"i\":\"17843328000000054\",\"t\":\"e\",\"a\":32.0,\"ac\":\"UPI\",\"c\":\"Transport\",\"n\":\"Rapido (SMS)\",\"ts\":1784332800000},{\"i\":\"17843328000000055\",\"t\":\"e\",\"a\":32.0,\"ac\":\"UPI\",\"c\":\"Transport\",\"n\":\"Rapido (SMS)\",\"ts\":1784332800000},{\"i\":\"17843328000000056\",\"t\":\"e\",\"a\":206.0,\"ac\":\"UPI\",\"c\":\"Entertainment\",\"n\":\"MOHAMED IMRAN FAREET (SMS)\",\"ts\":1784332800000},{\"i\":\"17843328000000057\",\"t\":\"e\",\"a\":681.17,\"ac\":\"UPI\",\"c\":\"Food & Dining\",\"n\":\"Dominos Pizza (SMS)\",\"ts\":1784332800000},{\"i\":\"17843328000000058\",\"t\":\"e\",\"a\":10.0,\"ac\":\"UPI\",\"c\":\"Transport\",\"n\":\"Indian Railway (SMS)\",\"ts\":1784332800000},{\"i\":\"17843328000000059\",\"t\":\"e\",\"a\":20.0,\"ac\":\"UPI\",\"c\":\"Other\",\"n\":\"SHIVAYOGESH J (SMS)\",\"ts\":1784332800000},{\"i\":\"17843328000000060\",\"t\":\"e\",\"a\":13.0,\"ac\":\"UPI\",\"c\":\"Transport\",\"n\":\"\",\"ts\":1784332800000},{\"i\":\"17843328000000061\",\"t\":\"e\",\"a\":33.0,\"ac\":\"UPI\",\"c\":\"Transport\",\"n\":\"\",\"ts\":1784332800000},{\"i\":\"17843328000000062\",\"t\":\"e\",\"a\":5.0,\"ac\":\"UPI\",\"c\":\"Transport\",\"n\":\"\",\"ts\":1784332800000},{\"i\":\"17842464000000063\",\"t\":\"e\",\"a\":1654.0,\"ac\":\"UPI\",\"c\":\"Shopping\",\"n\":\"Amazon India (SMS)\",\"ts\":1784246400000},{\"i\":\"17842464000000064\",\"t\":\"e\",\"a\":60.0,\"ac\":\"UPI\",\"c\":\"Groceries\",\"n\":\"\",\"ts\":1784246400000},{\"i\":\"17839872000000065\",\"t\":\"e\",\"a\":105.0,\"ac\":\"UPI\",\"c\":\"Food & Dining\",\"n\":\"SWIGGY (SMS)\",\"ts\":1783987200000},{\"i\":\"17839008000000066\",\"t\":\"e\",\"a\":60.0,\"ac\":\"UPI\",\"c\":\"Groceries\",\"n\":\"\",\"ts\":1783900800000},{\"i\":\"17838144000000067\",\"t\":\"e\",\"a\":150.0,\"ac\":\"UPI\",\"c\":\"Other\",\"n\":\"Haircut\",\"ts\":1783814400000},{\"i\":\"17837280000000068\",\"t\":\"e\",\"a\":20000.0,\"ac\":\"UPI\",\"c\":\"Other\",\"n\":\"\",\"ts\":1783728000000},{\"i\":\"17835552000000069\",\"t\":\"e\",\"a\":211.0,\"ac\":\"UPI\",\"c\":\"Food & Dining\",\"n\":\"Swiggy Ltd (SMS)\",\"ts\":1783555200000},{\"i\":\"17834688000000070\",\"t\":\"e\",\"a\":992.25,\"ac\":\"UPI\",\"c\":\"Transport\",\"n\":\"AbhiBus (SMS)\",\"ts\":1783468800000},{\"i\":\"17834688000000071\",\"t\":\"e\",\"a\":894.0,\"ac\":\"UPI\",\"c\":\"Transport\",\"n\":\"ABHIBUS COM (SMS)\",\"ts\":1783468800000},{\"i\":\"17833824000000072\",\"t\":\"e\",\"a\":30.0,\"ac\":\"UPI\",\"c\":\"Food & Dining\",\"n\":\"THANGAM FRUITS AND VEGETABLES (SMS)\",\"ts\":1783382400000},{\"i\":\"17833824000000073\",\"t\":\"e\",\"a\":115.0,\"ac\":\"UPI\",\"c\":\"Food & Dining\",\"n\":\"Swiggy Ltd (SMS)\",\"ts\":1783382400000},{\"i\":\"17833824000000074\",\"t\":\"e\",\"a\":11.0,\"ac\":\"UPI\",\"c\":\"Other\",\"n\":\"\",\"ts\":1783382400000},{\"i\":\"17833824000000075\",\"t\":\"e\",\"a\":10.0,\"ac\":\"UPI\",\"c\":\"Other\",\"n\":\"\",\"ts\":1783382400000},{\"i\":\"17833824000000076\",\"t\":\"e\",\"a\":35.0,\"ac\":\"UPI\",\"c\":\"Groceries\",\"n\":\"THANGAM FRUITS AND VEGETABLES (SMS)\",\"ts\":1783382400000},{\"i\":\"17832096000000077\",\"t\":\"e\",\"a\":128.0,\"ac\":\"UPI\",\"c\":\"Food & Dining\",\"n\":\"SWIGGY\",\"ts\":1783209600000},{\"i\":\"17832096000000078\",\"t\":\"e\",\"a\":595.0,\"ac\":\"UPI\",\"c\":\"Food & Dining\",\"n\":\"SWIGGY\",\"ts\":1783209600000},{\"i\":\"17832096000000079\",\"t\":\"e\",\"a\":147.0,\"ac\":\"UPI\",\"c\":\"Groceries\",\"n\":\"\",\"ts\":1783209600000},{\"i\":\"17831232000000080\",\"t\":\"e\",\"a\":3250.0,\"ac\":\"UPI\",\"c\":\"Rent\",\"n\":\"\",\"ts\":1783123200000},{\"i\":\"17831232000000081\",\"t\":\"e\",\"a\":110.0,\"ac\":\"UPI\",\"c\":\"Groceries\",\"n\":\"\",\"ts\":1783123200000},{\"i\":\"17830368000000082\",\"t\":\"e\",\"a\":255.0,\"ac\":\"UPI\",\"c\":\"Food & Dining\",\"n\":\"\",\"ts\":1783036800000},{\"i\":\"17829504000000083\",\"t\":\"e\",\"a\":134.0,\"ac\":\"UPI\",\"c\":\"Other\",\"n\":\"\",\"ts\":1782950400000},{\"i\":\"17829504000000084\",\"t\":\"e\",\"a\":20.0,\"ac\":\"UPI\",\"c\":\"Groceries\",\"n\":\"\",\"ts\":1782950400000},{\"i\":\"17828640000000085\",\"t\":\"i\",\"a\":51091.0,\"ac\":\"UPI\",\"c\":\"Salary\",\"n\":\"\",\"ts\":1782864000000},{\"i\":\"17828640000000086\",\"t\":\"e\",\"a\":40.0,\"ac\":\"UPI\",\"c\":\"Groceries\",\"n\":\"\",\"ts\":1782864000000},{\"i\":\"17828640000000087\",\"t\":\"e\",\"a\":122.0,\"ac\":\"UPI\",\"c\":\"Food & Dining\",\"n\":\"SWIGGY\",\"ts\":1782864000000}]";
-    
     const LOCAL_TX_KEY='walletTransactionsBackupV2';
-    const SEED_VERSION_KEY='walletExcelSeedVersion';
-    const EXCEL_SEED_VERSION='2026-08-11-88-rows';
-    const seedTransactions=JSON.parse(rawData).map(t=>({id:String(t.i),type:t.t==='e'?'expense':'income',amount:Number(t.a)||0,account:t.ac||'UPI',category:t.c||'Other',note:t.n||'',timestamp:Number(t.ts)||Date.now(),isRecurring:false}));
+    
+    // COMPACT JSON BACKUP TO AVOID TRUNCATION
+    const rawData = '[{"i":"1786233600000","t":"e","a":460.0,"ac":"UPI","c":"Food & Dining","n":"","ts":1786233600000},{"i":"1786147200001","t":"e","a":418.75,"ac":"UPI","c":"Groceries","n":"","ts":1786147200000},{"i":"1786147200002","t":"e","a":95.0,"ac":"UPI","c":"Food & Dining","n":"","ts":1786147200000},{"i":"1786147200003","t":"e","a":719.0,"ac":"UPI","c":"Subscriptions","n":"","ts":1786147200000},{"i":"1786147200004","t":"e","a":55.0,"ac":"UPI","c":"Groceries","n":"","ts":1786147200000},{"i":"1786147200005","t":"e","a":65.0,"ac":"UPI","c":"Transport","n":"","ts":1786147200000},{"i":"1786060800006","t":"e","a":163.0,"ac":"UPI","c":"Groceries","n":"","ts":1786060800000},{"i":"1785974400007","t":"e","a":130.0,"ac":"UPI","c":"Food & Dining","n":"","ts":1785974400000},{"i":"1785801600008","t":"e","a":240.0,"ac":"UPI","c":"Food & Dining","n":"","ts":1785801600000},{"i":"1785715200009","t":"i","a":39.84,"ac":"UPI","c":"Other","n":"","ts":1785715200000},{"i":"1785715200010","t":"e","a":115.0,"ac":"UPI","c":"Groceries","n":"","ts":1785715200000},{"i":"1785715200011","t":"e","a":161.72,"ac":"UPI","c":"Food & Dining","n":"","ts":1785715200000},{"i":"1785628800012","t":"e","a":64.0,"ac":"UPI","c":"Transport","n":"","ts":1785628800000},{"i":"1785628800013","t":"e","a":32.0,"ac":"UPI","c":"Transport","n":"","ts":1785628800000},{"i":"1785628800014","t":"e","a":16.0,"ac":"UPI","c":"Transport","n":"","ts":1785628800000},{"i":"1785628800015","t":"i","a":35.0,"ac":"UPI","c":"Other","n":"","ts":1785628800000},{"i":"1785628800016","t":"e","a":125.0,"ac":"UPI","c":"Groceries","n":"","ts":1785628800000},{"i":"1785628800017","t":"e","a":13.0,"ac":"UPI","c":"Transport","n":"","ts":1785628800000},{"i":"1785628800018","t":"e","a":35.0,"ac":"UPI","c":"Transport","n":"","ts":1785628800000},{"i":"1785628800019","t":"e","a":23.0,"ac":"UPI","c":"Transport","n":"","ts":1785628800000},{"i":"1785628800020","t":"e","a":27.0,"ac":"UPI","c":"Transport","n":"","ts":1785628800000},{"i":"1785542400021","t":"e","a":9750.0,"ac":"UPI","c":"Rent","n":"","ts":1785542400000},{"i":"1785542400022","t":"e","a":131.0,"ac":"UPI","c":"Food & Dining","n":"","ts":1785542400000},{"i":"1785542400023","t":"e","a":20000.0,"ac":"UPI","c":"Other","n":"","ts":1785542400000},{"i":"1785542400024","t":"i","a":50080.0,"ac":"UPI","c":"Salary","n":"","ts":1785542400000},{"i":"1785369600025","t":"e","a":165.0,"ac":"UPI","c":"Food & Dining","n":"","ts":1785369600000},{"i":"1785369600026","t":"e","a":167.72,"ac":"UPI","c":"Food & Dining","n":"","ts":1785369600000},{"i":"1785283200027","t":"e","a":198.0,"ac":"UPI","c":"Food & Dining","n":"","ts":1785283200000},{"i":"1785283200028","t":"e","a":153.0,"ac":"UPI","c":"Shopping","n":"Amazon India (SMS)","ts":1785283200000},{"i":"1785196800029","t":"e","a":50.0,"ac":"UPI","c":"Groceries","n":"","ts":1785196800000},{"i":"1785110400030","t":"e","a":120.0,"ac":"UPI","c":"Groceries","n":"","ts":1785110400000},{"i":"1785110400031","t":"e","a":511.97,"ac":"UPI","c":"Entertainment","n":"","ts":1785110400000},{"i":"1785024000032","t":"e","a":421.0,"ac":"UPI","c":"Food & Dining","n":"","ts":1785024000000},{"i":"1785024000033","t":"e","a":35.0,"ac":"UPI","c":"Groceries","n":"","ts":1785024000000},{"i":"1785024000034","t":"e","a":164.0,"ac":"UPI","c":"Food & Dining","n":"","ts":1785024000000},{"i":"1784937600035","t":"e","a":60.0,"ac":"UPI","c":"Groceries","n":"","ts":1784937600000},{"i":"1784937600036","t":"e","a":127.0,"ac":"UPI","c":"Food & Dining","n":"","ts":1784937600000},{"i":"1784764800037","t":"e","a":80.0,"ac":"UPI","c":"Groceries","n":"","ts":1784764800000},{"i":"1784678400038","t":"e","a":120.0,"ac":"UPI","c":"Food & Dining","n":"","ts":1784678400000},{"i":"1784678400039","t":"e","a":60.0,"ac":"UPI","c":"Food & Dining","n":"","ts":1784678400000},{"i":"1784592000040","t":"e","a":144.0,"ac":"UPI","c":"Food & Dining","n":"","ts":1784592000000},{"i":"1784592000041","t":"i","a":2800.0,"ac":"UPI","c":"Refund","n":"","ts":1784592000000},{"i":"1784592000042","t":"e","a":30.0,"ac":"UPI","c":"Food & Dining","n":"","ts":1784592000000},{"i":"1784505600043","t":"e","a":15.0,"ac":"UPI","c":"Groceries","n":"","ts":1784505600000},{"i":"1784505600044","t":"e","a":45.0,"ac":"UPI","c":"Food & Dining","n":"","ts":1784505600000},{"i":"1784419200045","t":"e","a":289.0,"ac":"UPI","c":"Groceries","n":"","ts":1784419200000},{"i":"1784419200046","t":"e","a":167.0,"ac":"UPI","c":"Food & Dining","n":"","ts":1784419200000},{"i":"1784419200047","t":"e","a":60.0,"ac":"UPI","c":"Food & Dining","n":"","ts":1784419200000},{"i":"1784332800048","t":"e","a":665.0,"ac":"UPI","c":"Electricity charges","n":"","ts":1784332800000},{"i":"1784332800049","t":"e","a":60.0,"ac":"UPI","c":"Food & Dining","n":"","ts":1784332800000},{"i":"1784332800050","t":"e","a":35.0,"ac":"UPI","c":"Groceries","n":"THANGAM FRUITS AND VEGETABLES (SMS)","ts":1784332800000},{"i":"1784332800051","t":"e","a":40.0,"ac":"UPI","c":"Transport","n":"METROPOLITAN TRANSPORT (SMS)","ts":1784332800000},{"i":"1784332800052","t":"e","a":23.0,"ac":"UPI","c":"Other","n":"Cumta info (SMS)","ts":1784332800000},{"i":"1784332800053","t":"i","a":62.0,"ac":"UPI","c":"Other","n":"SHIVAYOGESHJ (SMS)","ts":1784332800000},{"i":"1784332800054","t":"e","a":32.0,"ac":"UPI","c":"Transport","n":"Rapido (SMS)","ts":1784332800000},{"i":"1784332800055","t":"e","a":32.0,"ac":"UPI","c":"Transport","n":"Rapido (SMS)","ts":1784332800000},{"i":"1784332800056","t":"e","a":206.0,"ac":"UPI","c":"Entertainment","n":"MOHAMED IMRAN FAREET (SMS)","ts":1784332800000},{"i":"1784332800057","t":"e","a":681.17,"ac":"UPI","c":"Food & Dining","n":"Dominos Pizza (SMS)","ts":1784332800000},{"i":"1784332800058","t":"e","a":10.0,"ac":"UPI","c":"Transport","n":"Indian Railway (SMS)","ts":1784332800000},{"i":"1784332800059","t":"e","a":20.0,"ac":"UPI","c":"Other","n":"SHIVAYOGESH J (SMS)","ts":1784332800000},{"i":"1784332800060","t":"e","a":13.0,"ac":"UPI","c":"Transport","n":"","ts":1784332800000},{"i":"1784332800061","t":"e","a":33.0,"ac":"UPI","c":"Transport","n":"","ts":1784332800000},{"i":"1784332800062","t":"e","a":5.0,"ac":"UPI","c":"Transport","n":"","ts":1784332800000},{"i":"1784246400063","t":"e","a":1654.0,"ac":"UPI","c":"Shopping","n":"Amazon India (SMS)","ts":1784246400000},{"i":"1784246400064","t":"e","a":60.0,"ac":"UPI","c":"Groceries","n":"","ts":1784246400000},{"i":"1783987200065","t":"e","a":105.0,"ac":"UPI","c":"Food & Dining","n":"SWIGGY (SMS)","ts":1783987200000},{"i":"1783900800066","t":"e","a":60.0,"ac":"UPI","c":"Groceries","n":"","ts":1783900800000},{"i":"1783814400067","t":"e","a":150.0,"ac":"UPI","c":"Other","n":"Haircut","ts":1783814400000},{"i":"1783728000068","t":"e","a":20000.0,"ac":"UPI","c":"Other","n":"","ts":1783728000000},{"i":"1783555200069","t":"e","a":211.0,"ac":"UPI","c":"Food & Dining","n":"Swiggy Ltd (SMS)","ts":1783555200000},{"i":"1783468800070","t":"e","a":992.25,"ac":"UPI","c":"Transport","n":"AbhiBus (SMS)","ts":1783468800000},{"i":"1783468800071","t":"e","a":894.0,"ac":"UPI","c":"Transport","n":"ABHIBUS COM (SMS)","ts":1783468800000},{"i":"1783382400072","t":"e","a":30.0,"ac":"UPI","c":"Food & Dining","n":"THANGAM FRUITS AND VEGETABLES (SMS)","ts":1783382400000},{"i":"1783382400073","t":"e","a":115.0,"ac":"UPI","c":"Food & Dining","n":"Swiggy Ltd (SMS)","ts":1783382400000},{"i":"1783382400074","t":"e","a":11.0,"ac":"UPI","c":"Other","n":"","ts":1783382400000},{"i":"1783382400075","t":"e","a":10.0,"ac":"UPI","c":"Other","n":"","ts":1783382400000},{"i":"1783382400076","t":"e","a":35.0,"ac":"UPI","c":"Groceries","n":"THANGAM FRUITS AND VEGETABLES (SMS)","ts":1783382400000},{"i":"1783209600077","t":"e","a":128.0,"ac":"UPI","c":"Food & Dining","n":"SWIGGY","ts":1783209600000},{"i":"1783209600078","t":"e","a":595.0,"ac":"UPI","c":"Food & Dining","n":"SWIGGY","ts":1783209600000},{"i":"1783209600079","t":"e","a":147.0,"ac":"UPI","c":"Groceries","n":"","ts":1783209600000},{"i":"1783123200080","t":"e","a":3250.0,"ac":"UPI","c":"Rent","n":"","ts":1783123200000},{"i":"1783123200081","t":"e","a":110.0,"ac":"UPI","c":"Groceries","n":"","ts":1783123200000},{"i":"1783036800082","t":"e","a":255.0,"ac":"UPI","c":"Food & Dining","n":"","ts":1783036800000},{"i":"1782950400083","t":"e","a":134.0,"ac":"UPI","c":"Other","n":"","ts":1782950400000},{"i":"1782950400084","t":"e","a":20.0,"ac":"UPI","c":"Groceries","n":"","ts":1782950400000},{"i":"1782864000085","t":"i","a":51091.0,"ac":"UPI","c":"Salary","n":"","ts":1782864000000},{"i":"1782864000086","t":"e","a":40.0,"ac":"UPI","c":"Groceries","n":"","ts":1782864000000},{"i":"1782864000087","t":"e","a":122.0,"ac":"UPI","c":"Food & Dining","n":"SWIGGY","ts":1782864000000}]';
+    const seedTransactions = JSON.parse(rawData).map(t => ({id: String(t.i), type: t.t === 'e' ? 'expense' : 'income', amount: Number(t.a)||0, account: t.ac||'UPI', category: t.c||'Other', note: t.n||'', timestamp: Number(t.ts)||Date.now(), isRecurring: false}));
+    
+    function normalizeTransaction(t){return{id:String(t.id??t.i??Date.now()),type:t.type??(t.t==='e'?'expense':'income'),amount:Number(t.amount??t.a)||0,account:t.account??t.ac??'UPI',category:t.category??t.c??'Other',note:t.note??t.n??'',timestamp:Number(t.timestamp??t.ts)||Date.now(),isRecurring:!!t.isRecurring};}
+    function saveTransactionsLocally(){try{localStorage.setItem(LOCAL_TX_KEY,JSON.stringify(transactions));}catch(e){console.warn('Local cache unavailable',e);}}
+    
     let transactions=(()=>{
       try{
         const cached=JSON.parse(localStorage.getItem(LOCAL_TX_KEY));
         if(Array.isArray(cached)&&cached.length) return cached.map(normalizeTransaction);
       }catch(e){}
-      return seedTransactions;
+      return [...seedTransactions];
     })();
         
+    let selectedMonth = 'all'; 
+    let searchQuery = '';
+    let currentFilter = 'all';
     let wishlistItems = []; 
     let mediaItems = []; 
     let monthlyWishlistSavings = parseFloat(localStorage.getItem('walletWishlistSavings')) || 0;
@@ -1055,22 +1067,25 @@
         return `hsl(${Math.abs(hash % 360)}, 70%, 55%)`;
     }
 
-    /* GLOBAL TOOLTIP LOGIC */
-    const tooltipEl = document.getElementById('globalTooltip');
-    document.querySelectorAll('.info-icon').forEach(icon => {
-        icon.addEventListener('mouseenter', (e) => {
+    /* GLOBAL TOOLTIP LOGIC (Event Delegation to fix bugs) */
+    document.addEventListener('mouseover', (e) => {
+        if(e.target && e.target.classList && e.target.classList.contains('info-icon')) {
             const infoText = e.target.getAttribute('data-info');
-            if(!infoText) return;
+            const tooltipEl = document.getElementById('globalTooltip');
+            if(!infoText || !tooltipEl) return;
             tooltipEl.innerHTML = infoText;
             const rect = e.target.getBoundingClientRect();
             tooltipEl.style.left = `${rect.left + (rect.width / 2)}px`;
             tooltipEl.style.top = `${rect.top - 10}px`;
             tooltipEl.style.transform = `translateX(-50%) translateY(-100%)`;
             tooltipEl.style.opacity = '1';
-        });
-        icon.addEventListener('mouseleave', () => {
-            tooltipEl.style.opacity = '0';
-        });
+        }
+    });
+    document.addEventListener('mouseout', (e) => {
+        if(e.target && e.target.classList && e.target.classList.contains('info-icon')) {
+            const tooltipEl = document.getElementById('globalTooltip');
+            if(tooltipEl) tooltipEl.style.opacity = '0';
+        }
     });
 
     /* WALLET STACK MECHANIC */
@@ -1351,7 +1366,7 @@
         lucide.createIcons();
     }
 
-    async function handleDecision(id, action) { try { const res = await fetch(`${API_BASE}/${action}`, { method: 'POST', headers: apiHeaders, body: JSON.stringify({ id: id }) }); const result = await res.json(); if (result.success) { if (action === 'approve' && result.data) { transactions.push(result.data); updateUI(); } loadPendingTransactions(); } } catch (error) {} }
+    async function handleDecision(id, action) { try { const res = await fetch(`${API_BASE}/${action}`, { method: 'POST', headers: apiHeaders, body: JSON.stringify({ id: id }) }); const result = await res.json(); if (result.success) { if (action === 'approve' && result.data) { transactions.push(result.data); saveTransactionsLocally(); await createCloudTransactionBackup(transactions); updateUI(); } loadPendingTransactions(); } } catch (error) {} }
 
     async function handleSMSPaste() {
         const smsText = prompt("Paste raw transaction SMS here:"); if (!smsText) return;
@@ -1365,10 +1380,27 @@
         try { const res = await fetch(`${API_BASE}/bulk-sms`, { method: 'POST', headers: apiHeaders, body: JSON.stringify({ bulkText: smsText }) }); if (res.ok) { alert("Bulk sync initiated! Check Queue."); loadPendingTransactions(); } else alert(`Error.`); } catch (e) { alert("Network Error."); } finally { icon.setAttribute('data-lucide', 'layers'); icon.classList.remove('animate-spin', 'text-purple-400'); lucide.createIcons(); }
     }
 
-    function normalizeTransaction(t){return{id:String(t.id??t.i??Date.now()),type:t.type??(t.t==='e'?'expense':'income'),amount:Number(t.amount??t.a)||0,account:t.account??t.ac??'UPI',category:t.category??t.c??'Other',note:t.note??t.n??'',timestamp:Number(t.timestamp??t.ts)||Date.now(),isRecurring:!!t.isRecurring};}
-    function saveTransactionsLocally(){try{localStorage.setItem(LOCAL_TX_KEY,JSON.stringify(transactions));}catch(e){console.warn('Local cache unavailable',e);}}
-    async function createCloudTransactionBackup(list=transactions){try{const r=await fetch(`${API_BASE}/backup-transactions`,{method:'POST',headers:apiHeaders,body:JSON.stringify({transactions:list,createdAt:Date.now(),source:'Wallet Mark 2',version:2})});return r.ok}catch(e){return false}}
-    async function recoverTransactionsFromCloudBackup(){if(!confirm('Recover the protected cloud transaction backup? Current records will be merged by ID.'))return;try{const r=await fetch(`${API_BASE}/get-transaction-backup`);if(!r.ok)throw new Error('No protected backup found');const b=await r.json();const m=new Map(transactions.map(t=>[String(t.id),normalizeTransaction(t)]));(b.transactions||[]).forEach(t=>m.set(String(t.id),normalizeTransaction(t)));transactions=Array.from(m.values());saveTransactionsLocally();await fetch(`${API_BASE}/sync-transactions`,{method:'POST',headers:apiHeaders,body:JSON.stringify(transactions)});await createCloudTransactionBackup();updateUI();alert(`Recovered/merged ${(b.transactions||[]).length} protected records.`);}catch(e){alert('Recovery failed: '+e.message)}}
+    async function createCloudTransactionBackup(list=transactions) {
+        try{ const r=await fetch(`${API_BASE}/backup-transactions`,{method:'POST',headers:apiHeaders,body:JSON.stringify({transactions:list,createdAt:Date.now(),source:'Wallet Mark 2',version:2})}); return r.ok; } catch(e){ return false; }
+    }
+
+    async function recoverTransactionsFromCloudBackup(){
+        if(!confirm('Recover the protected cloud transaction backup? Current records will be merged by ID.')) return;
+        try{
+            const r=await fetch(`${API_BASE}/get-transaction-backup`);
+            if(!r.ok) throw new Error('No protected backup found');
+            const b=await r.json();
+            const m=new Map(transactions.map(t=>[String(t.id), normalizeTransaction(t)]));
+            (b.transactions||[]).forEach(t=>m.set(String(t.id), normalizeTransaction(t)));
+            transactions=Array.from(m.values());
+            saveTransactionsLocally();
+            await fetch(`${API_BASE}/sync-transactions`,{method:'POST',headers:apiHeaders,body:JSON.stringify(transactions)});
+            await createCloudTransactionBackup(transactions);
+            updateUI();
+            alert(`Recovered/merged ${(b.transactions||[]).length} protected records.`);
+        }catch(e){ alert('Recovery failed: '+e.message); }
+    }
+
     async function restoreEmbeddedExcelLedger(){
       if(!confirm(`Restore the 88-row Wallet_Data.xlsx ledger into Wallet Mark 2? Existing entries will be merged by ID.`)) return;
       try{
@@ -1381,9 +1413,7 @@
         await createCloudTransactionBackup(transactions);
         updateUI();
         alert(`Restored ${seedTransactions.length} Excel transactions. Ledger and charts refreshed.`);
-      }catch(e){
-        alert('Excel ledger restore failed: '+e.message);
-      }
+      }catch(e){ alert('Excel ledger restore failed: '+e.message); }
     }
 
     async function syncDataFromServer(){
@@ -1397,22 +1427,14 @@
 
         if(txRes.ok){
           const dbTx = (await txRes.json() || []).map(normalizeTransaction);
-
-          // Local/Excel data is the safety net. Cloud records override only matching IDs.
           const m = new Map(transactions.map(t => [String(t.id), normalizeTransaction(t)]));
           dbTx.forEach(t => m.set(String(t.id), normalizeTransaction(t)));
           transactions = Array.from(m.values()).filter(t => Number.isFinite(t.amount) && t.timestamp);
-
           saveTransactionsLocally();
 
-          // If Firestore is empty, upload the complete Excel/local ledger.
           if(!dbTx.length && transactions.length){
-            await fetch(`${API_BASE}/sync-transactions`, {
-              method:'POST', headers:apiHeaders, body:JSON.stringify(transactions)
-            });
+            await fetch(`${API_BASE}/sync-transactions`, { method:'POST', headers:apiHeaders, body:JSON.stringify(transactions) });
           }
-
-          // Always refresh the protected backup from the merged ledger.
           if(transactions.length) await createCloudTransactionBackup(transactions);
         }
 
@@ -1445,7 +1467,7 @@
         views.forEach(v => {
             const btn = document.getElementById('nav' + v.charAt(0).toUpperCase() + v.slice(1));
             if (v === viewName) {
-                btn.className = 'nav-btn active flex-1 sm:flex-none px-4 md:px-5 py-2.5 rounded-xl font-bold text-sm bg-blue-600 text-white shadow-lg transition-all border border-blue-400/50 uppercase tracking-wider';
+                btn.className = 'nav-btn active flex-1 sm:flex-none px-4 md:px-5 py-2.5 rounded-xl font-bold text-sm text-white shadow-lg transition-all uppercase tracking-wider';
             } else {
                 btn.className = 'nav-btn flex-1 sm:flex-none px-4 md:px-5 py-2.5 rounded-xl font-bold text-sm text-gray-400 hover:text-white hover:bg-white/10 transition-all border border-transparent uppercase tracking-wider';
             }
@@ -1516,7 +1538,8 @@
           filter.value = selectedMonth; cardFilter.value = selectedMonth; 
       } else { 
           if(transactions.length > 0 && selectedMonth !== 'all') {
-             selectedMonth = 'all'; filter.value = 'all'; cardFilter.value = 'all';
+             let latestMonth = sortedMonths[0] || 'all';
+             selectedMonth = latestMonth; filter.value = latestMonth; cardFilter.value = latestMonth;
           } else {
              filter.value = nowStr; cardFilter.value = nowStr; selectedMonth = nowStr; 
           }
