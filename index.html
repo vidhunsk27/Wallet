@@ -4,7 +4,6 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
   <title>Wally MK 2 • Spider-Web Financial Command Center</title>
-  
   <script src="https://cdn.tailwindcss.com"></script>
   <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-datalabels@2.2.0"></script>
@@ -15,64 +14,50 @@
 
   <style>
     @import url('https://fonts.googleapis.com/css2?family=Fredoka:wght@300;400;500;600;700&display=swap');
-    
     :root { --primary: #e3262e; --secondary: #1769aa; --accent: #e3262e; --spider-red: #e3262e; --spider-blue: #1769aa; --spider-ink: #03070d; }
     body { font-family: 'Fredoka', sans-serif; background-color: var(--spider-ink); color: #eef4f8; overflow-x: hidden; min-height: 100vh; perspective: 1000px; }
     body::before { content: ''; position: fixed; inset: 0; background: radial-gradient(circle at 50% 5%, rgba(227,38,46,.16), transparent 35%), linear-gradient(145deg, rgba(2,8,16,.98), rgba(3,10,20,.98) 48%, rgba(20,3,7,.98)); z-index: -1; }
-    
     .grid-overlay { position: fixed; inset: 0; background-image: linear-gradient(rgba(227,38,46,.035) 1px, transparent 1px), linear-gradient(90deg, rgba(23,105,170,.035) 1px, transparent 1px); background-size: 28px 28px; z-index: -1; pointer-events: none; }
     .bg-mesh { position: fixed; inset: 0; z-index: -1; background-image: radial-gradient(at 8% 8%, rgba(227,38,46,.22) 0px, transparent 42%), radial-gradient(at 92% 12%, rgba(23,105,170,.22) 0px, transparent 42%), radial-gradient(at 80% 92%, rgba(227,38,46,.12) 0px, transparent 48%), radial-gradient(at 12% 88%, rgba(23,105,170,.12) 0px, transparent 48%); filter: blur(70px); animation: mesh-float 20s ease infinite alternate; }
     @keyframes mesh-float { 0% { transform: scale(1); } 100% { transform: scale(1.05); } }
     .spider-sheen { position: relative; overflow: hidden; }
     .spider-sheen::before { content: ""; position: absolute; inset: 0; pointer-events: none; opacity: .34; background: repeating-conic-gradient(from 0deg at 50% 50%, transparent 0deg 14deg, rgba(220,230,240,.08) 14.5deg 15deg, transparent 15.5deg 30deg), radial-gradient(circle at 50% 50%, transparent 0 32%, rgba(220,230,240,.05) 32.5% 33%, transparent 33.5% 49%, rgba(220,230,240,.04) 49.5% 50%, transparent 50.5%); mask-image: radial-gradient(circle at center, black, transparent 72%); }
-
     .glass-panel { background: linear-gradient(145deg, rgba(8,16,27,.78), rgba(15,8,12,.72)); backdrop-filter: blur(16px); border: 1px solid rgba(227,38,46,.16); box-shadow: 0 4px 28px rgba(0,0,0,.38), inset 0 1px 0 rgba(255,255,255,.025); transition: all 0.4s cubic-bezier(0.23, 1, 0.32, 1); }
     .glass-panel:hover { background: linear-gradient(145deg, rgba(10,20,32,.86), rgba(20,8,13,.82)); border-color: rgba(227,38,46,.38); box-shadow: 0 14px 44px rgba(0,0,0,.5), 0 0 28px rgba(227,38,46,.07); transform: translateY(-2px); }
     .glass-input { background: rgba(0, 0, 0, 0.6); border: 1px solid rgba(255, 255, 255, 0.15); transition: all 0.3s ease; }
     .glass-input:focus { border-color: var(--spider-red); box-shadow: 0 0 20px rgba(227,38,46,.22); outline: none; background: rgba(0, 0, 0, 0.8); }
-    
     ::-webkit-scrollbar { width: 8px; height: 8px; } ::-webkit-scrollbar-track { background: transparent; } ::-webkit-scrollbar-thumb { background: rgba(227,38,46, 0.3); border-radius: 10px; }
     .hide-scroll::-webkit-scrollbar { display: none; } .hide-scroll { -ms-overflow-style: none; scrollbar-width: none; }
-
     @keyframes slideUpFade { 0% { opacity: 0; transform: translateY(30px); } 100% { opacity: 1; transform: translateY(0); } }
     .animate-slide-up { animation: slideUpFade 0.6s cubic-bezier(0.16, 1, 0.3, 1) forwards; opacity: 0; }
-
     .view-container { position: relative; width: 100%; overflow: hidden; min-height: 80vh; }
     .view-card { transition: all 0.5s cubic-bezier(0.4, 0, 0.2, 1); position: absolute; top: 0; left: 0; width: 100%; opacity: 0; pointer-events: none; transform: translateX(50px) scale(0.95); }
     .view-card.active { position: relative; opacity: 1; pointer-events: auto; transform: translateX(0) scale(1); z-index: 10; }
     .view-card.prev { transform: translateX(-50px) scale(0.95); } .view-card.next { transform: translateX(50px) scale(0.95); }
-
     .nav-btn { transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1); position: relative; overflow: hidden; }
     .nav-btn::after { content: ''; position: absolute; bottom: 0; left: 50%; width: 0; height: 2px; background: linear-gradient(90deg, var(--spider-red), var(--spider-blue)); transition: all 0.3s ease; transform: translateX(-50%); }
     .nav-btn.active::after { width: 60%; }
     .nav-btn.active { background: linear-gradient(135deg, rgba(227,38,46,.88), rgba(176,20,28,.88)) !important; border-color: rgba(255,255,255,.24) !important; box-shadow: 0 0 22px rgba(227,38,46,.24); }
-
     #globalTooltip { position: fixed; background: rgba(10, 15, 25, 0.98); backdrop-filter: blur(12px); border: 1px solid rgba(227,38,46, 0.5); color: #e2e8f0; padding: 12px 16px; border-radius: 8px; width: max-content; max-width: 280px; white-space: normal; line-height: 1.5; font-size: 0.8rem; font-weight: 500; font-family: 'Fredoka', sans-serif; z-index: 99999; box-shadow: 0 10px 40px rgba(0,0,0,0.9); opacity: 0; pointer-events: none; transition: opacity 0.2s ease; transform: translateX(-50%); }
     .info-icon { display: inline-flex; align-items: center; justify-content: center; margin-left: 8px; color: #4ea3df; cursor: help; position: relative; width: 16px; height: 16px; background: rgba(23,105,170, 0.2); border-radius: 50%; text-align: center; line-height: 1; font-size: 10px; font-weight: 900; transition: all 0.2s; flex-shrink: 0; }
     .info-icon:hover { background: rgba(227,38,46, 0.6); color: #fff; transform: scale(1.1); }
-
     .modal-active { animation: modalPop 0.4s cubic-bezier(0.16, 1, 0.3, 1) forwards; }
     @keyframes modalPop { 0% { opacity: 0; transform: scale(0.95) translateY(20px); } 100% { opacity: 1; transform: scale(1) translateY(0); } }
-
     .ledger-item { transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1); border: 1px solid transparent; background: rgba(255,255,255,0.02); }
     .ledger-item:hover { border-color: rgba(227,38,46,.24); box-shadow: 0 10px 28px rgba(0,0,0,.45); background-color: rgba(255,255,255,0.05); transform: translateY(-2px); }
     .ledger-item .action-btn { opacity: 1; transform: scale(1); transition: all 0.2s; }
     @media (min-width: 768px) { .ledger-item .action-btn { opacity: 0; transform: scale(0.8); } .ledger-item:hover .action-btn { opacity: 1; transform: scale(1); } }
-    
     .kanban-col { min-height: 200px; background: rgba(0,0,0,0.4); border-radius: 16px; padding: 12px; border: 1px solid rgba(255,255,255,0.05); }
     .tool-active { background-color: rgba(227, 38, 46, 0.6) !important; border-color: rgba(227, 38, 46, 0.8) !important; color: #ffffff !important; box-shadow: inset 0 2px 4px rgba(0,0,0,0.4); transform: translateY(1px); }
-
     #workspaceNotes { background-color: rgba(5, 5, 10, 0.7); background-image: linear-gradient(rgba(255,255,255,0.03) 1px, transparent 1px), linear-gradient(90deg, rgba(255,255,255,0.03) 1px, transparent 1px); background-size: 24px 24px; border-radius: 12px; padding: 1.5rem; }
     #workspaceNotes[contenteditable="true"]:empty:before { content: "Type notes, tasks, or start writing..."; color: #6b7280; display: block; }
     .chk-item { display: flex; align-items: center; margin-bottom: 6px; padding: 6px 8px; border-radius: 8px; transition: background 0.2s; border: 1px solid transparent; }
     .chk-item:hover { background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1); }
     .chk-item input[type="checkbox"] { accent-color: var(--spider-red); width: 18px; height: 18px; cursor: pointer; margin-right: 12px; border-radius: 4px; flex-shrink: 0; }
     .chk-item input[type="checkbox"]:checked + label { text-decoration: line-through; color: #6b7280; opacity: 0.5; }
-
     .wallet-stack { position: relative; height: 420px; display: flex; justify-content: center; align-items: flex-end; margin-bottom: 2rem; user-select: none; }
     .wallet-card { position: absolute; width: 100%; max-width: 700px; height: 350px; transition: all 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275); cursor: pointer; transform-origin: bottom center; border-top: 1px solid rgba(255,255,255,0.2); border-color: rgba(227,38,46,.18); }
     .wallet-card:hover:not(.active-card) { transform: translateY(-40px) scale(0.98) !important; box-shadow: 0 -10px 40px rgba(0,0,0,0.5); }
-    
     .truncate-strict { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; min-width: 0; }
     .chart-carousel-card { min-width: 90vw; height: 380px; scroll-snap-align: center; flex-shrink: 0; display: flex; flex-direction: column; }
     @media (min-width: 768px) { .chart-carousel-card { min-width: 45vw; } }
@@ -81,13 +66,9 @@
   </style>
 </head>
 <body class="p-3 md:p-8 pb-24 relative spider-sheen">
-
-  <div id="globalTooltip"></div>
-  <div class="grid-overlay"></div>
-  <div class="bg-mesh"></div>
+  <div id="globalTooltip"></div><div class="grid-overlay"></div><div class="bg-mesh"></div>
 
   <div class="max-w-7xl mx-auto space-y-4 md:space-y-6 relative z-10">
-    
     <header class="flex flex-col sm:flex-row justify-between items-center gap-4 glass-panel rounded-3xl p-4 px-6 animate-slide-up">
       <div class="flex items-center space-x-4">
         <div class="relative group cursor-pointer">
@@ -108,26 +89,19 @@
     </header>
 
     <main id="mainContainer" class="view-container">
-    
-    <!-- DASHBOARD VIEW -->
     <div id="viewDashboard" class="view-card active space-y-4 md:space-y-6">
-      
       <div id="pendingContainer" class="hidden mb-4 animate-slide-up">
-          <div class="bg-gray-900 border border-blue-500/40 rounded-2xl p-4 md:p-6 shadow-[0_0_40px_rgba(59,130,246,0.2)] relative overflow-hidden transition-all">
-               <h3 class="text-xs font-bold text-blue-400 mb-4 uppercase tracking-widest flex items-center"><div class="w-2 h-2 rounded-full bg-blue-500 mr-2 animate-pulse"></div> Action Required: C.A.S.P.E.R. Queue</h3>
+          <div class="bg-gray-900 border border-blue-500/40 rounded-2xl p-4 md:p-6 shadow-[0_0_40px_rgba(59,130,246,0.2)]">
+               <h3 class="text-xs font-bold text-blue-400 mb-4 uppercase tracking-widest flex items-center"><div class="w-2 h-2 rounded-full bg-blue-500 mr-2 animate-pulse"></div> C.A.S.P.E.R. Queue</h3>
                <div id="pending-list" class="space-y-3 relative z-10"></div>
           </div>
       </div>
-
-      <!-- HORIZONTAL METRICS -->
       <div class="flex overflow-x-auto snap-x snap-mandatory gap-4 md:gap-6 pb-4 hide-scroll relative z-20 animate-slide-up">
-        
         <div class="glass-panel rounded-3xl p-6 md:p-8 flex flex-col h-full bg-gradient-to-br from-white/5 to-transparent min-w-[85vw] sm:min-w-[45vw] md:min-w-[calc(33.33%-16px)] snap-center flex-shrink-0">
           <div class="flex justify-between items-start mb-4"><h3 class="text-sm font-bold text-gray-400 uppercase tracking-widest flex items-center"><div class="w-2.5 h-2.5 rounded-full bg-blue-500 mr-2"></div> Total Assets (Liquid)<span class="info-icon" data-info="Sum of all your funds across UPI, Card, and Cash.">i</span></h3></div>
           <h1 id="netBalance" class="text-4xl lg:text-5xl xl:text-6xl font-black text-white mt-2 drop-shadow-lg truncate">₹0</h1>
           <p class="text-gray-400 text-sm mt-4 font-medium tracking-wide">Unified balance across tracked accounts.</p>
         </div>
-
         <div class="glass-panel rounded-3xl p-6 md:p-8 flex flex-col justify-center h-full bg-gradient-to-br from-white/5 to-transparent min-w-[85vw] sm:min-w-[45vw] md:min-w-[calc(33.33%-16px)] snap-center flex-shrink-0">
           <div class="flex justify-between items-center mb-4 relative z-10 border-b border-white/10 pb-4">
               <div class="relative min-w-0 max-w-[180px] flex-1 flex items-center">
@@ -145,10 +119,9 @@
           </div>
           <div class="mt-auto pt-4 border-t border-white/10 flex flex-col gap-2"><div class="flex items-center"><p id="currMonthNet" class="text-sm font-bold uppercase tracking-wider text-gray-400 truncate">NET: ₹0</p></div></div>
         </div>
-
         <div class="glass-panel rounded-3xl p-6 md:p-8 flex flex-col justify-center h-full bg-gradient-to-br from-purple-500/10 to-transparent border-purple-500/20 min-w-[85vw] sm:min-w-[45vw] md:min-w-[calc(33.33%-16px)] snap-center flex-shrink-0">
           <div class="flex justify-between items-start mb-4">
-              <h3 class="text-sm font-bold text-purple-400 uppercase tracking-widest flex items-center min-w-0"><i data-lucide="credit-card" class="w-4 h-4 mr-2 flex-shrink-0"></i> <span class="truncate">Active Credit Card</span><span class="info-icon ml-2" data-info="Monitors your active credit card statement. Shows total spent from the 'Card' account vs your defined limit. Click the gear to adjust limit.">i</span></h3>
+              <h3 class="text-sm font-bold text-purple-400 uppercase tracking-widest flex items-center min-w-0"><i data-lucide="credit-card" class="w-4 h-4 mr-2 flex-shrink-0"></i> <span class="truncate">Active Credit Card</span><span class="info-icon text-purple-400 border-purple-500/30" data-info="Monitors your active credit card statement. Shows total spent from the 'Card' account vs your defined limit. Click the gear to adjust limit.">i</span></h3>
               <button onclick="setCCLimit()" class="text-gray-400 hover:text-white transition-all bg-white/10 rounded-lg p-1.5 flex-shrink-0 ml-2"><i data-lucide="settings" class="w-4 h-4"></i></button>
           </div>
           <h2 id="ccSpent" class="text-4xl lg:text-5xl font-black text-white mt-2 truncate drop-shadow-lg">₹0</h2>
@@ -157,24 +130,21 @@
               <div class="flex justify-between text-[10px] font-bold text-gray-400 tracking-widest uppercase"><span>Current Bal</span><span id="ccLimitText">Limit: ₹0</span></div>
           </div>
         </div>
-
         <div class="glass-panel rounded-3xl p-6 md:p-8 flex flex-col justify-center h-full bg-gradient-to-br from-rose-500/5 to-transparent border-rose-500/20 min-w-[85vw] sm:min-w-[45vw] md:min-w-[calc(33.33%-16px)] snap-center flex-shrink-0">
           <div class="flex justify-between items-start gap-2">
-            <div class="flex-1 min-w-0 pr-2 flex items-center"><h3 class="text-sm font-bold text-gray-400 uppercase tracking-widest mb-2 truncate">Period Expenses</h3><span class="info-icon ml-2 mb-2" data-info="Total outbound cashflow for the selected timeframe.">i</span></div>
+            <div class="flex-1 min-w-0 pr-2 flex items-center"><h3 class="text-sm font-bold text-gray-400 uppercase tracking-widest mb-2 truncate">Period Expenses</h3><span class="info-icon mb-2" data-info="Total outbound cashflow for the selected timeframe. The progress bar tracks this mathematically against your target budget.">i</span></div>
             <button onclick="setGoal()" class="text-gray-400 hover:text-white transition-all p-2.5 flex-shrink-0 bg-white/10 rounded-xl" title="Set Budget"><i data-lucide="target" class="w-5 h-5"></i></button>
           </div>
           <h2 id="periodExpenseHeader" class="text-4xl lg:text-5xl font-black text-rose-400 mt-2 truncate drop-shadow-lg">₹0</h2>
           <div class="mt-8 pt-2 w-full flex-shrink-0"><div class="w-full bg-[#0a0a0f] rounded-full h-4 border border-white/10 overflow-hidden shadow-inner relative"><div id="goalProgress" class="bg-gradient-to-r from-rose-500 via-rose-400 to-rose-300 h-full rounded-full transition-all duration-1000 shadow-[0_0_15px_rgba(244,63,94,0.6)] absolute top-0 left-0 bottom-0" style="width: 0%"></div></div></div>
-          <p id="goalText" class="text-xs md:text-sm text-gray-300 mt-3 text-right font-bold truncate">Budget: ₹0</p>
+          <div class="flex justify-between items-center mt-3"><div id="projectedSavingsContainer" class="hidden items-center"><p id="projectedSavings" class="text-[10px] font-bold text-yellow-400 tracking-widest uppercase"></p></div><p id="goalText" class="text-xs md:text-sm text-gray-300 text-right font-bold truncate ml-auto">Budget: ₹0</p></div>
         </div>
-
         <div class="glass-panel rounded-3xl p-6 md:p-8 flex flex-col justify-center min-w-[85vw] sm:min-w-[45vw] md:min-w-[calc(33.33%-16px)] h-full bg-gradient-to-br from-emerald-500/5 to-transparent border-emerald-500/20 snap-center flex-shrink-0">
           <h3 class="text-sm font-bold text-gray-400 uppercase tracking-widest mb-2 truncate flex items-center">Total Income <span class="info-icon" data-info="The absolute gross total of every income event logged into the C.A.S.P.E.R. server across all dates.">i</span></h3>
           <h2 id="allTimeIncome" class="text-4xl lg:text-5xl font-black text-emerald-400 mt-2 truncate drop-shadow-lg">₹0</h2>
         </div>
       </div>
 
-      <!-- Quick Metrics Grid -->
       <div class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-4 md:gap-6 mt-2 uppercase animate-slide-up">
         <div class="glass-panel rounded-2xl p-4 flex flex-col items-center justify-center text-center"><p class="text-[10px] text-gray-400 font-bold tracking-widest mb-1 flex items-center justify-center w-full"><i data-lucide="activity" class="w-3 h-3 mr-1"></i> Health <span class="info-icon ml-1" data-info="Algorithm: Base 50 + Savings Velocity Bonus + Liquid Runway Bonus + Low Debt Ratio Bonus.">i</span></p><p id="healthScore" class="text-xl md:text-2xl font-black text-emerald-400 drop-shadow-sm truncate w-full uppercase">0/100</p></div>
         <div class="glass-panel rounded-2xl p-4 flex flex-col items-center justify-center text-center"><p class="text-[10px] text-blue-400 font-bold tracking-widest mb-1 flex items-center justify-center w-full"><i data-lucide="flame" class="w-3 h-3 mr-1"></i> Daily Burn <span class="info-icon ml-1" data-info="Average money spent per day in the selected timeframe.">i</span></p><p id="statBurnRate" class="text-xl md:text-2xl font-black text-white truncate w-full uppercase">₹0</p></div>
@@ -184,29 +154,20 @@
         <div class="glass-panel rounded-2xl p-4 flex flex-col items-center justify-center text-center"><p class="text-[10px] text-orange-400 font-bold tracking-widest mb-1 flex items-center justify-center w-full"><i data-lucide="pie-chart" class="w-3 h-3 mr-1"></i> Top Expense <span class="info-icon ml-1" data-info="Your single highest spending category in the selected period.">i</span></p><div class="flex flex-col items-center justify-center w-full mt-1 min-w-0"><p id="statTopExpenseName" class="text-sm md:text-base font-black text-white truncate w-full tracking-wider uppercase">OTHER</p></div></div>
       </div>
 
-      <!-- SWIPEABLE CHARTS CAROUSEL (Horizontal Scroll) -->
       <div class="flex overflow-x-auto snap-x snap-mandatory gap-4 md:gap-6 pb-4 hide-scroll relative z-20 mt-8 animate-slide-up">
-          
           <div class="chart-carousel-card glass-panel rounded-3xl p-5 md:p-6 bg-gradient-to-br from-blue-900/40 to-black/90 border border-blue-500/30">
               <div class="flex justify-between items-center mb-4 gap-2">
                 <h3 class="text-xs font-bold text-blue-300 uppercase tracking-widest flex items-center flex-shrink-0">Distribution <span class="info-icon ml-2" data-info="Categorical breakdown of your spending.">i</span></h3>
                 <div class="flex items-center gap-2 min-w-0">
-                    <div class="relative min-w-0">
-                        <select id="pieChartMonthFilter" onchange="updatePieChart(this.value); event.stopPropagation();" class="bg-black/50 text-[10px] font-bold text-white uppercase rounded-xl px-2 py-1.5 pr-6 border border-white/10 outline-none hover:border-blue-500/50 cursor-pointer w-[110px] truncate-strict appearance-none"><option value="current">SELECTED</option><option value="all">ALL TIME</option></select>
-                        <i data-lucide="chevron-down" class="absolute right-1.5 top-1/2 transform -translate-y-1/2 w-3 h-3 text-white pointer-events-none"></i>
-                    </div>
+                    <div class="relative min-w-0"><select id="pieChartMonthFilter" onchange="updatePieChart(this.value); event.stopPropagation();" class="bg-black/50 text-[10px] font-bold text-white uppercase rounded-xl px-2 py-1.5 pr-6 border border-white/10 outline-none hover:border-blue-500/50 cursor-pointer w-[110px] truncate-strict appearance-none"><option value="current">SELECTED</option><option value="all">ALL TIME</option></select><i data-lucide="chevron-down" class="absolute right-1.5 top-1/2 transform -translate-y-1/2 w-3 h-3 text-white pointer-events-none"></i></div>
                     <button onclick="openChartModal('walletChart', 'Expense Analytics'); event.stopPropagation();" class="text-gray-400 hover:text-white transition-colors bg-white/10 hover:bg-white/20 p-1.5 rounded-lg border border-white/10 flex-shrink-0"><i data-lucide="maximize-2" class="w-4 h-4"></i></button>
                 </div>
               </div>
               <div class="flex flex-row items-center justify-between gap-4 h-[250px] w-full">
-                  <div class="w-1/2 h-full relative flex items-center justify-center">
-                      <canvas id="walletChart"></canvas>
-                      <div class="absolute inset-0 flex flex-col items-center justify-center pointer-events-none"><span class="text-gray-400 text-[9px] font-bold uppercase tracking-widest">Spent</span><h2 id="chartCenterText" class="text-xl font-black text-white drop-shadow-md m-0 truncate px-2 w-full text-center">₹0</h2></div>
-                  </div>
+                  <div class="w-1/2 h-full relative flex items-center justify-center"><canvas id="walletChart"></canvas><div class="absolute inset-0 flex flex-col items-center justify-center pointer-events-none"><span class="text-gray-400 text-[9px] font-bold uppercase tracking-widest">Spent</span><h2 id="chartCenterText" class="text-xl font-black text-white drop-shadow-md m-0 truncate px-2 w-full text-center">₹0</h2></div></div>
                   <div id="topInsights" class="w-1/2 space-y-2 overflow-y-auto h-full pr-2 tracking-wider"></div>
               </div>
           </div>
-
           <div class="chart-carousel-card glass-panel rounded-3xl p-5 md:p-6 bg-gradient-to-br from-purple-900/40 to-black/90 border border-purple-500/30">
               <div class="flex justify-between items-center mb-4 gap-2">
                 <h3 class="text-xs font-bold text-purple-300 uppercase tracking-widest flex items-center flex-shrink-0">C.A.S.P.E.R. ENGINE <span class="info-icon ml-2" data-info="Calculated Asset Security and Personal Expense Recorder. Hit 'Analyze' for a budget summary, or 'Forecast' for predictive month-over-month trajectory analysis.">i</span></h3>
@@ -215,130 +176,46 @@
                     <button onclick="getCASPERForecast(); event.stopPropagation();" id="aiForecastBtn" class="bg-purple-600/30 text-purple-300 hover:bg-purple-600 hover:text-white px-3 py-1.5 rounded-xl text-[10px] font-bold transition-all border border-purple-500/50 flex items-center shadow-md"><i data-lucide="brain-circuit" class="w-3 h-3 mr-1"></i> Forecast</button>
                 </div>
               </div>
-              <div id="aiTerminal" class="w-full h-[240px] overflow-y-auto p-4 bg-black/60 border border-purple-500/40 rounded-xl text-xs md:text-sm text-gray-200 shadow-inner tracking-tight leading-relaxed">
-                  <div class="flex flex-col items-center justify-center h-full opacity-50"><i data-lucide="cpu" class="w-12 h-12 mb-3 text-purple-400"></i><p class="text-center font-bold tracking-widest uppercase text-[10px]">C.A.S.P.E.R. Core Standby.<br>Initialize Analysis or Forecast.</p></div>
-              </div>
+              <div id="aiTerminal" class="w-full h-[240px] overflow-y-auto p-4 bg-black/60 border border-purple-500/40 rounded-xl text-xs md:text-sm text-gray-200 shadow-inner tracking-tight leading-relaxed"><div class="flex flex-col items-center justify-center h-full opacity-50"><i data-lucide="cpu" class="w-12 h-12 mb-3 text-purple-400"></i><p class="text-center font-bold tracking-widest uppercase text-[10px]">C.A.S.P.E.R. Core Standby.<br>Initialize Analysis or Forecast.</p></div></div>
           </div>
-
           <div class="chart-carousel-card glass-panel rounded-3xl p-5 md:p-6 bg-gradient-to-br from-emerald-900/30 to-black/90 border border-emerald-500/30">
-              <div class="flex justify-between items-center mb-4">
-                  <h3 class="text-xs font-bold text-emerald-300 uppercase tracking-widest flex items-center">Spending Radar <span class="info-icon ml-2" data-info="A multidimensional view comparing your top 5 spending categories.">i</span></h3>
-                  <div class="flex gap-2"><button onclick="openChartModal('radarChart', 'Spending Radar Map'); event.stopPropagation();" class="text-gray-400 hover:text-white transition-colors bg-white/10 hover:bg-white/20 p-1.5 rounded-lg border border-white/10"><i data-lucide="maximize-2" class="w-4 h-4"></i></button></div>
-              </div>
+              <div class="flex justify-between items-center mb-4"><h3 class="text-xs font-bold text-emerald-300 uppercase tracking-widest flex items-center">Spending Radar <span class="info-icon ml-2" data-info="A multidimensional view comparing your top 5 spending categories.">i</span></h3><div class="flex gap-2"><button onclick="openChartModal('radarChart', 'Spending Radar Map'); event.stopPropagation();" class="text-gray-400 hover:text-white transition-colors bg-white/10 hover:bg-white/20 p-1.5 rounded-lg border border-white/10"><i data-lucide="maximize-2" class="w-4 h-4"></i></button></div></div>
               <div class="h-[250px] relative flex justify-center w-full"><canvas id="radarChart"></canvas></div>
           </div>
-          
           <div class="chart-carousel-card glass-panel rounded-3xl p-5 md:p-6 bg-gradient-to-br from-rose-900/30 to-black/90 border border-rose-500/30">
-              <div class="flex justify-between items-center mb-4">
-                  <h3 class="text-xs font-bold text-rose-300 uppercase tracking-widest flex items-center">Cumulative Net Worth <span class="info-icon ml-2" data-info="Cumulative track of your total retained wealth over time (All-Time Income minus All-Time Expenses).">i</span></h3>
-                  <button onclick="openChartModal('trendChart', 'Cumulative Net Worth Over Time'); event.stopPropagation();" class="text-gray-400 hover:text-white transition-colors bg-white/10 hover:bg-white/20 p-1.5 rounded-lg border border-white/10"><i data-lucide="maximize-2" class="w-4 h-4"></i></button>
-              </div>
+              <div class="flex justify-between items-center mb-4"><h3 class="text-xs font-bold text-rose-300 uppercase tracking-widest flex items-center">Cumulative Net Worth <span class="info-icon ml-2" data-info="Cumulative track of your total retained wealth over time (All-Time Income minus All-Time Expenses).">i</span></h3><button onclick="openChartModal('trendChart', 'Cumulative Net Worth Over Time'); event.stopPropagation();" class="text-gray-400 hover:text-white transition-colors bg-white/10 hover:bg-white/20 p-1.5 rounded-lg border border-white/10"><i data-lucide="maximize-2" class="w-4 h-4"></i></button></div>
               <div class="h-[250px] relative flex justify-center w-full"><canvas id="trendChart"></canvas></div>
           </div>
       </div>
 
-      <!-- Lower Charts Grid -->
       <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-2 gap-4 md:gap-6 mt-6">
-          <div class="glass-panel rounded-3xl p-5 md:p-6 bg-gradient-to-b from-transparent to-white/5 border border-white/10 animate-slide-up">
-              <div class="flex justify-between items-center mb-4">
-                  <h3 class="text-xs font-bold text-gray-400 uppercase tracking-widest flex items-center">Month Over Month <span class="info-icon ml-2" data-info="Bar chart comparing your total aggregate expenses across different calendar months.">i</span></h3>
-                  <div class="flex gap-2"><button onclick="openChartModal('monthlyTrendChart', 'Monthly Spend Comparison')" class="text-gray-500 hover:text-white transition-colors bg-white/10 hover:bg-white/20 p-1.5 rounded-lg border border-white/10"><i data-lucide="maximize-2" class="w-4 h-4"></i></button></div>
-              </div>
-              <div class="h-52 relative flex justify-center w-full"><canvas id="monthlyTrendChart"></canvas></div>
-          </div>
-
-          <div class="glass-panel rounded-3xl p-5 md:p-6 bg-gradient-to-b from-transparent to-white/5 border border-white/10 animate-slide-up">
-              <div class="flex justify-between items-center mb-4">
-                  <h3 class="text-xs font-bold text-gray-400 uppercase tracking-widest flex items-center">Weekly Rhythm <span class="info-icon ml-2" data-info="Visualizes what days of the week you spend the most money historically.">i</span></h3>
-                  <div class="flex gap-2"><button onclick="openChartModal('weeklyRhythmChart', 'Weekly Rhythm')" class="text-gray-500 hover:text-white transition-colors bg-white/10 hover:bg-white/20 p-1.5 rounded-lg border border-white/10"><i data-lucide="maximize-2" class="w-4 h-4"></i></button></div>
-              </div>
-              <div class="h-52 relative flex justify-center w-full"><canvas id="weeklyRhythmChart"></canvas></div>
-          </div>
-          
-          <div class="glass-panel rounded-3xl p-5 md:p-6 bg-gradient-to-b from-transparent to-white/5 border border-white/10 animate-slide-up">
-              <div class="flex justify-between items-center mb-4">
-                  <h3 class="text-xs font-bold text-gray-400 uppercase tracking-widest flex items-center">7-Day Cashflow <span class="info-icon ml-2" data-info="Daily split of income vs. expenses for the most recent 7 days of activity in the selected period.">i</span></h3>
-                  <div class="flex items-center gap-2 flex-shrink-0">
-                      <button onclick="openAllTimeChart()" class="text-xs text-blue-400 hover:text-white font-bold bg-blue-500/10 px-3 py-1.5 rounded-lg border border-blue-500/20 transition-all flex items-center shadow-inner uppercase tracking-wider"><i data-lucide="calendar-days" class="w-3 h-3 mr-1.5"></i> Daily</button>
-                      <button onclick="openChartModal('cashflowChart', 'Recent 7-Day Cashflow')" class="text-gray-500 hover:text-white transition-colors bg-white/10 hover:bg-white/20 p-1.5 rounded-lg border border-white/10"><i data-lucide="maximize-2" class="w-4 h-4"></i></button>
-                  </div>
-              </div>
-              <div class="h-52 relative flex justify-center w-full"><canvas id="cashflowChart"></canvas></div>
-          </div>
-
-          <div class="glass-panel rounded-3xl p-5 md:p-6 bg-gradient-to-b from-transparent to-white/5 border border-white/10 animate-slide-up">
-              <div class="flex justify-between items-center mb-4">
-                  <h3 class="text-xs font-bold text-gray-400 uppercase tracking-widest flex items-center">Historical Flow <span class="info-icon ml-2" data-info="Long-term view comparing inbound and outbound cashflow across all historical data points.">i</span></h3>
-                  <div class="flex items-center gap-2 min-w-0">
-                      <div class="relative min-w-0 flex-1"><select id="historyChartFilter" onchange="updateHistoryChart(this.value)" class="bg-black/60 text-[9px] font-bold text-white uppercase rounded-lg px-2 py-1.5 border border-white/20 outline-none hover:border-emerald-500/50 cursor-pointer w-full pr-6 appearance-none shadow-inner truncate-strict"></select><i data-lucide="chevron-down" class="absolute right-1.5 top-1/2 transform -translate-y-1/2 w-3 h-3 text-white pointer-events-none"></i></div>
-                      <button onclick="openChartModal('allMonthsChart', 'Historical Monthly Flow')" class="text-gray-500 hover:text-white transition-colors bg-white/10 hover:bg-white/20 p-1.5 rounded-lg border border-white/10 flex-shrink-0"><i data-lucide="maximize-2" class="w-4 h-4"></i></button>
-                  </div>
-              </div>
-              <div class="h-52 relative flex justify-center w-full"><canvas id="allMonthsChart"></canvas></div>
-          </div>
+          <div class="glass-panel rounded-3xl p-5 md:p-6 bg-gradient-to-b from-transparent to-white/5 border border-white/10 animate-slide-up"><div class="flex justify-between items-center mb-4"><h3 class="text-xs font-bold text-gray-400 uppercase tracking-widest flex items-center">Month Over Month <span class="info-icon ml-2" data-info="Bar chart comparing your total aggregate expenses across different calendar months.">i</span></h3><div class="flex gap-2"><button onclick="openChartModal('monthlyTrendChart', 'Monthly Spend Comparison')" class="text-gray-500 hover:text-white transition-colors bg-white/10 hover:bg-white/20 p-1.5 rounded-lg border border-white/10"><i data-lucide="maximize-2" class="w-4 h-4"></i></button></div></div><div class="h-52 relative flex justify-center w-full"><canvas id="monthlyTrendChart"></canvas></div></div>
+          <div class="glass-panel rounded-3xl p-5 md:p-6 bg-gradient-to-b from-transparent to-white/5 border border-white/10 animate-slide-up"><div class="flex justify-between items-center mb-4"><h3 class="text-xs font-bold text-gray-400 uppercase tracking-widest flex items-center">Weekly Rhythm <span class="info-icon ml-2" data-info="Visualizes what days of the week you spend the most money historically.">i</span></h3><div class="flex gap-2"><button onclick="openChartModal('weeklyRhythmChart', 'Weekly Rhythm')" class="text-gray-500 hover:text-white transition-colors bg-white/10 hover:bg-white/20 p-1.5 rounded-lg border border-white/10"><i data-lucide="maximize-2" class="w-4 h-4"></i></button></div></div><div class="h-52 relative flex justify-center w-full"><canvas id="weeklyRhythmChart"></canvas></div></div>
+          <div class="glass-panel rounded-3xl p-5 md:p-6 bg-gradient-to-b from-transparent to-white/5 border border-white/10 animate-slide-up"><div class="flex justify-between items-center mb-4"><h3 class="text-xs font-bold text-gray-400 uppercase tracking-widest flex items-center">7-Day Cashflow <span class="info-icon ml-2" data-info="Daily split of income vs. expenses for the most recent 7 days of activity in the selected period.">i</span></h3><div class="flex items-center gap-2 flex-shrink-0"><button onclick="openAllTimeChart()" class="text-xs text-blue-400 hover:text-white font-bold bg-blue-500/10 px-3 py-1.5 rounded-lg border border-blue-500/20 transition-all flex items-center shadow-inner uppercase tracking-wider"><i data-lucide="calendar-days" class="w-3 h-3 mr-1.5"></i> Daily</button><button onclick="openChartModal('cashflowChart', 'Recent 7-Day Cashflow')" class="text-gray-500 hover:text-white transition-colors bg-white/10 hover:bg-white/20 p-1.5 rounded-lg border border-white/10"><i data-lucide="maximize-2" class="w-4 h-4"></i></button></div></div><div class="h-52 relative flex justify-center w-full"><canvas id="cashflowChart"></canvas></div></div>
+          <div class="glass-panel rounded-3xl p-5 md:p-6 bg-gradient-to-b from-transparent to-white/5 border border-white/10 animate-slide-up"><div class="flex justify-between items-center mb-4"><h3 class="text-xs font-bold text-gray-400 uppercase tracking-widest flex items-center">Historical Flow <span class="info-icon ml-2" data-info="Long-term view comparing inbound and outbound cashflow across all historical data points.">i</span></h3><div class="flex items-center gap-2 min-w-0"><div class="relative min-w-0 flex-1"><select id="historyChartFilter" onchange="updateHistoryChart(this.value)" class="bg-black/60 text-[9px] font-bold text-white uppercase rounded-lg px-2 py-1.5 border border-white/20 outline-none hover:border-emerald-500/50 cursor-pointer w-full pr-6 appearance-none shadow-inner truncate-strict"></select><i data-lucide="chevron-down" class="absolute right-1.5 top-1/2 transform -translate-y-1/2 w-3 h-3 text-white pointer-events-none"></i></div><button onclick="openChartModal('allMonthsChart', 'Historical Monthly Flow')" class="text-gray-500 hover:text-white transition-colors bg-white/10 hover:bg-white/20 p-1.5 rounded-lg border border-white/10 flex-shrink-0"><i data-lucide="maximize-2" class="w-4 h-4"></i></button></div></div><div class="h-52 relative flex justify-center w-full"><canvas id="allMonthsChart"></canvas></div></div>
       </div>
 
       <div class="grid grid-cols-1 lg:grid-cols-3 gap-4 md:gap-6 mt-6">
         <div class="lg:col-span-2">
           <div class="glass-panel rounded-3xl p-4 md:p-6 bg-gradient-to-br from-white/5 to-transparent h-full animate-slide-up">
             <div class="flex flex-col gap-4 mb-4">
-               <div class="flex justify-between items-center">
-                 <h3 class="text-xs font-bold text-gray-400 uppercase tracking-widest flex items-center">Ledger Data <span class="spider-accent mx-2">•</span><span id="recordCount" class="px-2.5 py-0.5 bg-black/50 border border-white/20 rounded-md text-[10px] font-bold text-white shadow-inner">0</span></h3>
-                 <div class="flex items-center space-x-1.5">
-                   <button onclick="openAIReport()" class="bg-purple-600/30 hover:bg-purple-600 text-purple-200 hover:text-white px-3 py-2 rounded-xl text-xs font-bold border border-purple-500/50 transition-all flex items-center shadow-md uppercase tracking-wider mr-1"><i data-lucide="sparkles" class="w-3.5 h-3.5 mr-1.5 text-purple-300"></i> Full Report</button>
-                   <button onclick="exportPDF()" class="bg-red-500/10 hover:bg-red-500/30 text-red-400 p-2 rounded-xl border border-red-500/20 transition-colors" title="Export Dashboard PDF"><i data-lucide="file-text" class="w-5 h-5"></i></button>
-                   <button onclick="exportExcel()" class="bg-emerald-500/10 hover:bg-emerald-500/30 text-emerald-400 p-2 rounded-xl border border-emerald-500/20 transition-colors" title="Export Ledger Excel"><i data-lucide="file-spreadsheet" class="w-5 h-5"></i></button>
-                   <button onclick="restoreEmbeddedExcelLedger()" class="bg-red-500/10 hover:bg-red-600/30 text-red-300 p-2 rounded-xl border border-red-500/20 transition-colors" title="Restore Seed Ledger"><i data-lucide="shield-check" class="w-5 h-5"></i></button>
-                   <label class="bg-white/10 hover:bg-white/20 text-gray-300 p-2 rounded-xl border border-white/10 cursor-pointer transition-colors" title="Restore Backup"><i data-lucide="upload" class="w-5 h-5"></i><input type="file" id="importFile" accept=".json,.xlsx,.xls,.csv" class="hidden" onchange="importData(event)"></label>
-                 </div>
-               </div>
-               <div class="flex space-x-2">
-                 <div class="relative min-w-0 flex-1 max-w-[160px]"><select id="monthFilter" class="w-full glass-input rounded-xl py-2.5 px-3 pr-8 text-sm text-white font-bold uppercase tracking-wider appearance-none truncate-strict" onchange="selectedMonth = this.value; document.getElementById('cardMonthFilter').value = this.value; updateUI();"></select><i data-lucide="chevron-down" class="absolute right-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-gray-400 pointer-events-none"></i></div>
-                 <div class="relative flex-grow min-w-0"><i data-lucide="search" class="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-gray-500"></i><input type="text" id="searchInput" placeholder="Search the ledger..." class="w-full glass-input rounded-xl py-2.5 pl-9 pr-3 text-sm text-white focus:ring-2 focus:ring-blue-500/50 transition-all font-medium truncate-strict" /></div>
-               </div>
+               <div class="flex justify-between items-center"><h3 class="text-xs font-bold text-gray-400 uppercase tracking-widest flex items-center">Ledger Data <span class="spider-accent mx-2">•</span><span id="recordCount" class="px-2.5 py-0.5 bg-black/50 border border-white/20 rounded-md text-[10px] font-bold text-white shadow-inner">0</span></h3><div class="flex items-center space-x-1.5"><button onclick="openAIReport()" class="bg-purple-600/30 hover:bg-purple-600 text-purple-200 hover:text-white px-3 py-2 rounded-xl text-xs font-bold border border-purple-500/50 transition-all flex items-center shadow-md uppercase tracking-wider mr-1"><i data-lucide="sparkles" class="w-3.5 h-3.5 mr-1.5 text-purple-300"></i> Full Report</button><button onclick="exportPDF()" class="bg-red-500/10 hover:bg-red-500/30 text-red-400 p-2 rounded-xl border border-red-500/20 transition-colors" title="Export Dashboard PDF"><i data-lucide="file-text" class="w-5 h-5"></i></button><button onclick="exportExcel()" class="bg-emerald-500/10 hover:bg-emerald-500/30 text-emerald-400 p-2 rounded-xl border border-emerald-500/20 transition-colors" title="Export Ledger Excel"><i data-lucide="file-spreadsheet" class="w-5 h-5"></i></button><button onclick="restoreEmbeddedExcelLedger()" class="bg-red-500/10 hover:bg-red-600/30 text-red-300 p-2 rounded-xl border border-red-500/20 transition-colors" title="Restore Seed Ledger"><i data-lucide="shield-check" class="w-5 h-5"></i></button><label class="bg-white/10 hover:bg-white/20 text-gray-300 p-2 rounded-xl border border-white/10 cursor-pointer transition-colors" title="Restore Backup"><i data-lucide="upload" class="w-5 h-5"></i><input type="file" id="importFile" accept=".json,.xlsx,.xls,.csv" class="hidden" onchange="importData(event)"></label></div></div>
+               <div class="flex space-x-2"><div class="relative min-w-0 flex-1 max-w-[160px]"><select id="monthFilter" class="w-full glass-input rounded-xl py-2.5 px-3 pr-8 text-sm text-white font-bold uppercase tracking-wider appearance-none truncate-strict" onchange="selectedMonth = this.value; document.getElementById('cardMonthFilter').value = this.value; updateUI();"></select><i data-lucide="chevron-down" class="absolute right-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-gray-400 pointer-events-none"></i></div><div class="relative flex-grow min-w-0"><i data-lucide="search" class="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-gray-500"></i><input type="text" id="searchInput" placeholder="Search the ledger..." class="w-full glass-input rounded-xl py-2.5 pl-9 pr-3 text-sm text-white focus:ring-2 focus:ring-blue-500/50 transition-all font-medium truncate-strict" /></div></div>
             </div>
-            <div class="flex space-x-2 mb-4 overflow-x-auto pb-2 scrollbar-hide">
-                 <button onclick="applyFilter('all')" class="px-4 py-1.5 rounded-full text-xs font-bold bg-white/10 text-white whitespace-nowrap transition-colors hover:bg-white/20 tracking-wider uppercase border border-white/10">All</button>
-                 <button onclick="applyFilter('income')" class="px-4 py-1.5 rounded-full text-xs font-bold bg-emerald-500/20 text-emerald-400 whitespace-nowrap transition-colors hover:bg-emerald-500/30 tracking-wider uppercase border border-emerald-500/20">Income</button>
-                 <button onclick="applyFilter('expense')" class="px-4 py-1.5 rounded-full text-xs font-bold bg-rose-500/20 text-rose-400 whitespace-nowrap transition-colors hover:bg-rose-500/30 tracking-wider uppercase border border-rose-500/20">Expenses</button>
-                 <button onclick="applyFilter('High Impact')" class="px-4 py-1.5 rounded-full text-xs font-bold bg-purple-500/20 text-purple-400 whitespace-nowrap transition-colors hover:bg-purple-500/30 tracking-wider uppercase border border-purple-500/20">> ₹10k</button>
-            </div>
+            <div class="flex space-x-2 mb-4 overflow-x-auto pb-2 scrollbar-hide"><button onclick="applyFilter('all')" class="px-4 py-1.5 rounded-full text-xs font-bold bg-white/10 text-white whitespace-nowrap transition-colors hover:bg-white/20 tracking-wider uppercase border border-white/10">All</button><button onclick="applyFilter('income')" class="px-4 py-1.5 rounded-full text-xs font-bold bg-emerald-500/20 text-emerald-400 whitespace-nowrap transition-colors hover:bg-emerald-500/30 tracking-wider uppercase border border-emerald-500/20">Income</button><button onclick="applyFilter('expense')" class="px-4 py-1.5 rounded-full text-xs font-bold bg-rose-500/20 text-rose-400 whitespace-nowrap transition-colors hover:bg-rose-500/30 tracking-wider uppercase border border-rose-500/20">Expenses</button><button onclick="applyFilter('High Impact')" class="px-4 py-1.5 rounded-full text-xs font-bold bg-purple-500/20 text-purple-400 whitespace-nowrap transition-colors hover:bg-purple-500/30 tracking-wider uppercase border border-purple-500/20">> ₹10k</button></div>
             <div id="ledgerList" class="space-y-3 max-h-[500px] overflow-y-auto pr-2 touch-pan-y relative tracking-wider"></div>
           </div>
         </div>
-
         <div class="lg:col-span-1">
           <div class="glass-panel rounded-3xl p-5 md:p-6 sticky top-6 bg-gradient-to-br from-white/5 to-transparent animate-slide-up">
             <h3 class="text-xs font-bold text-gray-400 uppercase tracking-widest mb-6 flex items-center">Quick Entry <span class="info-icon ml-2" data-info="Manually add transactions here. You can also paste raw SMS text using the message button inside the amount box to let AI auto-fill the details.">i</span></h3>
-            <div class="flex rounded-xl bg-black/50 p-1.5 mb-6 border border-white/10 shadow-inner relative z-10">
-              <button id="tabExpense" class="flex-1 py-2 text-sm font-bold rounded-lg bg-white/10 text-white transition-all shadow-md tracking-wider uppercase border border-white/10" onclick="switchTab('expense')">Expense</button>
-              <button id="tabIncome" class="flex-1 py-2 text-sm font-bold rounded-lg text-gray-500 hover:text-white hover:bg-white/10 transition-all tracking-wider uppercase border border-transparent" onclick="switchTab('income')">Income</button>
-            </div>
-
+            <div class="flex rounded-xl bg-black/50 p-1.5 mb-6 border border-white/10 shadow-inner relative z-10"><button id="tabExpense" class="flex-1 py-2 text-sm font-bold rounded-lg bg-white/10 text-white transition-all shadow-md tracking-wider uppercase border border-white/10" onclick="switchTab('expense')">Expense</button><button id="tabIncome" class="flex-1 py-2 text-sm font-bold rounded-lg text-gray-500 hover:text-white hover:bg-white/10 transition-all tracking-wider uppercase border border-transparent" onclick="switchTab('income')">Income</button></div>
             <form id="transactionForm" class="space-y-4 md:space-y-5 relative z-10">
               <div>
-                <div class="flex gap-2 mb-3 overflow-x-auto scrollbar-hide touch-pan-x">
-                  <button type="button" onclick="addAmount(100)" class="flex-1 min-w-[60px] bg-white/10 hover:bg-blue-600/30 text-gray-200 text-xs font-bold py-2 rounded-xl transition-all border border-white/20">+100</button>
-                  <button type="button" onclick="addAmount(500)" class="flex-1 min-w-[60px] bg-white/10 hover:bg-emerald-600/30 text-gray-200 text-xs font-bold py-2 rounded-xl transition-all border border-white/20">+500</button>
-                  <button type="button" onclick="addAmount(1000)" class="flex-1 min-w-[60px] bg-white/10 hover:bg-purple-600/30 text-gray-200 text-xs font-bold py-2 rounded-xl transition-all border border-white/20">+1000</button>
-                  <button type="button" onclick="addAmount(5000)" class="flex-1 min-w-[60px] bg-white/10 hover:bg-rose-600/30 text-gray-200 text-xs font-bold py-2 rounded-xl transition-all border border-white/20">+5000</button>
-                </div>
-                <div class="relative flex items-center bg-black/60 rounded-2xl border border-white/20 focus-within:border-blue-500 transition-colors shadow-inner overflow-hidden pr-1">
-                  <span id="currencySymbol" class="pl-4 text-3xl font-black text-rose-500 transition-colors drop-shadow-md flex-shrink-0">₹</span>
-                  <input type="number" id="amount" placeholder="0.00" step="0.01" required class="w-full bg-transparent py-5 pl-1 pr-20 md:pr-32 text-3xl md:text-4xl font-black text-white focus:outline-none" />
-                  <div class="absolute right-0 flex items-center space-x-1 pr-2 bg-black/50 h-full pl-2 border-l border-white/10 backdrop-blur-md">
-                      <button type="button" onclick="handleSMSPaste()" class="p-2.5 bg-white/10 hover:bg-blue-600/30 text-gray-200 hover:text-blue-400 rounded-xl transition-colors border border-white/10 shadow-sm" title="Paste Transaction SMS"><i id="smsIcon" data-lucide="message-square" class="w-5 h-5"></i></button>
-                      <button type="button" onclick="handleBulkSMS()" class="p-2.5 bg-white/10 hover:bg-purple-600/30 text-gray-200 hover:text-purple-400 rounded-xl transition-colors border border-white/10 shadow-sm" title="Sync Multiple Old SMS"><i id="bulkSmsIcon" data-lucide="layers" class="w-5 h-5"></i></button>
-                      <label for="receiptUpload" class="p-2.5 bg-white/10 hover:bg-emerald-600/30 text-gray-200 hover:text-emerald-400 rounded-xl cursor-pointer transition-colors border border-white/10 shadow-sm" title="Scan Receipt/PDF"><i id="scanIcon" data-lucide="camera" class="w-5 h-5"></i></label>
-                      <button type="button" onclick="recoverTransactionsFromCloudBackup()" class="p-2.5 bg-red-500/10 hover:bg-red-600/30 text-red-300 hover:text-white rounded-xl transition-colors border border-red-500/20 shadow-sm" title="Recover Protected Cloud Backup"><i data-lucide="database-backup" class="w-5 h-5"></i></button>
-                      <input type="file" id="receiptUpload" accept="image/*" capture="camera" class="hidden" onchange="scanReceipt(event)">
-                  </div>
-                </div>
+                <div class="flex gap-2 mb-3 overflow-x-auto scrollbar-hide touch-pan-x"><button type="button" onclick="addAmount(100)" class="flex-1 min-w-[60px] bg-white/10 hover:bg-blue-600/30 text-gray-200 text-xs font-bold py-2 rounded-xl transition-all border border-white/20">+100</button><button type="button" onclick="addAmount(500)" class="flex-1 min-w-[60px] bg-white/10 hover:bg-emerald-600/30 text-gray-200 text-xs font-bold py-2 rounded-xl transition-all border border-white/20">+500</button><button type="button" onclick="addAmount(1000)" class="flex-1 min-w-[60px] bg-white/10 hover:bg-purple-600/30 text-gray-200 text-xs font-bold py-2 rounded-xl transition-all border border-white/20">+1000</button><button type="button" onclick="addAmount(5000)" class="flex-1 min-w-[60px] bg-white/10 hover:bg-rose-600/30 text-gray-200 text-xs font-bold py-2 rounded-xl transition-all border border-white/20">+5000</button></div>
+                <div class="relative flex items-center bg-black/60 rounded-2xl border border-white/20 focus-within:border-blue-500 transition-colors shadow-inner overflow-hidden pr-1"><span id="currencySymbol" class="pl-4 text-3xl font-black text-rose-500 transition-colors drop-shadow-md flex-shrink-0">₹</span><input type="number" id="amount" placeholder="0.00" step="0.01" required class="w-full bg-transparent py-5 pl-1 pr-20 md:pr-32 text-3xl md:text-4xl font-black text-white focus:outline-none" /><div class="absolute right-0 flex items-center space-x-1 pr-2 bg-black/50 h-full pl-2 border-l border-white/10 backdrop-blur-md"><button type="button" onclick="handleSMSPaste()" class="p-2.5 bg-white/10 hover:bg-blue-600/30 text-gray-200 hover:text-blue-400 rounded-xl transition-colors border border-white/10 shadow-sm" title="Paste Transaction SMS"><i id="smsIcon" data-lucide="message-square" class="w-5 h-5"></i></button><button type="button" onclick="handleBulkSMS()" class="p-2.5 bg-white/10 hover:bg-purple-600/30 text-gray-200 hover:text-purple-400 rounded-xl transition-colors border border-white/10 shadow-sm" title="Sync Multiple Old SMS"><i id="bulkSmsIcon" data-lucide="layers" class="w-5 h-5"></i></button><label for="receiptUpload" class="p-2.5 bg-white/10 hover:bg-emerald-600/30 text-gray-200 hover:text-emerald-400 rounded-xl cursor-pointer transition-colors border border-white/10 shadow-sm" title="Scan Receipt/PDF"><i id="scanIcon" data-lucide="camera" class="w-5 h-5"></i></label><button type="button" onclick="recoverTransactionsFromCloudBackup()" class="p-2.5 bg-red-500/10 hover:bg-red-600/30 text-red-300 hover:text-white rounded-xl transition-colors border border-red-500/20 shadow-sm" title="Recover Protected Cloud Backup"><i data-lucide="database-backup" class="w-5 h-5"></i></button><input type="file" id="receiptUpload" accept="image/*" capture="camera" class="hidden" onchange="scanReceipt(event)"></div></div>
               </div>
-              <div class="grid grid-cols-2 gap-4">
-                <div class="relative min-w-0"><label class="block text-[10px] font-bold text-gray-400 uppercase tracking-wider mb-2 pl-1">Category</label><select id="category" class="w-full glass-input rounded-xl p-4 pr-8 text-sm text-white hover:border-blue-500/50 transition-colors font-medium appearance-none truncate-strict"></select><i data-lucide="chevron-down" class="absolute right-3 top-10 transform w-4 h-4 text-gray-400 pointer-events-none"></i></div>
-                <div class="relative min-w-0"><label class="block text-[10px] font-bold text-gray-400 uppercase tracking-wider mb-2 pl-1">Account</label><select id="account" class="w-full glass-input rounded-xl p-4 pr-8 text-sm text-white hover:border-blue-500/50 transition-colors font-medium appearance-none truncate-strict"><option value="UPI">📱 UPI</option><option value="Card">💳 Card</option><option value="Cash">💵 Cash</option></select><i data-lucide="chevron-down" class="absolute right-3 top-10 transform w-4 h-4 text-gray-400 pointer-events-none"></i></div>
-              </div>
+              <div class="grid grid-cols-2 gap-4"><div class="relative min-w-0"><label class="block text-[10px] font-bold text-gray-400 uppercase tracking-wider mb-2 pl-1">Category</label><select id="category" class="w-full glass-input rounded-xl p-4 pr-8 text-sm text-white hover:border-blue-500/50 transition-colors font-medium appearance-none truncate-strict"></select><i data-lucide="chevron-down" class="absolute right-3 top-10 transform w-4 h-4 text-gray-400 pointer-events-none"></i></div><div class="relative min-w-0"><label class="block text-[10px] font-bold text-gray-400 uppercase tracking-wider mb-2 pl-1">Account</label><select id="account" class="w-full glass-input rounded-xl p-4 pr-8 text-sm text-white hover:border-blue-500/50 transition-colors font-medium appearance-none truncate-strict"><option value="UPI">📱 UPI</option><option value="Card">💳 Card</option><option value="Cash">💵 Cash</option></select><i data-lucide="chevron-down" class="absolute right-3 top-10 transform w-4 h-4 text-gray-400 pointer-events-none"></i></div></div>
               <div><label class="block text-[10px] font-bold text-gray-400 uppercase tracking-wider mb-2 pl-1">Date</label><input type="date" id="date" required class="w-full glass-input rounded-xl p-4 text-sm text-white hover:border-blue-500/50 transition-colors font-bold tracking-wider" /></div>
               <div><label class="block text-[10px] font-bold text-gray-400 uppercase tracking-wider mb-2 pl-1">Description</label><input type="text" id="note" placeholder="Transaction context info..." class="w-full glass-input rounded-xl p-4 text-sm text-white hover:border-blue-500/50 transition-colors font-medium truncate-strict" /></div>
               <div id="recurringToggleDiv" class="flex items-center justify-between p-4 bg-black/60 rounded-xl border border-white/20 hover:border-blue-500/50 transition-colors shadow-inner"><div class="flex items-center"><i data-lucide="repeat" class="w-4 h-4 text-blue-400 mr-2 drop-shadow-[0_0_5px_rgba(59,130,246,0.5)]"></i><span class="text-[10px] font-bold text-gray-300 uppercase tracking-widest">Auto-Renew Monthly</span></div><label class="relative inline-flex items-center cursor-pointer"><input type="checkbox" id="isRecurring" class="sr-only peer"><div class="w-9 h-5 bg-gray-700 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-4 after:w-4 after:transition-all peer-checked:bg-blue-500 shadow-[inset_0_2px_4px_rgba(0,0,0,0.3)]"></div></label></div>
@@ -473,7 +350,6 @@
               </div>
           </div>
           
-          <!-- RECENT SAVES CAROUSEL -->
           <div class="glass-panel rounded-3xl p-6 md:p-8 flex flex-col border border-white/10 bg-black/40 lg:col-span-2 overflow-hidden w-full">
             <h3 class="text-xs font-bold text-gray-400 uppercase tracking-widest mb-4 flex items-center"><i data-lucide="history" class="w-4 h-4 mr-2"></i> Recent Workspace Saves <span class="info-icon ml-2" data-info="Every time you hit Sync, a local snapshot is saved here so you can easily restore previous states.">i</span></h3>
             <div id="recentSavesGrid" class="flex gap-4 overflow-x-auto pb-4 hide-scroll w-full snap-x">
@@ -519,7 +395,6 @@
       </div>
   </div>
 
-  <!-- ALL-TIME TIMELINE MODAL / DAILY LEDGER -->
   <div id="allTimeModal" class="hidden fixed inset-0 bg-black/95 backdrop-blur-xl z-[100] flex items-center justify-center p-4 transition-opacity">
       <div class="glass-panel modal-active rounded-3xl w-full max-w-5xl h-[80vh] border border-white/20 shadow-[0_0_60px_rgba(59,130,246,0.3)] relative overflow-hidden flex flex-col bg-black/60">
           <div class="absolute inset-0 bg-gradient-to-br from-blue-600/10 to-transparent pointer-events-none"></div>
@@ -531,7 +406,6 @@
       </div>
   </div>
 
-  <!-- GENERIC EXPANDED CHART MODAL -->
   <div id="expandedChartModal" class="hidden fixed inset-0 bg-black/95 backdrop-blur-xl z-[100] flex items-center justify-center p-4 transition-opacity">
       <div class="glass-panel modal-active rounded-3xl w-full max-w-5xl h-[80vh] border border-white/20 shadow-[0_0_60px_rgba(59,130,246,0.3)] relative overflow-hidden flex flex-col bg-black/60">
           <div class="absolute inset-0 bg-gradient-to-br from-blue-600/10 to-transparent pointer-events-none"></div>
@@ -543,7 +417,6 @@
       </div>
   </div>
 
-  <!-- STYLIZED EDIT MODAL FOR TRANSACTIONS -->
   <div id="editModal" class="hidden fixed inset-0 bg-black/90 backdrop-blur-xl z-[100] flex items-center justify-center p-4 transition-opacity">
       <div class="glass-panel modal-active rounded-3xl p-8 w-full max-w-sm border border-white/20 shadow-[0_0_60px_rgba(59,130,246,0.3)] relative overflow-hidden bg-black/60">
           <div class="absolute inset-0 bg-gradient-to-br from-blue-600/10 to-transparent pointer-events-none"></div>
@@ -562,7 +435,6 @@
       </div>
   </div>
 
-  <!-- WISHLIST & MEDIA EDIT MODAL -->
   <div id="editWishlistModal" class="hidden fixed inset-0 bg-black/90 backdrop-blur-xl z-[100] flex items-center justify-center p-4 transition-opacity">
       <div class="glass-panel modal-active rounded-3xl p-8 w-full max-w-sm border border-white/20 shadow-[0_0_60px_rgba(59,130,246,0.3)] relative overflow-hidden bg-black/60">
           <div class="absolute inset-0 bg-gradient-to-br from-blue-600/10 to-transparent pointer-events-none"></div>
@@ -601,7 +473,6 @@
     let ccLimit = parseFloat(localStorage.getItem('walletCCLimit')) || 50000;
     const LOCAL_TX_KEY='walletTransactionsBackupV2';
     
-    // COMPACT JSON BACKUP TO AVOID TRUNCATION
     const rawData = '[{"i":"1786233600000","t":"e","a":460.0,"ac":"UPI","c":"Food & Dining","n":"","ts":1786233600000},{"i":"1786147200001","t":"e","a":418.75,"ac":"UPI","c":"Groceries","n":"","ts":1786147200000},{"i":"1786147200002","t":"e","a":95.0,"ac":"UPI","c":"Food & Dining","n":"","ts":1786147200000},{"i":"1786147200003","t":"e","a":719.0,"ac":"UPI","c":"Subscriptions","n":"","ts":1786147200000},{"i":"1786147200004","t":"e","a":55.0,"ac":"UPI","c":"Groceries","n":"","ts":1786147200000},{"i":"1786147200005","t":"e","a":65.0,"ac":"UPI","c":"Transport","n":"","ts":1786147200000},{"i":"1786060800006","t":"e","a":163.0,"ac":"UPI","c":"Groceries","n":"","ts":1786060800000},{"i":"1785974400007","t":"e","a":130.0,"ac":"UPI","c":"Food & Dining","n":"","ts":1785974400000},{"i":"1785801600008","t":"e","a":240.0,"ac":"UPI","c":"Food & Dining","n":"","ts":1785801600000},{"i":"1785715200009","t":"i","a":39.84,"ac":"UPI","c":"Other","n":"","ts":1785715200000},{"i":"1785715200010","t":"e","a":115.0,"ac":"UPI","c":"Groceries","n":"","ts":1785715200000},{"i":"1785715200011","t":"e","a":161.72,"ac":"UPI","c":"Food & Dining","n":"","ts":1785715200000},{"i":"1785628800012","t":"e","a":64.0,"ac":"UPI","c":"Transport","n":"","ts":1785628800000},{"i":"1785628800013","t":"e","a":32.0,"ac":"UPI","c":"Transport","n":"","ts":1785628800000},{"i":"1785628800014","t":"e","a":16.0,"ac":"UPI","c":"Transport","n":"","ts":1785628800000},{"i":"1785628800015","t":"i","a":35.0,"ac":"UPI","c":"Other","n":"","ts":1785628800000},{"i":"1785628800016","t":"e","a":125.0,"ac":"UPI","c":"Groceries","n":"","ts":1785628800000},{"i":"1785628800017","t":"e","a":13.0,"ac":"UPI","c":"Transport","n":"","ts":1785628800000},{"i":"1785628800018","t":"e","a":35.0,"ac":"UPI","c":"Transport","n":"","ts":1785628800000},{"i":"1785628800019","t":"e","a":23.0,"ac":"UPI","c":"Transport","n":"","ts":1785628800000},{"i":"1785628800020","t":"e","a":27.0,"ac":"UPI","c":"Transport","n":"","ts":1785628800000},{"i":"1785542400021","t":"e","a":9750.0,"ac":"UPI","c":"Rent","n":"","ts":1785542400000},{"i":"1785542400022","t":"e","a":131.0,"ac":"UPI","c":"Food & Dining","n":"","ts":1785542400000},{"i":"1785542400023","t":"e","a":20000.0,"ac":"UPI","c":"Other","n":"","ts":1785542400000},{"i":"1785542400024","t":"i","a":50080.0,"ac":"UPI","c":"Salary","n":"","ts":1785542400000},{"i":"1785369600025","t":"e","a":165.0,"ac":"UPI","c":"Food & Dining","n":"","ts":1785369600000},{"i":"1785369600026","t":"e","a":167.72,"ac":"UPI","c":"Food & Dining","n":"","ts":1785369600000},{"i":"1785283200027","t":"e","a":198.0,"ac":"UPI","c":"Food & Dining","n":"","ts":1785283200000},{"i":"1785283200028","t":"e","a":153.0,"ac":"UPI","c":"Shopping","n":"Amazon India (SMS)","ts":1785283200000},{"i":"1785196800029","t":"e","a":50.0,"ac":"UPI","c":"Groceries","n":"","ts":1785196800000},{"i":"1785110400030","t":"e","a":120.0,"ac":"UPI","c":"Groceries","n":"","ts":1785110400000},{"i":"1785110400031","t":"e","a":511.97,"ac":"UPI","c":"Entertainment","n":"","ts":1785110400000},{"i":"1785024000032","t":"e","a":421.0,"ac":"UPI","c":"Food & Dining","n":"","ts":1785024000000},{"i":"1785024000033","t":"e","a":35.0,"ac":"UPI","c":"Groceries","n":"","ts":1785024000000},{"i":"1785024000034","t":"e","a":164.0,"ac":"UPI","c":"Food & Dining","n":"","ts":1785024000000},{"i":"1784937600035","t":"e","a":60.0,"ac":"UPI","c":"Groceries","n":"","ts":1784937600000},{"i":"1784937600036","t":"e","a":127.0,"ac":"UPI","c":"Food & Dining","n":"","ts":1784937600000},{"i":"1784764800037","t":"e","a":80.0,"ac":"UPI","c":"Groceries","n":"","ts":1784764800000},{"i":"1784678400038","t":"e","a":120.0,"ac":"UPI","c":"Food & Dining","n":"","ts":1784678400000},{"i":"1784678400039","t":"e","a":60.0,"ac":"UPI","c":"Food & Dining","n":"","ts":1784678400000},{"i":"1784592000040","t":"e","a":144.0,"ac":"UPI","c":"Food & Dining","n":"","ts":1784592000000},{"i":"1784592000041","t":"i","a":2800.0,"ac":"UPI","c":"Refund","n":"","ts":1784592000000},{"i":"1784592000042","t":"e","a":30.0,"ac":"UPI","c":"Food & Dining","n":"","ts":1784592000000},{"i":"1784505600043","t":"e","a":15.0,"ac":"UPI","c":"Groceries","n":"","ts":1784505600000},{"i":"1784505600044","t":"e","a":45.0,"ac":"UPI","c":"Food & Dining","n":"","ts":1784505600000},{"i":"1784419200045","t":"e","a":289.0,"ac":"UPI","c":"Groceries","n":"","ts":1784419200000},{"i":"1784419200046","t":"e","a":167.0,"ac":"UPI","c":"Food & Dining","n":"","ts":1784419200000},{"i":"1784419200047","t":"e","a":60.0,"ac":"UPI","c":"Food & Dining","n":"","ts":1784419200000},{"i":"1784332800048","t":"e","a":665.0,"ac":"UPI","c":"Electricity charges","n":"","ts":1784332800000},{"i":"1784332800049","t":"e","a":60.0,"ac":"UPI","c":"Food & Dining","n":"","ts":1784332800000},{"i":"1784332800050","t":"e","a":35.0,"ac":"UPI","c":"Groceries","n":"THANGAM FRUITS AND VEGETABLES (SMS)","ts":1784332800000},{"i":"1784332800051","t":"e","a":40.0,"ac":"UPI","c":"Transport","n":"METROPOLITAN TRANSPORT (SMS)","ts":1784332800000},{"i":"1784332800052","t":"e","a":23.0,"ac":"UPI","c":"Other","n":"Cumta info (SMS)","ts":1784332800000},{"i":"1784332800053","t":"i","a":62.0,"ac":"UPI","c":"Other","n":"SHIVAYOGESHJ (SMS)","ts":1784332800000},{"i":"1784332800054","t":"e","a":32.0,"ac":"UPI","c":"Transport","n":"Rapido (SMS)","ts":1784332800000},{"i":"1784332800055","t":"e","a":32.0,"ac":"UPI","c":"Transport","n":"Rapido (SMS)","ts":1784332800000},{"i":"1784332800056","t":"e","a":206.0,"ac":"UPI","c":"Entertainment","n":"MOHAMED IMRAN FAREET (SMS)","ts":1784332800000},{"i":"1784332800057","t":"e","a":681.17,"ac":"UPI","c":"Food & Dining","n":"Dominos Pizza (SMS)","ts":1784332800000},{"i":"1784332800058","t":"e","a":10.0,"ac":"UPI","c":"Transport","n":"Indian Railway (SMS)","ts":1784332800000},{"i":"1784332800059","t":"e","a":20.0,"ac":"UPI","c":"Other","n":"SHIVAYOGESH J (SMS)","ts":1784332800000},{"i":"1784332800060","t":"e","a":13.0,"ac":"UPI","c":"Transport","n":"","ts":1784332800000},{"i":"1784332800061","t":"e","a":33.0,"ac":"UPI","c":"Transport","n":"","ts":1784332800000},{"i":"1784332800062","t":"e","a":5.0,"ac":"UPI","c":"Transport","n":"","ts":1784332800000},{"i":"1784246400063","t":"e","a":1654.0,"ac":"UPI","c":"Shopping","n":"Amazon India (SMS)","ts":1784246400000},{"i":"1784246400064","t":"e","a":60.0,"ac":"UPI","c":"Groceries","n":"","ts":1784246400000},{"i":"1783987200065","t":"e","a":105.0,"ac":"UPI","c":"Food & Dining","n":"SWIGGY (SMS)","ts":1783987200000},{"i":"1783900800066","t":"e","a":60.0,"ac":"UPI","c":"Groceries","n":"","ts":1783900800000},{"i":"1783814400067","t":"e","a":150.0,"ac":"UPI","c":"Other","n":"Haircut","ts":1783814400000},{"i":"1783728000068","t":"e","a":20000.0,"ac":"UPI","c":"Other","n":"","ts":1783728000000},{"i":"1783555200069","t":"e","a":211.0,"ac":"UPI","c":"Food & Dining","n":"Swiggy Ltd (SMS)","ts":1783555200000},{"i":"1783468800070","t":"e","a":992.25,"ac":"UPI","c":"Transport","n":"AbhiBus (SMS)","ts":1783468800000},{"i":"1783468800071","t":"e","a":894.0,"ac":"UPI","c":"Transport","n":"ABHIBUS COM (SMS)","ts":1783468800000},{"i":"1783382400072","t":"e","a":30.0,"ac":"UPI","c":"Food & Dining","n":"THANGAM FRUITS AND VEGETABLES (SMS)","ts":1783382400000},{"i":"1783382400073","t":"e","a":115.0,"ac":"UPI","c":"Food & Dining","n":"Swiggy Ltd (SMS)","ts":1783382400000},{"i":"1783382400074","t":"e","a":11.0,"ac":"UPI","c":"Other","n":"","ts":1783382400000},{"i":"1783382400075","t":"e","a":10.0,"ac":"UPI","c":"Other","n":"","ts":1783382400000},{"i":"1783382400076","t":"e","a":35.0,"ac":"UPI","c":"Groceries","n":"THANGAM FRUITS AND VEGETABLES (SMS)","ts":1783382400000},{"i":"1783209600077","t":"e","a":128.0,"ac":"UPI","c":"Food & Dining","n":"SWIGGY","ts":1783209600000},{"i":"1783209600078","t":"e","a":595.0,"ac":"UPI","c":"Food & Dining","n":"SWIGGY","ts":1783209600000},{"i":"1783209600079","t":"e","a":147.0,"ac":"UPI","c":"Groceries","n":"","ts":1783209600000},{"i":"1783123200080","t":"e","a":3250.0,"ac":"UPI","c":"Rent","n":"","ts":1783123200000},{"i":"1783123200081","t":"e","a":110.0,"ac":"UPI","c":"Groceries","n":"","ts":1783123200000},{"i":"1783036800082","t":"e","a":255.0,"ac":"UPI","c":"Food & Dining","n":"","ts":1783036800000},{"i":"1782950400083","t":"e","a":134.0,"ac":"UPI","c":"Other","n":"","ts":1782950400000},{"i":"1782950400084","t":"e","a":20.0,"ac":"UPI","c":"Groceries","n":"","ts":1782950400000},{"i":"1782864000085","t":"i","a":51091.0,"ac":"UPI","c":"Salary","n":"","ts":1782864000000},{"i":"1782864000086","t":"e","a":40.0,"ac":"UPI","c":"Groceries","n":"","ts":1782864000000},{"i":"1782864000087","t":"e","a":122.0,"ac":"UPI","c":"Food & Dining","n":"SWIGGY","ts":1782864000000}]';
     const seedTransactions = JSON.parse(rawData).map(t => ({id: String(t.i), type: t.t === 'e' ? 'expense' : 'income', amount: Number(t.a)||0, account: t.ac||'UPI', category: t.c||'Other', note: t.n||'', timestamp: Number(t.ts)||Date.now(), isRecurring: false}));
     
@@ -627,7 +498,6 @@
     let expandedChartObj = null;
     let reportCharts = {};
     let mediaViewMode = 'grid';
-    
     let wishScrapeController = null;
     let mediaScrapeController = null;
 
@@ -635,22 +505,10 @@
 
     const EXPENSE_CATEGORIES = ['Food & Dining', 'Groceries', 'Transport', 'Utilities', 'Electricity charges', 'Mobile Recharge', 'Rent', 'Education', 'Travel', 'Shopping', 'Entertainment', 'Health', 'Subscriptions', 'Investments', 'Other'];
     const INCOME_CATEGORIES = ['Salary', 'Freelance', 'Refund', 'Cashback', 'Other'];
-    
-    const CAT_COLORS = { 
-        'Food & Dining': '#ef4444', 'Groceries': '#f97316', 'Subscriptions': '#8b5cf6', 'Transport': '#3b82f6', 
-        'Utilities': '#eab308', 'Electricity charges': '#22d3ee', 'Mobile Recharge': '#14b8a6', 'Rent': '#6366f1', 
-        'Education': '#38bdf8', 'Travel': '#2dd4bf', 'Shopping': '#a855f7', 'Salary': '#10b981',
-        'Investments': '#059669', 'Other': '#9ca3af', 'Entertainment': '#ec4899', 'Health': '#84cc16', 
-        'Freelance': '#34d399', 'Refund': '#6ee7b7', 'Cashback': '#fcd34d'
-    };
+    const CAT_COLORS = { 'Food & Dining': '#ef4444', 'Groceries': '#f97316', 'Subscriptions': '#8b5cf6', 'Transport': '#3b82f6', 'Utilities': '#eab308', 'Electricity charges': '#22d3ee', 'Mobile Recharge': '#14b8a6', 'Rent': '#6366f1', 'Education': '#38bdf8', 'Travel': '#2dd4bf', 'Shopping': '#a855f7', 'Salary': '#10b981', 'Investments': '#059669', 'Other': '#9ca3af', 'Entertainment': '#ec4899', 'Health': '#84cc16', 'Freelance': '#34d399', 'Refund': '#6ee7b7', 'Cashback': '#fcd34d' };
 
-    function getColor(cat) {
-        if(CAT_COLORS[cat]) return CAT_COLORS[cat];
-        let hash = 0; for (let i = 0; i < cat.length; i++) hash = cat.charCodeAt(i) + ((hash << 5) - hash);
-        return `hsl(${Math.abs(hash % 360)}, 70%, 55%)`;
-    }
+    function getColor(cat) { if(CAT_COLORS[cat]) return CAT_COLORS[cat]; let hash = 0; for (let i = 0; i < cat.length; i++) hash = cat.charCodeAt(i) + ((hash << 5) - hash); return `hsl(${Math.abs(hash % 360)}, 70%, 55%)`; }
 
-    /* GLOBAL TOOLTIP LOGIC (Event Delegation to fix bugs) */
     document.addEventListener('mouseover', (e) => {
         if(e.target && e.target.classList && e.target.classList.contains('info-icon')) {
             const infoText = e.target.getAttribute('data-info');
@@ -671,14 +529,9 @@
         }
     });
 
-    /* WALLET STACK MECHANIC */
     const stack = document.getElementById('walletStack');
     let stackStartX = 0; let stackStartY = 0;
-    
-    stack.addEventListener('touchstart', e => { 
-        stackStartX = e.changedTouches[0].screenX; stackStartY = e.changedTouches[0].screenY; 
-    }, {passive: true});
-
+    stack.addEventListener('touchstart', e => { stackStartX = e.changedTouches[0].screenX; stackStartY = e.changedTouches[0].screenY; }, {passive: true});
     stack.addEventListener('touchend', e => {
         const touchEndX = e.changedTouches[0].screenX; const touchEndY = e.changedTouches[0].screenY;
         const diffX = touchEndX - stackStartX; const diffY = touchEndY - stackStartY;
@@ -698,28 +551,15 @@
         const cards = Array.from(stack.children);
         cards.forEach(c => c.classList.remove('active-card'));
         cardEl.classList.add('active-card');
-
         let remainingCards = cards.filter(c => c !== cardEl);
         cardEl.style.zIndex = '10'; cardEl.style.transform = 'translateY(10px) scale(1.05)';
-        
-        remainingCards.forEach((c, index) => {
-            c.style.zIndex = String(remainingCards.length - index);
-            c.style.transform = `translateY(${ -20 + (index * 10) }px) scale(${0.9 + (index * 0.02)})`;
-        });
+        remainingCards.forEach((c, index) => { c.style.zIndex = String(remainingCards.length - index); c.style.transform = `translateY(${ -20 + (index * 10) }px) scale(${0.9 + (index * 0.02)})`; });
     }
 
     function applyFilter(f) { currentFilter = f; updateUI(); }
 
-    document.getElementById('mediaStatus').addEventListener('change', function(e) {
-        document.getElementById('ratingContainer').style.display = e.target.value === 'Completed' ? 'block' : 'none';
-        if (e.target.value !== 'Completed') document.getElementById('mediaRating').value = 'Unrated';
-    });
-
-    document.getElementById('ewStatus').addEventListener('change', function(e) {
-        const rContainer = document.getElementById('ewRatingContainer');
-        if (e.target.value === 'Completed') rContainer.classList.remove('hidden');
-        else { rContainer.classList.add('hidden'); document.getElementById('ewRating').value = 'Unrated'; }
-    });
+    document.getElementById('mediaStatus').addEventListener('change', function(e) { document.getElementById('ratingContainer').style.display = e.target.value === 'Completed' ? 'block' : 'none'; if (e.target.value !== 'Completed') document.getElementById('mediaRating').value = 'Unrated'; });
+    document.getElementById('ewStatus').addEventListener('change', function(e) { const rContainer = document.getElementById('ewRatingContainer'); if (e.target.value === 'Completed') rContainer.classList.remove('hidden'); else { rContainer.classList.add('hidden'); document.getElementById('ewRating').value = 'Unrated'; } });
 
     async function toggleMediaStatus(id) {
         const index = mediaItems.findIndex(m => m.id === id); if (index === -1) return;
@@ -727,77 +567,28 @@
         let newStatus = currentStatus === 'Planned' ? 'In Progress' : (currentStatus === 'In Progress' ? 'Completed' : 'Planned');
         mediaItems[index].mediaStatus = newStatus;
         if (newStatus !== 'Completed') mediaItems[index].mediaRating = 'Unrated';
-        renderMedia();
-        try { await fetch(`${API_BASE}/add-wishlist`, { method: 'POST', headers: apiHeaders, body: JSON.stringify(mediaItems[index]) }); } catch(err){}
+        renderMedia(); try { await fetch(`${API_BASE}/add-wishlist`, { method: 'POST', headers: apiHeaders, body: JSON.stringify(mediaItems[index]) }); } catch(err){}
     }
 
-    // WORKSPACE LOGIC
     document.addEventListener('selectionchange', () => {
-        const isBold = document.queryCommandState('bold');
-        const isItalic = document.queryCommandState('italic');
-        const isUnderline = document.queryCommandState('underline');
-        
-        const bBtn = document.getElementById('btn-bold');
-        if(bBtn) bBtn.classList.toggle('tool-active', isBold);
-        
-        const iBtn = document.getElementById('btn-italic');
-        if(iBtn) iBtn.classList.toggle('tool-active', isItalic);
-        
-        const uBtn = document.getElementById('btn-underline');
-        if(uBtn) uBtn.classList.toggle('tool-active', isUnderline);
+        const isBold = document.queryCommandState('bold'); const isItalic = document.queryCommandState('italic'); const isUnderline = document.queryCommandState('underline');
+        const bBtn = document.getElementById('btn-bold'); if(bBtn) bBtn.classList.toggle('tool-active', isBold);
+        const iBtn = document.getElementById('btn-italic'); if(iBtn) iBtn.classList.toggle('tool-active', isItalic);
+        const uBtn = document.getElementById('btn-underline'); if(uBtn) uBtn.classList.toggle('tool-active', isUnderline);
     });
 
-    function applyFontSize(px) {
-        document.execCommand("fontSize", false, "7"); 
-        document.getElementById('workspaceNotes').querySelectorAll("font[size='7']").forEach(f => { f.removeAttribute("size"); f.style.fontSize = px + "px"; });
-        saveWorkspace();
-    }
-    
-    function applyFontColor(color) {
-        const selection = window.getSelection(); if (!selection.rangeCount) return;
-        document.execCommand('styleWithCSS', false, true); document.execCommand('foreColor', false, color);
-        saveWorkspace();
-    }
-
-    function insertChecklist() {
-        const id = 'chk_' + Date.now();
-        const html = `<div class="chk-item"><input type="checkbox" id="${id}"><label for="${id}" contenteditable="true"></label></div>`;
-        document.execCommand('insertHTML', false, html); saveWorkspace();
-    }
-    
-    document.getElementById('workspaceNotes').addEventListener('keydown', function(e) {
-        if (e.key === 'Enter') {
-            const selection = window.getSelection(); if (!selection.rangeCount) return;
-            const node = selection.getRangeAt(0).startContainer;
-            const chkItem = node.nodeType === 3 ? node.parentNode.closest('.chk-item') : node.closest('.chk-item');
-            if (chkItem) {
-                e.preventDefault(); const labelTxt = chkItem.querySelector('label').innerText.trim();
-                if (labelTxt === '') { chkItem.remove(); document.execCommand('insertParagraph'); } else insertChecklist();
-            }
-        }
-    });
-
+    function applyFontSize(px) { document.execCommand("fontSize", false, "7"); document.getElementById('workspaceNotes').querySelectorAll("font[size='7']").forEach(f => { f.removeAttribute("size"); f.style.fontSize = px + "px"; }); saveWorkspace(); }
+    function applyFontColor(color) { const selection = window.getSelection(); if (!selection.rangeCount) return; document.execCommand('styleWithCSS', false, true); document.execCommand('foreColor', false, color); saveWorkspace(); }
+    function insertChecklist() { const id = 'chk_' + Date.now(); const html = `<div class="chk-item"><input type="checkbox" id="${id}"><label for="${id}" contenteditable="true"></label></div>`; document.execCommand('insertHTML', false, html); saveWorkspace(); }
+    document.getElementById('workspaceNotes').addEventListener('keydown', function(e) { if (e.key === 'Enter') { const selection = window.getSelection(); if (!selection.rangeCount) return; const node = selection.getRangeAt(0).startContainer; const chkItem = node.nodeType === 3 ? node.parentNode.closest('.chk-item') : node.closest('.chk-item'); if (chkItem) { e.preventDefault(); const labelTxt = chkItem.querySelector('label').innerText.trim(); if (labelTxt === '') { chkItem.remove(); document.execCommand('insertParagraph'); } else insertChecklist(); } } });
     document.getElementById('workspaceNotes').addEventListener('change', function(e) { if(e.target.type === 'checkbox') saveWorkspace(); });
-
-    function exportWorkspaceTXT() {
-        const a = document.createElement('a'); a.href = URL.createObjectURL(new Blob([document.getElementById('workspaceNotes').innerText], { type: 'text/plain' }));
-        a.download = 'Wally_Workspace_Notes.txt'; a.click();
-    }
+    function exportWorkspaceTXT() { const a = document.createElement('a'); a.href = URL.createObjectURL(new Blob([document.getElementById('workspaceNotes').innerText], { type: 'text/plain' })); a.download = 'Wally_Workspace_Notes.txt'; a.click(); }
 
     function renderRecentSaves() {
         const history = JSON.parse(localStorage.getItem('workspaceHistory')) || [];
         const grid = document.getElementById('recentSavesGrid');
-        if(history.length === 0) {
-            grid.innerHTML = `<p class="text-gray-500 text-xs italic p-4">No recent saves found locally. Sync to create a snapshot.</p>`;
-            return;
-        }
-        grid.innerHTML = history.map((h, i) => `
-            <div onclick="restoreWorkspace(${i})" class="preview-card bg-black/60 border border-white/10 rounded-2xl p-3 min-w-[140px] max-w-[140px] flex-shrink-0 flex flex-col h-28 relative overflow-hidden">
-                <p class="text-[9px] text-gray-400 font-bold mb-2 uppercase tracking-widest">${h.date}</p>
-                <div class="text-[8px] text-gray-500 line-clamp-3 mb-2 flex-1">${h.notes.replace(/<[^>]*>?/gm, ' ')}</div>
-                ${h.whiteboard && h.whiteboard.length > 50 ? `<div class="h-6 w-full opacity-50 bg-center bg-contain bg-no-repeat rounded" style="background-image: url('${h.whiteboard}')"></div>` : `<div class="h-6 w-full flex items-center justify-center text-gray-600"><i data-lucide="pen-tool" class="w-3 h-3"></i></div>`}
-            </div>
-        `).join('');
+        if(history.length === 0) { grid.innerHTML = `<p class="text-gray-500 text-xs italic p-4">No recent saves found locally. Sync to create a snapshot.</p>`; return; }
+        grid.innerHTML = history.map((h, i) => `<div onclick="restoreWorkspace(${i})" class="preview-card bg-black/60 border border-white/10 rounded-2xl p-3 min-w-[140px] max-w-[140px] flex-shrink-0 flex flex-col h-28 relative overflow-hidden"><p class="text-[9px] text-gray-400 font-bold mb-2 uppercase tracking-widest">${h.date}</p><div class="text-[8px] text-gray-500 line-clamp-3 mb-2 flex-1">${h.notes.replace(/<[^>]*>?/gm, ' ')}</div>${h.whiteboard && h.whiteboard.length > 50 ? `<div class="h-6 w-full opacity-50 bg-center bg-contain bg-no-repeat rounded" style="background-image: url('${h.whiteboard}')"></div>` : `<div class="h-6 w-full flex items-center justify-center text-gray-600"><i data-lucide="pen-tool" class="w-3 h-3"></i></div>`}</div>`).join('');
         lucide.createIcons();
     }
 
@@ -807,10 +598,7 @@
             const data = history[index];
             if(data) {
                 if(data.notes) document.getElementById('workspaceNotes').innerHTML = data.notes;
-                if(data.whiteboard) {
-                    const canvas = document.getElementById('whiteboardCanvas');
-                    const img = new Image(); img.onload = () => { canvas.getContext('2d').clearRect(0,0,canvas.width,canvas.height); canvas.getContext('2d').drawImage(img, 0, 0); }; img.src = data.whiteboard;
-                }
+                if(data.whiteboard) { const canvas = document.getElementById('whiteboardCanvas'); const img = new Image(); img.onload = () => { canvas.getContext('2d').clearRect(0,0,canvas.width,canvas.height); canvas.getContext('2d').drawImage(img, 0, 0); }; img.src = data.whiteboard; }
             }
         }
     }
@@ -820,24 +608,13 @@
         notesEl.querySelectorAll('input[type="checkbox"]').forEach(cb => { cb.checked ? cb.setAttribute('checked', 'checked') : cb.removeAttribute('checked'); });
         const saveBtn = document.querySelector('button[onclick="saveWorkspace()"]');
         const origText = saveBtn.innerHTML; saveBtn.innerHTML = '<i data-lucide="loader-2" class="w-4 h-4 mr-2 animate-spin"></i> Syncing'; lucide.createIcons();
-        
         const wbData = document.getElementById('whiteboardCanvas').toDataURL();
-        
         let history = JSON.parse(localStorage.getItem('workspaceHistory')) || [];
         history.unshift({ id: Date.now(), date: new Date().toLocaleDateString('en-GB',{day:'numeric',month:'short',hour:'2-digit',minute:'2-digit'}), notes: notesEl.innerHTML, whiteboard: wbData });
         if(history.length > 8) history.pop();
         localStorage.setItem('workspaceHistory', JSON.stringify(history));
         renderRecentSaves();
-
-        try {
-            await fetch(`${API_BASE}/save-workspace`, {
-                method: 'POST', headers: apiHeaders,
-                body: JSON.stringify({ notes: notesEl.innerHTML, whiteboard: wbData })
-            });
-            saveBtn.innerHTML = '<i data-lucide="check" class="w-4 h-4 mr-2"></i> Synced!';
-        } catch(e) {
-            saveBtn.innerHTML = '<i data-lucide="x" class="w-4 h-4 mr-2"></i> Error';
-        }
+        try { await fetch(`${API_BASE}/save-workspace`, { method: 'POST', headers: apiHeaders, body: JSON.stringify({ notes: notesEl.innerHTML, whiteboard: wbData }) }); saveBtn.innerHTML = '<i data-lucide="check" class="w-4 h-4 mr-2"></i> Synced!'; } catch(e) { saveBtn.innerHTML = '<i data-lucide="x" class="w-4 h-4 mr-2"></i> Error'; }
         lucide.createIcons(); setTimeout(() => { saveBtn.innerHTML = origText; lucide.createIcons(); }, 2000);
     }
     
@@ -847,36 +624,18 @@
             if (res.ok) {
                 const data = await res.json();
                 if(data.notes) document.getElementById('workspaceNotes').innerHTML = data.notes;
-                if(data.whiteboard) {
-                    const canvas = document.getElementById('whiteboardCanvas');
-                    const img = new Image(); img.onload = () => canvas.getContext('2d').drawImage(img, 0, 0); img.src = data.whiteboard;
-                }
+                if(data.whiteboard) { const canvas = document.getElementById('whiteboardCanvas'); const img = new Image(); img.onload = () => canvas.getContext('2d').drawImage(img, 0, 0); img.src = data.whiteboard; }
             }
         } catch(e) {}
         renderRecentSaves();
     }
     
     let isDrawing = false, currentTool = 'pen', penColor = '#ffffff', penWidth = 2, startX, startY, savedImageData, wbHistory = [], isTextMode = false;
-
-    function saveWbState() {
-        const canvas = document.getElementById('whiteboardCanvas'); wbHistory.push(canvas.toDataURL());
-        if(wbHistory.length > 20) wbHistory.shift(); 
-    }
-
-    function undoWhiteboard() {
-        if(wbHistory.length > 0) {
-            wbHistory.pop(); const canvas = document.getElementById('whiteboardCanvas'); const ctx = canvas.getContext('2d'); ctx.clearRect(0,0, canvas.width, canvas.height);
-            if(wbHistory.length > 0) { const img = new Image(); img.onload = () => ctx.drawImage(img, 0, 0); img.src = wbHistory[wbHistory.length - 1]; }
-            saveWorkspace();
-        }
-    }
-
+    function saveWbState() { const canvas = document.getElementById('whiteboardCanvas'); wbHistory.push(canvas.toDataURL()); if(wbHistory.length > 20) wbHistory.shift(); }
+    function undoWhiteboard() { if(wbHistory.length > 0) { wbHistory.pop(); const canvas = document.getElementById('whiteboardCanvas'); const ctx = canvas.getContext('2d'); ctx.clearRect(0,0, canvas.width, canvas.height); if(wbHistory.length > 0) { const img = new Image(); img.onload = () => ctx.drawImage(img, 0, 0); img.src = wbHistory[wbHistory.length - 1]; } saveWorkspace(); } }
     function initWhiteboard() {
         const canvas = document.getElementById('whiteboardCanvas'); const ctx = canvas.getContext('2d'); const rect = canvas.parentElement.getBoundingClientRect();
-        if(canvas.width !== rect.width) {
-            canvas.width = rect.width; canvas.height = rect.height;
-            if(wbHistory.length > 0) { const img = new Image(); img.onload = () => ctx.drawImage(img, 0, 0); img.src = wbHistory[wbHistory.length - 1]; }
-        }
+        if(canvas.width !== rect.width) { canvas.width = rect.width; canvas.height = rect.height; if(wbHistory.length > 0) { const img = new Image(); img.onload = () => ctx.drawImage(img, 0, 0); img.src = wbHistory[wbHistory.length - 1]; } }
         if (wbHistory.length === 0) saveWbState();
         canvas.removeEventListener('mousedown', startPos); canvas.removeEventListener('mousemove', draw); canvas.removeEventListener('mouseup', endPos); canvas.removeEventListener('mouseout', endPos);
         canvas.addEventListener('mousedown', startPos); canvas.addEventListener('mousemove', draw); canvas.addEventListener('mouseup', endPos); canvas.addEventListener('mouseout', endPos);
@@ -884,11 +643,7 @@
 
         function startPos(e) {
             const bcr = canvas.getBoundingClientRect(); const x = (e.clientX ?? e.touches[0].clientX) - bcr.left; const y = (e.clientY ?? e.touches[0].clientY) - bcr.top;
-            if (isTextMode) {
-                const text = prompt("Enter text:");
-                if (text) { saveWbState(); ctx.font = `${document.getElementById('wbFontSize').value || 24}px ${document.getElementById('wbFontFamily').value || 'Fredoka'}`; ctx.fillStyle = penColor; ctx.fillText(text, x, y); saveWorkspace(); }
-                return;
-            }
+            if (isTextMode) { const text = prompt("Enter text:"); if (text) { saveWbState(); ctx.font = `${document.getElementById('wbFontSize').value || 24}px ${document.getElementById('wbFontFamily').value || 'Fredoka'}`; ctx.fillStyle = penColor; ctx.fillText(text, x, y); saveWorkspace(); } return; }
             isDrawing = true; saveWbState(); startX = x; startY = y; savedImageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
             if (['pen', 'highlighter', 'eraser'].includes(currentTool)) { ctx.beginPath(); ctx.moveTo(startX, startY); draw(e); }
         }
@@ -898,12 +653,8 @@
             const bcr = canvas.getBoundingClientRect(); const x = (e.clientX ?? e.touches[0].clientX) - bcr.left; const y = (e.clientY ?? e.touches[0].clientY) - bcr.top;
             ctx.lineWidth = penWidth; ctx.lineCap = 'round'; ctx.lineJoin = 'round';
             if (currentTool === 'eraser') { ctx.globalCompositeOperation = 'destination-out'; ctx.strokeStyle = 'rgba(0,0,0,1)'; } 
-            else if (currentTool === 'highlighter') {
-                ctx.globalCompositeOperation = 'source-over';
-                let c = /^#([A-Fa-f0-9]{3}){1,2}$/.test(penColor) ? penColor.substring(1).split('') : null;
-                if(c) { if(c.length==3) c=[c[0],c[0],c[1],c[1],c[2],c[2]]; c='0x'+c.join(''); ctx.strokeStyle = `rgba(${(c>>16)&255}, ${(c>>8)&255}, ${c&255}, 0.4)`; } 
-                else ctx.strokeStyle = 'rgba(234, 179, 8, 0.4)';
-            } else { ctx.globalCompositeOperation = 'source-over'; ctx.strokeStyle = penColor; }
+            else if (currentTool === 'highlighter') { ctx.globalCompositeOperation = 'source-over'; let c = /^#([A-Fa-f0-9]{3}){1,2}$/.test(penColor) ? penColor.substring(1).split('') : null; if(c) { if(c.length==3) c=[c[0],c[0],c[1],c[1],c[2],c[2]]; c='0x'+c.join(''); ctx.strokeStyle = `rgba(${(c>>16)&255}, ${(c>>8)&255}, ${c&255}, 0.4)`; } else ctx.strokeStyle = 'rgba(234, 179, 8, 0.4)'; } 
+            else { ctx.globalCompositeOperation = 'source-over'; ctx.strokeStyle = penColor; }
 
             if (['pen', 'highlighter', 'eraser'].includes(currentTool)) { ctx.lineTo(x, y); ctx.stroke(); } 
             else {
@@ -916,22 +667,8 @@
         function endPos() { if (isDrawing) { isDrawing = false; ctx.beginPath(); saveWorkspace(); } }
     }
 
-    function setTool(tool) { 
-        currentTool = tool; isTextMode = false; 
-        if(tool === 'eraser') { document.getElementById('wbWidthSlider').value = 20; penWidth = 20; } 
-        else if (tool === 'highlighter') { document.getElementById('wbWidthSlider').value = 15; penWidth = 15; }
-        else if (tool === 'pen') { document.getElementById('wbWidthSlider').value = 2; penWidth = 2; }
-        
-        document.querySelectorAll('.wb-tool').forEach(btn => btn.classList.remove('tool-active'));
-        const activeBtn = document.getElementById('tool-' + tool);
-        if(activeBtn) activeBtn.classList.add('tool-active');
-    }
-    
-    function setTextMode() { 
-        isTextMode = true; currentTool = 'text'; 
-        document.querySelectorAll('.wb-tool').forEach(btn => btn.classList.remove('tool-active'));
-        document.getElementById('tool-text').classList.add('tool-active');
-    }
+    function setTool(tool) { currentTool = tool; isTextMode = false; if(tool === 'eraser') { document.getElementById('wbWidthSlider').value = 20; penWidth = 20; } else if (tool === 'highlighter') { document.getElementById('wbWidthSlider').value = 15; penWidth = 15; } else if (tool === 'pen') { document.getElementById('wbWidthSlider').value = 2; penWidth = 2; } document.querySelectorAll('.wb-tool').forEach(btn => btn.classList.remove('tool-active')); const activeBtn = document.getElementById('tool-' + tool); if(activeBtn) activeBtn.classList.add('tool-active'); }
+    function setTextMode() { isTextMode = true; currentTool = 'text'; document.querySelectorAll('.wb-tool').forEach(btn => btn.classList.remove('tool-active')); document.getElementById('tool-text').classList.add('tool-active'); }
     function setPenWidth(w) { penWidth = w; }
     function setPenColor(c) { penColor = c; document.getElementById('wbColorPicker').value = c; if (currentTool === 'eraser' || isTextMode) { isTextMode = false; setTool('pen'); } }
     function clearWhiteboard() { if(confirm("Clear entire whiteboard?")) { saveWbState(); document.getElementById('whiteboardCanvas').getContext('2d').clearRect(0, 0, 10000, 10000); saveWorkspace(); } }
@@ -963,9 +700,7 @@
         try { const res = await fetch(`${API_BASE}/bulk-sms`, { method: 'POST', headers: apiHeaders, body: JSON.stringify({ bulkText: smsText }) }); if (res.ok) { alert("Bulk sync initiated! Check Queue."); loadPendingTransactions(); } else alert(`Error.`); } catch (e) { alert("Network Error."); } finally { icon.setAttribute('data-lucide', 'layers'); icon.classList.remove('animate-spin', 'text-purple-400'); lucide.createIcons(); }
     }
 
-    async function createCloudTransactionBackup(list=transactions) {
-        try{ const r=await fetch(`${API_BASE}/backup-transactions`,{method:'POST',headers:apiHeaders,body:JSON.stringify({transactions:list,createdAt:Date.now(),source:'Wally MK 2',version:2})}); return r.ok; } catch(e){ return false; }
-    }
+    async function createCloudTransactionBackup(list=transactions) { try{ const r=await fetch(`${API_BASE}/backup-transactions`,{method:'POST',headers:apiHeaders,body:JSON.stringify({transactions:list,createdAt:Date.now(),source:'Wally MK 2',version:2})}); return r.ok; } catch(e){ return false; } }
 
     async function recoverTransactionsFromCloudBackup(){
         if(!confirm('Recover the protected cloud transaction backup? Current records will be merged by ID.')) return;
@@ -1002,43 +737,21 @@
     async function syncDataFromServer(){
       try {
         updateUI(); renderWishlist(); renderMedia();
-
-        const [txRes,wRes] = await Promise.all([
-          fetch(`${API_BASE}/get-transactions`, {cache:'no-store'}),
-          fetch(`${API_BASE}/get-wishlist`, {cache:'no-store'})
-        ]);
-
+        const [txRes,wRes] = await Promise.all([ fetch(`${API_BASE}/get-transactions`, {cache:'no-store'}), fetch(`${API_BASE}/get-wishlist`, {cache:'no-store'}) ]);
         if(txRes.ok){
           const dbTx = (await txRes.json() || []).map(normalizeTransaction);
-
           const m = new Map(transactions.map(t => [String(t.id), normalizeTransaction(t)]));
           dbTx.forEach(t => m.set(String(t.id), normalizeTransaction(t)));
           transactions = Array.from(m.values()).filter(t => Number.isFinite(t.amount) && t.timestamp);
-
           saveTransactionsLocally();
-
-          if(!dbTx.length && transactions.length){
-            await fetch(`${API_BASE}/sync-transactions`, {
-              method:'POST', headers:apiHeaders, body:JSON.stringify(transactions)
-            });
-          }
-
+          if(!dbTx.length && transactions.length){ await fetch(`${API_BASE}/sync-transactions`, { method:'POST', headers:apiHeaders, body:JSON.stringify(transactions) }); }
           if(transactions.length) await createCloudTransactionBackup(transactions);
         }
-
         if(wRes.ok){
           const allWish = await wRes.json();
-          if(Array.isArray(allWish)){
-            wishlistItems = allWish.filter(w => !w.isMedia);
-            mediaItems = allWish.filter(w => w.isMedia);
-          }
+          if(Array.isArray(allWish)){ wishlistItems = allWish.filter(w => !w.isMedia); mediaItems = allWish.filter(w => w.isMedia); }
         }
-      } catch(e) {
-        console.error('Sync Error', e);
-      } finally {
-        saveTransactionsLocally();
-        updateUI(); renderWishlist(); renderMedia();
-      }
+      } catch(e) { console.error('Sync Error', e); } finally { saveTransactionsLocally(); updateUI(); renderWishlist(); renderMedia(); }
     }
 
     const views = ['dashboard', 'wishlist', 'media', 'workspace'];
@@ -1047,26 +760,16 @@
     function switchMainView(viewName) {
         const nextIndex = views.indexOf(viewName);
         if (nextIndex === -1 || nextIndex === currentViewIndex) return;
-
         const direction = nextIndex > currentViewIndex ? 'next' : 'prev';
         const currentViewEl = document.getElementById('view' + views[currentViewIndex].charAt(0).toUpperCase() + views[currentViewIndex].slice(1));
         const nextViewEl = document.getElementById('view' + viewName.charAt(0).toUpperCase() + viewName.slice(1));
-
         views.forEach(v => {
             const btn = document.getElementById('nav' + v.charAt(0).toUpperCase() + v.slice(1));
-            if (v === viewName) {
-                btn.className = 'nav-btn active flex-1 sm:flex-none px-4 md:px-5 py-2.5 rounded-xl font-bold text-sm text-white shadow-lg transition-all uppercase tracking-wider';
-            } else {
-                btn.className = 'nav-btn flex-1 sm:flex-none px-4 md:px-5 py-2.5 rounded-xl font-bold text-sm text-gray-400 hover:text-white hover:bg-white/10 transition-all border border-transparent uppercase tracking-wider';
-            }
+            if (v === viewName) btn.className = 'nav-btn active flex-1 sm:flex-none px-4 md:px-5 py-2.5 rounded-xl font-bold text-sm text-white shadow-lg transition-all uppercase tracking-wider';
+            else btn.className = 'nav-btn flex-1 sm:flex-none px-4 md:px-5 py-2.5 rounded-xl font-bold text-sm text-gray-400 hover:text-white hover:bg-white/10 transition-all border border-transparent uppercase tracking-wider';
         });
-
-        currentViewEl.classList.remove('active');
-        currentViewEl.classList.add(direction === 'next' ? 'prev' : 'next');
-        
-        nextViewEl.classList.remove('prev', 'next');
-        nextViewEl.classList.add('active');
-
+        currentViewEl.classList.remove('active'); currentViewEl.classList.add(direction === 'next' ? 'prev' : 'next');
+        nextViewEl.classList.remove('prev', 'next'); nextViewEl.classList.add('active');
         currentViewIndex = nextIndex;
         if(viewName === 'workspace') setTimeout(initWhiteboard, 200);
         lucide.createIcons();
@@ -1075,8 +778,7 @@
     let touchStartX = 0;
     document.addEventListener('touchstart', e => { touchStartX = e.changedTouches[0].screenX; }, {passive: true});
     document.addEventListener('touchend', e => {
-        const touchEndX = e.changedTouches[0].screenX;
-        const threshold = 100;
+        const touchEndX = e.changedTouches[0].screenX; const threshold = 100;
         if (touchEndX < touchStartX - threshold && currentViewIndex < views.length - 1) switchMainView(views[currentViewIndex + 1]);
         if (touchEndX > touchStartX + threshold && currentViewIndex > 0) switchMainView(views[currentViewIndex - 1]);
     }, {passive: true});
@@ -1094,16 +796,8 @@
       const sel = document.getElementById('category'); sel.innerHTML = ''; (currentType === 'expense' ? EXPENSE_CATEGORIES : INCOME_CATEGORIES).forEach(c => { sel.innerHTML += `<option value="${c}">${c}</option>`; });
     }
 
-    function setGoal() { 
-        const g = prompt(`Set Budget for ${selectedMonth} (₹):`, monthlyBudgets[selectedMonth] || monthlyBudgets['default'] || 25000); 
-        if (g && !isNaN(g)) { monthlyBudgets[selectedMonth] = parseFloat(g); localStorage.setItem('walletBudgets', JSON.stringify(monthlyBudgets)); updateUI(); } 
-    }
-
-    function setCCLimit() { 
-        const g = prompt(`Set Master Credit Card Limit (₹):`, ccLimit); 
-        if (g && !isNaN(g)) { ccLimit = parseFloat(g); localStorage.setItem('walletCCLimit', ccLimit); updateUI(); } 
-    }
-    
+    function setGoal() { const g = prompt(`Set Budget for ${selectedMonth} (₹):`, monthlyBudgets[selectedMonth] || monthlyBudgets['default'] || 25000); if (g && !isNaN(g)) { monthlyBudgets[selectedMonth] = parseFloat(g); localStorage.setItem('walletBudgets', JSON.stringify(monthlyBudgets)); updateUI(); } }
+    function setCCLimit() { const g = prompt(`Set Master Credit Card Limit (₹):`, ccLimit); if (g && !isNaN(g)) { ccLimit = parseFloat(g); localStorage.setItem('walletCCLimit', ccLimit); updateUI(); } }
     function addAmount(val) { const el = document.getElementById('amount'); el.value = (parseFloat(el.value) || 0) + val; }
 
     function populateMonthFilter() {
@@ -1113,26 +807,11 @@
       const sortedMonths = Array.from(months).sort().reverse(); 
       filter.innerHTML = '<option value="all">ALL TIME</option>'; cardFilter.innerHTML = '<option value="all">ALL TIME</option>';
       let pOpts = '<option value="current">SELECTED</option><option value="all">ALL TIME</option>', hOpts = '<option value="all">ALL MONTHS</option>';
-
-      sortedMonths.forEach(m => { 
-          const text = new Date(m.split('-')[0], m.split('-')[1] - 1).toLocaleDateString('en-GB', { month: 'long', year: 'numeric' }).toUpperCase();
-          filter.innerHTML += `<option value="${m}">${text}</option>`; cardFilter.innerHTML += `<option value="${m}">${text}</option>`; pOpts += `<option value="${m}">${text}</option>`; hOpts += `<option value="${m}">${text}</option>`;
-      });
-
+      sortedMonths.forEach(m => { const text = new Date(m.split('-')[0], m.split('-')[1] - 1).toLocaleDateString('en-GB', { month: 'long', year: 'numeric' }).toUpperCase(); filter.innerHTML += `<option value="${m}">${text}</option>`; cardFilter.innerHTML += `<option value="${m}">${text}</option>`; pOpts += `<option value="${m}">${text}</option>`; hOpts += `<option value="${m}">${text}</option>`; });
       if (pieFilter) pieFilter.innerHTML = pOpts;
       if (histFilter) { const oldHVal = histFilter.value; histFilter.innerHTML = hOpts; if (Array.from(histFilter.options).some(o => o.value === oldHVal)) histFilter.value = oldHVal; }
-      
-      // Auto-fallback
-      if (Array.from(filter.options).some(o => o.value === selectedMonth)) { 
-          filter.value = selectedMonth; cardFilter.value = selectedMonth; 
-      } else { 
-          if(transactions.length > 0 && selectedMonth !== 'all') {
-             let latestMonth = sortedMonths[0] || 'all';
-             selectedMonth = latestMonth; filter.value = latestMonth; cardFilter.value = latestMonth;
-          } else {
-             filter.value = nowStr; cardFilter.value = nowStr; selectedMonth = nowStr; 
-          }
-      }
+      if (Array.from(filter.options).some(o => o.value === selectedMonth)) { filter.value = selectedMonth; cardFilter.value = selectedMonth; } 
+      else { if(transactions.length > 0 && selectedMonth !== 'all') { let latestMonth = sortedMonths[0] || 'all'; selectedMonth = latestMonth; filter.value = latestMonth; cardFilter.value = latestMonth; } else { filter.value = nowStr; cardFilter.value = nowStr; selectedMonth = nowStr; } }
     }
 
     function exportPDF() {
@@ -1147,73 +826,33 @@
     }
 
     async function importData(event) {
-      const file = event.target.files[0];
-      if (!file) return;
+      const file = event.target.files[0]; if (!file) return;
       try {
-        const ext = file.name.split('.').pop().toLowerCase();
-        let importedTransactions = [];
-
+        const ext = file.name.split('.').pop().toLowerCase(); let importedTransactions = [];
         if (ext === 'json') {
-          const text = await file.text();
-          const imported = JSON.parse(text);
+          const text = await file.text(); const imported = JSON.parse(text);
           importedTransactions = Array.isArray(imported.transactions) ? imported.transactions : [];
-          if (Array.isArray(imported.wishlist)) {
-            await fetch(`${API_BASE}/sync-wishlist`, { method:'POST', headers:apiHeaders, body:JSON.stringify(imported.wishlist) });
-          }
+          if (Array.isArray(imported.wishlist)) await fetch(`${API_BASE}/sync-wishlist`, { method:'POST', headers:apiHeaders, body:JSON.stringify(imported.wishlist) });
         } else {
-          const buffer = await file.arrayBuffer();
-          const wb = XLSX.read(buffer, { type:'array', cellDates:true });
+          const buffer = await file.arrayBuffer(); const wb = XLSX.read(buffer, { type:'array', cellDates:true });
           const sheetName = wb.SheetNames.includes('Ledger') ? 'Ledger' : wb.SheetNames[0];
           const rows = XLSX.utils.sheet_to_json(wb.Sheets[sheetName], { defval:'' });
-
           importedTransactions = rows.map((r, idx) => {
-            const dateValue = r.Date ?? r.date ?? r.Timestamp ?? r.timestamp;
-            let ts = Date.now();
-            if (dateValue instanceof Date) ts = dateValue.getTime();
-            else if (typeof dateValue === 'number') ts = dateValue < 10000000000 ? dateValue * 86400000 : dateValue;
-            else {
-              const s = String(dateValue || '').trim();
-              const match = s.match(/^(\d{1,2})[\\/.\-](\d{1,2})[\\/.\-](\d{4})$/);
-              if (match) ts = new Date(Number(match[3]), Number(match[2])-1, Number(match[1])).getTime();
-              else {
-                const parsed = new Date(s);
-                if (!Number.isNaN(parsed.getTime())) ts = parsed.getTime();
-              }
-            }
+            const dateValue = r.Date ?? r.date ?? r.Timestamp ?? r.timestamp; let ts = Date.now();
+            if (dateValue instanceof Date) ts = dateValue.getTime(); else if (typeof dateValue === 'number') ts = dateValue < 10000000000 ? dateValue * 86400000 : dateValue;
+            else { const s = String(dateValue || '').trim(); const match = s.match(/^(\d{1,2})[\\/.\-](\d{1,2})[\\/.\-](\d{4})$/); if (match) ts = new Date(Number(match[3]), Number(match[2])-1, Number(match[1])).getTime(); else { const parsed = new Date(s); if (!Number.isNaN(parsed.getTime())) ts = parsed.getTime(); } }
             const typeRaw = String(r.Type ?? r.type ?? '').toLowerCase().trim();
-            return normalizeTransaction({
-              id: String(ts) + String(idx).padStart(4,'0'),
-              type: typeRaw.includes('income') || typeRaw === 'i' ? 'income' : 'expense',
-              amount: Number(r.Amount ?? r.amount ?? 0),
-              account: r.Account ?? r.account ?? 'UPI',
-              category: r.Category ?? r.category ?? 'Other',
-              note: r.Description ?? r.Desc ?? r.description ?? r.note ?? '',
-              timestamp: ts,
-              isRecurring: false
-            });
+            return normalizeTransaction({ id: String(ts) + String(idx).padStart(4,'0'), type: typeRaw.includes('income') || typeRaw === 'i' ? 'income' : 'expense', amount: Number(r.Amount ?? r.amount ?? 0), account: r.Account ?? r.account ?? 'UPI', category: r.Category ?? r.category ?? 'Other', note: r.Description ?? r.Desc ?? r.description ?? r.note ?? '', timestamp: ts, isRecurring: false });
           });
         }
-
         if (!importedTransactions.length) throw new Error('No transaction rows found.');
         const normalized = importedTransactions.map(normalizeTransaction);
         const map = new Map(transactions.map(t => [String(t.id), normalizeTransaction(t)]));
-        normalized.forEach(t => map.set(String(t.id), t));
-        transactions = Array.from(map.values());
-        saveTransactionsLocally();
-
-        const syncRes = await fetch(`${API_BASE}/sync-transactions`, {
-          method:'POST', headers:apiHeaders, body:JSON.stringify(transactions)
-        });
+        normalized.forEach(t => map.set(String(t.id), t)); transactions = Array.from(map.values()); saveTransactionsLocally();
+        const syncRes = await fetch(`${API_BASE}/sync-transactions`, { method:'POST', headers:apiHeaders, body:JSON.stringify(transactions) });
         if (!syncRes.ok) throw new Error('Cloud sync failed.');
-        await createCloudTransactionBackup(transactions);
-        updateUI();
-        alert(`Wally MK 2 ledger synced: ${normalized.length} transaction rows imported.`);
-      } catch (err) {
-        console.error('Import error', err);
-        alert(`Import failed: ${err.message}`);
-      } finally {
-        event.target.value = '';
-      }
+        await createCloudTransactionBackup(transactions); updateUI(); alert(`Wally MK 2 ledger synced: ${normalized.length} transaction rows imported.`);
+      } catch (err) { alert(`Import failed: ${err.message}`); } finally { event.target.value = ''; }
     }
 
     async function scanReceipt(event) {
@@ -1234,13 +873,9 @@
     async function getCASPERForecast() {
         const term = document.getElementById('aiTerminal'); const btn = document.getElementById('aiForecastBtn'); btn.disabled = true; clearTimeout(aiTypingTimer); term.classList.remove('hidden'); term.innerHTML = '<span class="text-purple-400 animate-pulse font-medium">C.A.S.P.E.R. is computing month-over-month trajectory...</span>';
         try {
-            const now = new Date();
-            const currM = `${now.getFullYear()}-${String(now.getMonth()+1).padStart(2,'0')}`;
-            const prevM = `${now.getMonth()===0 ? now.getFullYear()-1 : now.getFullYear()}-${String(now.getMonth()===0 ? 12 : now.getMonth()).padStart(2,'0')}`;
-            
+            const now = new Date(); const currM = `${now.getFullYear()}-${String(now.getMonth()+1).padStart(2,'0')}`; const prevM = `${now.getMonth()===0 ? now.getFullYear()-1 : now.getFullYear()}-${String(now.getMonth()===0 ? 12 : now.getMonth()).padStart(2,'0')}`;
             const currData = transactions.filter(t => t.type==='expense' && `${new Date(t.timestamp).getFullYear()}-${String(new Date(t.timestamp).getMonth()+1).padStart(2,'0')}` === currM);
             const prevData = transactions.filter(t => t.type==='expense' && `${new Date(t.timestamp).getFullYear()}-${String(new Date(t.timestamp).getMonth()+1).padStart(2,'0')}` === prevM);
-
             const res = await fetch(`${API_BASE}/jarvis-predict`, { method: 'POST', headers: apiHeaders, body: JSON.stringify({ currentMonthData: currData, previousMonthData: prevData, currentBudget: monthlyBudgets[selectedMonth]||25000 }) });
             const data = await res.json(); term.innerHTML = data.report; btn.disabled = false;
         } catch (err) { term.innerHTML = '<span class="text-red-400">Prediction Engine Offline.</span>'; btn.disabled = false; }
@@ -1249,27 +884,21 @@
     async function openAIReport() {
         document.getElementById('aiReportModal').classList.remove('hidden'); document.getElementById('aiReportContent').innerHTML = '<div class="flex items-center text-blue-400 animate-pulse font-bold text-lg"><i data-lucide="loader-2" class="w-6 h-6 mr-3 animate-spin"></i> C.A.S.P.E.R. is compiling full report...</div>'; lucide.createIcons();
         Object.values(reportCharts).forEach(c => c.destroy()); reportCharts = {};
-
         const getCatData = (txs) => { const data = {}; txs.filter(t=>t.type==='expense').forEach(t => data[t.category] = (data[t.category]||0)+t.amount); return Object.entries(data).sort((a,b)=>b[1]-a[1]); };
         const getTimelineData = (txs) => { const dates = {}; [...txs].sort((a,b)=>a.timestamp-b.timestamp).forEach(t => { const d = new Date(t.timestamp); const m = `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}`; if(!dates[m]) dates[m] = {i:0,e:0}; t.type === 'income' ? dates[m].i += t.amount : dates[m].e += t.amount; }); const labels = Object.keys(dates); return { labels, inc: labels.map(l=>dates[l].i), exp: labels.map(l=>dates[l].e) }; };
-
         const filtered = transactions.filter(t => selectedMonth === 'all' || `${new Date(t.timestamp).getFullYear()}-${String(new Date(t.timestamp).getMonth() + 1).padStart(2, '0')}` === selectedMonth);
         const monthCats = getCatData(filtered), allCats = getCatData(transactions), monthTime = getTimelineData(filtered), allTime = getTimelineData(transactions);
-        
         const cOpts = { responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false } } };
         const pOpts = { responsive: true, maintainAspectRatio: false, plugins: { legend: { position: 'right', labels:{color:'#9ca3af', font:{family:'Fredoka', size: 10}} } } };
-
         reportCharts.pieMonth = new Chart(document.getElementById('reportPieMonth'), { type: 'doughnut', data: { labels: monthCats.map(c=>c[0]), datasets: [{ data: monthCats.map(c=>c[1]), backgroundColor: monthCats.map(c=>getColor(c[0])), borderWidth: 2, borderColor: '#08080a' }] }, options: pOpts });
         reportCharts.barMonth = new Chart(document.getElementById('reportBarMonth'), { type: 'bar', data: { labels: monthCats.slice(0,7).map(c=>c[0]), datasets: [{ label: 'Expenses', data: monthCats.slice(0,7).map(c=>c[1]), backgroundColor: '#f43f5e', borderRadius:4 }] }, options: cOpts });
         reportCharts.pieAll = new Chart(document.getElementById('reportPieAll'), { type: 'doughnut', data: { labels: allCats.map(c=>c[0]), datasets: [{ data: allCats.map(c=>c[1]), backgroundColor: allCats.map(c=>getColor(c[0])), borderWidth: 2, borderColor: '#08080a' }] }, options: pOpts });
         reportCharts.barAll = new Chart(document.getElementById('reportBarAll'), { type: 'bar', data: { labels: allTime.labels, datasets: [ { label:'Income', data:allTime.inc, backgroundColor:'#10b981', borderRadius:4 }, { label:'Expense', data:allTime.exp, backgroundColor:'#f43f5e', borderRadius:4 } ] }, options: cOpts });
-
         const rCats = ['Food & Dining', 'Transport', 'Shopping', 'Utilities', 'Subscriptions'];
         reportCharts.radarMonth = new Chart(document.getElementById('reportRadarMonth'), { type: 'radar', data: { labels: rCats, datasets: [{ data: rCats.map(c => monthCats.find(m => m[0] === c)?.[1] || 0), backgroundColor: 'rgba(59, 130, 246, 0.2)', borderColor: '#3b82f6', pointBackgroundColor: '#60a5fa', borderWidth: 2 }] }, options: cOpts });
         reportCharts.radarAll = new Chart(document.getElementById('reportRadarAll'), { type: 'radar', data: { labels: rCats, datasets: [{ data: rCats.map(c => allCats.find(m => m[0] === c)?.[1] || 0), backgroundColor: 'rgba(168, 85, 247, 0.2)', borderColor: '#a855f7', pointBackgroundColor: '#c084fc', borderWidth: 2 }] }, options: cOpts });
         reportCharts.trendMonth = new Chart(document.getElementById('reportTrendMonth'), { type: 'line', data: { labels: monthTime.labels, datasets: [ { label:'Inc', data:monthTime.inc, borderColor:'#10b981' }, { label:'Exp', data:monthTime.exp, borderColor:'#f43f5e' } ] }, options: cOpts });
         reportCharts.trendAll = new Chart(document.getElementById('reportTrendAll'), { type: 'line', data: { labels: allTime.labels, datasets: [ { label:'Inc', data:allTime.inc, borderColor:'#10b981', fill:true, backgroundColor:'rgba(16, 185, 129, 0.1)' }, { label:'Exp', data:allTime.exp, borderColor:'#f43f5e', fill:true, backgroundColor:'rgba(244, 63, 94, 0.1)' } ] }, options: cOpts });
-
         const mSums = {}; transactions.forEach(t => { const m = `${new Date(t.timestamp).getFullYear()}-${String(new Date(t.timestamp).getMonth()+1).padStart(2,'0')}`; if (!mSums[m]) mSums[m] = { inc:0, exp:0, cats:{} }; t.type === 'income' ? mSums[m].inc += t.amount : (mSums[m].exp += t.amount, mSums[m].cats[t.category] = (mSums[m].cats[t.category]||0)+t.amount); });
         try { const res = await fetch(`${API_BASE}/jarvis-report`, { method: 'POST', headers: apiHeaders, body: JSON.stringify({ compiledMonths: mSums, monthlyBudget: monthlyBudgets[selectedMonth]||25000, selectedMonth }) }); document.getElementById('aiReportContent').innerHTML = (await res.json()).report; } catch(e) { document.getElementById('aiReportContent').innerHTML = '<span class="text-red-400">Failed.</span>'; }
     }
@@ -1409,7 +1038,7 @@
 
     function generateMediaCard(item) {
         const sColor = item.mediaStatus === 'Completed' ? 'bg-emerald-500/20 text-emerald-300' : (item.mediaStatus === 'In Progress' ? 'bg-orange-500/20 text-orange-300' : 'bg-blue-500/20 text-blue-300');
-        return `<div class="glass-panel rounded-3xl p-5 relative group border border-white/10 flex flex-col justify-between hover:-translate-y-1.5 transition-transform bg-gradient-to-br from-white/5 to-transparent"><div class="absolute top-3 right-3 flex space-x-2 opacity-100 md:opacity-0 group-hover:opacity-100 transition-all z-20"><button onclick="openEditWishlistModal('${item.id}', true)" class="bg-blue-500/30 text-blue-300 p-2 rounded-full hover:bg-blue-50 hover:text-white"><i data-lucide="edit-2" class="w-4 h-4"></i></button><button onclick="deleteMediaItem('${item.id}')" class="bg-red-500/30 text-red-300 p-2 rounded-full hover:bg-red-50 hover:text-white"><i data-lucide="x" class="w-4 h-4"></i></button></div>${item.imageUrl ? `<img src="${item.imageUrl}" class="w-full h-56 object-cover rounded-xl mb-4 bg-black/50 border border-white/10">` : `<div class="w-full h-56 rounded-xl mb-4 bg-white/5 border border-white/10 flex items-center justify-center"><i data-lucide="film" class="w-8 h-8 text-gray-500"></i></div>`}<div class="flex-grow space-y-2 min-w-0"><div class="flex items-center justify-between gap-2 pr-16"><div class="flex gap-2 min-w-0"><span class="px-2 py-0.5 bg-purple-500/20 text-purple-300 border border-purple-500/30 rounded-md text-[9px] font-black uppercase tracking-wider truncate max-w-[100px]">${item.wishCategory}</span></div><span class="text-[9px] text-gray-500 font-bold flex-shrink-0">${item.timestamp ? new Date(item.timestamp).toLocaleDateString() : ''}</span></div><div class="flex items-start justify-between gap-2 pt-1"><h3 class="font-bold text-white text-lg tracking-wider line-clamp-2">${item.title}</h3><button onclick="toggleMediaStatus('${item.id}')" class="text-gray-400 hover:text-emerald-400 transition-colors mt-1 flex-shrink-0"><i data-lucide="${item.mediaStatus === 'Completed' ? 'check-circle' : 'circle'}" class="w-5 h-5"></i></button></div>${item.mediaDetails ? `<p class="text-[11px] text-gray-300 bg-black/50 px-2 py-1 rounded-lg border border-white/10 mt-2 truncate">${item.mediaDetails}</p>` : ''}<div class="flex items-center justify-between pt-2"><span class="px-2 py-1 ${sColor} rounded-md text-[9px] font-black uppercase tracking-wider flex-shrink-0">${item.mediaStatus}</span>${item.mediaRating !== 'Unrated' ? `<span class="text-yellow-400 text-xs flex-shrink-0">${'⭐'.repeat(parseInt(item.mediaRating))}</span>` : ''}</div></div><div class="flex gap-2 mt-4"><button onclick="linkMediaToWishlist('${item.id}')" class="flex-1 bg-blue-500/20 text-blue-300 py-2.5 rounded-xl text-xs font-bold transition-all border border-blue-500/30 uppercase tracking-wider truncate">Add to Wish</button>${item.link ? `<a href="${item.link}" target="_blank" class="flex-1 text-center bg-white/10 hover:bg-white/20 py-2.5 rounded-xl text-xs font-bold transition-all border border-white/20 text-white uppercase tracking-wider truncate">Link</a>` : ''}</div></div>`;
+        return `<div class="glass-panel rounded-3xl p-5 relative group border border-white/10 flex flex-col justify-between hover:-translate-y-1.5 transition-transform bg-gradient-to-br from-white/5 to-transparent"><div class="absolute top-3 right-3 flex space-x-2 opacity-100 md:opacity-0 group-hover:opacity-100 transition-all z-20"><button onclick="openEditWishlistModal('${item.id}', true)" class="bg-blue-500/30 text-blue-300 p-2 rounded-full hover:bg-blue-500 hover:text-white"><i data-lucide="edit-2" class="w-4 h-4"></i></button><button onclick="deleteMediaItem('${item.id}')" class="bg-red-500/30 text-red-300 p-2 rounded-full hover:bg-red-50 hover:text-white"><i data-lucide="x" class="w-4 h-4"></i></button></div>${item.imageUrl ? `<img src="${item.imageUrl}" class="w-full h-56 object-cover rounded-xl mb-4 bg-black/50 border border-white/10">` : `<div class="w-full h-56 rounded-xl mb-4 bg-white/5 border border-white/10 flex items-center justify-center"><i data-lucide="film" class="w-8 h-8 text-gray-500"></i></div>`}<div class="flex-grow space-y-2 min-w-0"><div class="flex items-center justify-between gap-2 pr-16"><div class="flex gap-2 min-w-0"><span class="px-2 py-0.5 bg-purple-500/20 text-purple-300 border border-purple-500/30 rounded-md text-[9px] font-black uppercase tracking-wider truncate max-w-[100px]">${item.wishCategory}</span></div><span class="text-[9px] text-gray-500 font-bold flex-shrink-0">${item.timestamp ? new Date(item.timestamp).toLocaleDateString() : ''}</span></div><div class="flex items-start justify-between gap-2 pt-1"><h3 class="font-bold text-white text-lg tracking-wider line-clamp-2">${item.title}</h3><button onclick="toggleMediaStatus('${item.id}')" class="text-gray-400 hover:text-emerald-400 transition-colors mt-1 flex-shrink-0"><i data-lucide="${item.mediaStatus === 'Completed' ? 'check-circle' : 'circle'}" class="w-5 h-5"></i></button></div>${item.mediaDetails ? `<p class="text-[11px] text-gray-300 bg-black/50 px-2 py-1 rounded-lg border border-white/10 mt-2 truncate">${item.mediaDetails}</p>` : ''}<div class="flex items-center justify-between pt-2"><span class="px-2 py-1 ${sColor} rounded-md text-[9px] font-black uppercase tracking-wider flex-shrink-0">${item.mediaStatus}</span>${item.mediaRating !== 'Unrated' ? `<span class="text-yellow-400 text-xs flex-shrink-0">${'⭐'.repeat(parseInt(item.mediaRating))}</span>` : ''}</div></div><div class="flex gap-2 mt-4"><button onclick="linkMediaToWishlist('${item.id}')" class="flex-1 bg-blue-500/20 text-blue-300 py-2.5 rounded-xl text-xs font-bold transition-all border border-blue-500/30 uppercase tracking-wider truncate">Add to Wish</button>${item.link ? `<a href="${item.link}" target="_blank" class="flex-1 text-center bg-white/10 hover:bg-white/20 py-2.5 rounded-xl text-xs font-bold transition-all border border-white/20 text-white uppercase tracking-wider truncate">Link</a>` : ''}</div></div>`;
     }
 
     function renderMedia() {

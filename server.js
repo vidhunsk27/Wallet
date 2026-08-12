@@ -101,7 +101,7 @@ app.post('/api/backup-transactions', async (req, res) => {
         if (transactions.length === 0) return res.status(400).json({ error: 'Backup refused because transaction list is empty' });
         const cleanedTransactions = transactions.filter(tx => tx && tx.id !== undefined && tx.id !== null);
         if (cleanedTransactions.length === 0) return res.status(400).json({ error: 'Backup refused because no valid transactions were supplied' });
-        await db.collection('settings').doc('transactionBackupLatest').set({ transactions: cleanedTransactions, count: cleanedTransactions.length, createdAt: Date.now(), source: req.body.source || 'Wallet Mark 2', version: 1 });
+        await db.collection('settings').doc('transactionBackupLatest').set({ transactions: cleanedTransactions, count: cleanedTransactions.length, createdAt: Date.now(), source: req.body.source || 'Wally MK 2', version: 1 });
         res.status(200).json({ message: 'Protected transaction backup saved', count: cleanedTransactions.length, createdAt: Date.now() });
     } catch (error) { res.status(500).json({ error: 'Failed to backup transactions' }); }
 });
@@ -137,14 +137,14 @@ app.get('/api/get-wishlist', async (req, res) => {
 
 app.post('/api/add-wishlist', async (req, res) => {
     try {
-        await db.collection('wishlist').doc(req.body.id).set(req.body);
+        await db.collection('wishlist').doc(String(req.body.id)).set(req.body);
         res.status(201).json({ message: 'Added successfully' });
     } catch (error) { res.status(500).json({ error: 'Failed to add' }); }
 });
 
 app.delete('/api/delete-wishlist/:id', async (req, res) => {
     try {
-        await db.collection('wishlist').doc(req.params.id).delete();
+        await db.collection('wishlist').doc(String(req.params.id)).delete();
         res.status(200).json({ message: 'Deleted' });
     } catch (error) { res.status(500).json({ error: 'Failed to delete' }); }
 });
@@ -284,13 +284,14 @@ app.get('/api/pending', async (req, res) => {
 
 app.post('/api/approve', async (req, res) => {
     try {
-        const { id } = req.body;
-        const docRef = db.collection('pending').doc(String(id));
+        const id = String(req.body.id);
+        if (!id) return res.status(400).json({ error: 'Transaction ID required' });
+        const docRef = db.collection('pending').doc(id);
         const doc = await docRef.get();
         if (doc.exists) {
             const approvedTxn = doc.data();
             const finalTx = { id: approvedTxn.id, type: approvedTxn.type || 'expense', amount: approvedTxn.amount, account: approvedTxn.account || 'UPI', category: approvedTxn.category || 'Other', note: approvedTxn.note || approvedTxn.merchant, timestamp: approvedTxn.timestamp, isRecurring: false };
-            await db.collection('transactions').doc(finalTx.id).set(finalTx);
+            await db.collection('transactions').doc(id).set(finalTx);
             await docRef.delete();
             res.json({ success: true, message: "Approved successfully", data: finalTx });
         } else {
@@ -301,8 +302,9 @@ app.post('/api/approve', async (req, res) => {
 
 app.post('/api/reject', async (req, res) => {
     try {
-        const { id } = req.body;
-        await db.collection('pending').doc(String(id)).delete();
+        const id = String(req.body.id);
+        if (!id) return res.status(400).json({ error: 'Transaction ID required' });
+        await db.collection('pending').doc(id).delete();
         res.json({ success: true, message: "Rejected and safely expunged" });
     } catch (error) { res.status(500).json({ error: 'Rejection routing failed' }); }
 });
@@ -423,30 +425,7 @@ app.post('/api/scrape-media', async (req, res) => {
 app.get('/api/bookmark-media', async (req, res) => {
     const targetUrl = req.query.url;
     if (!targetUrl) return res.send("No URL provided.");
-    res.send(`
-        <html style="background:#050505; color:#a855f7; font-family:sans-serif; text-align:center; padding:2rem;">
-            <h2 style="margin-top: 20px; color:#a855f7;">🎬 Media Vault</h2>
-            <div id="manualEntryBox" style="background: rgba(255,255,255,0.05); padding: 20px; border-radius: 16px; margin-top: 20px; border: 1px solid rgba(255,255,255,0.1);">
-                <input type="text" id="manualName" placeholder="Movie / Book Name" style="background: rgba(0,0,0,0.5); color: #fff; font-size: 16px; border: 1px solid rgba(255,255,255,0.2); border-radius: 12px; padding: 15px; width: 100%; outline: none; margin-bottom: 10px;">
-                <select id="mediaType" style="background: rgba(0,0,0,0.5); color: #fff; border: 1px solid rgba(255,255,255,0.2); border-radius: 12px; padding: 12px; width: 100%; outline: none; margin-bottom: 10px;"><option value="Movie">🎬 Movie</option><option value="Book">📚 Book</option><option value="Series">📺 Series</option><option value="Anime">🎌 Anime</option></select>
-                <select id="mediaGenre" style="background: rgba(0,0,0,0.5); color: #fff; border: 1px solid rgba(255,255,255,0.2); border-radius: 12px; padding: 12px; width: 100%; outline: none; margin-bottom: 15px;"><option value="Action">Action</option><option value="Comedy">Comedy</option><option value="Drama">Drama</option><option value="Sci-Fi">Sci-Fi</option><option value="Romance">Romance</option><option value="Other">Other</option></select>
-                <button onclick="saveManualData()" style="background: #9333ea; color: white; border: none; padding: 15px; width: 100%; border-radius: 12px; font-size: 16px; font-weight: bold; cursor: pointer; transition: 0.2s;">Save to Vault</button>
-            </div>
-            <script>
-                function saveManualData() {
-                    const btn = document.querySelector('button');
-                    btn.innerText = "Syncing to Cloud..."; btn.style.background = "#10b981";
-                    fetch('https://wallet-y7yv.onrender.com/api/add-wishlist', {
-                        method: 'POST', headers: { 'Content-Type': 'application/json' },
-                        body: JSON.stringify({ id: String(Date.now()), title: document.getElementById('manualName').value || 'Saved Media', price: 0, link: '${targetUrl}', imageUrl: '', category: 'MEDIA NODE', wishCategory: document.getElementById('mediaType').value, mediaGenre: document.getElementById('mediaGenre').value, mediaStatus: 'Planned', isMedia: true, timestamp: Date.now() })
-                    }).then(() => {
-                        document.getElementById('manualEntryBox').innerHTML = '<h1 style="color:#10b981; font-size: 30px; margin: 30px 0;">Saved! 🎬</h1>';
-                        setTimeout(() => window.close(), 1500);
-                    });
-                }
-            </script>
-        </html>
-    `);
+    res.send(`<html style="background:#050505; color:#a855f7; font-family:sans-serif; text-align:center; padding:2rem;"><h2 style="margin-top: 20px; color:#a855f7;">🎬 Media Vault</h2><div id="manualEntryBox" style="background: rgba(255,255,255,0.05); padding: 20px; border-radius: 16px; margin-top: 20px; border: 1px solid rgba(255,255,255,0.1);"><input type="text" id="manualName" placeholder="Movie / Book Name" style="background: rgba(0,0,0,0.5); color: #fff; font-size: 16px; border: 1px solid rgba(255,255,255,0.2); border-radius: 12px; padding: 15px; width: 100%; outline: none; margin-bottom: 10px;"><select id="mediaType" style="background: rgba(0,0,0,0.5); color: #fff; border: 1px solid rgba(255,255,255,0.2); border-radius: 12px; padding: 12px; width: 100%; outline: none; margin-bottom: 10px;"><option value="Movie">🎬 Movie</option><option value="Book">📚 Book</option><option value="Series">📺 Series</option><option value="Anime">🎌 Anime</option></select><select id="mediaGenre" style="background: rgba(0,0,0,0.5); color: #fff; border: 1px solid rgba(255,255,255,0.2); border-radius: 12px; padding: 12px; width: 100%; outline: none; margin-bottom: 15px;"><option value="Action">Action</option><option value="Comedy">Comedy</option><option value="Drama">Drama</option><option value="Sci-Fi">Sci-Fi</option><option value="Romance">Romance</option><option value="Other">Other</option></select><button onclick="saveManualData()" style="background: #9333ea; color: white; border: none; padding: 15px; width: 100%; border-radius: 12px; font-size: 16px; font-weight: bold; cursor: pointer; transition: 0.2s;">Save to Vault</button></div><script>function saveManualData() { const btn = document.querySelector('button'); btn.innerText = "Syncing to Cloud..."; btn.style.background = "#10b981"; fetch('https://wallet-y7yv.onrender.com/api/add-wishlist', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ id: String(Date.now()), title: document.getElementById('manualName').value || 'Saved Media', price: 0, link: '${targetUrl}', imageUrl: '', category: 'MEDIA NODE', wishCategory: document.getElementById('mediaType').value, mediaGenre: document.getElementById('mediaGenre').value, mediaStatus: 'Planned', isMedia: true, timestamp: Date.now() }) }).then(() => { document.getElementById('manualEntryBox').innerHTML = '<h1 style="color:#10b981; font-size: 30px; margin: 30px 0;">Saved! 🎬</h1>'; setTimeout(() => window.close(), 1500); }); }</script></html>`);
 });
 
 app.get('/api/bookmark-media-auto', async (req, res) => {
@@ -470,27 +449,7 @@ app.get('/api/bookmark-auto', async (req, res) => {
 
 app.get('/api/bookmark', async (req, res) => {
     const targetUrl = req.query.url;
-    res.send(`
-        <html style="background:#050505; color:#10b981; font-family:sans-serif; text-align:center; padding:2rem;">
-            <div id="manualEntryBox" style="background: rgba(255,255,255,0.05); padding: 20px; border-radius: 16px; margin-top: 20px; border: 1px solid rgba(255,255,255,0.1);">
-                <input type="text" id="manualName" placeholder="Product Name" style="background: rgba(0,0,0,0.5); color: #fff; font-size: 16px; border: 1px solid rgba(255,255,255,0.2); border-radius: 12px; padding: 15px; width: 100%; outline: none; margin-bottom: 10px;">
-                <input type="number" id="manualPrice" placeholder="Enter Price (₹)" style="background: rgba(0,0,0,0.5); color: #10b981; font-size: 24px; font-weight: bold; text-align: center; border: 1px solid rgba(255,255,255,0.2); border-radius: 12px; padding: 15px; width: 100%; outline: none; margin-bottom: 15px;" autofocus>
-                <button onclick="saveManualData()" style="background: #3b82f6; color: white; border: none; padding: 15px; width: 100%; border-radius: 12px; font-size: 16px; font-weight: bold; cursor: pointer; transition: 0.2s;">Save to Tracker</button>
-            </div>
-            <script>
-                function saveManualData() {
-                    const btn = document.querySelector('button');
-                    const priceInput = document.getElementById('manualPrice').value;
-                    if (!priceInput || priceInput <= 0) return;
-                    btn.innerText = "Syncing..."; btn.style.background = "#10b981";
-                    fetch('https://wallet-y7yv.onrender.com/api/add-wishlist', {
-                        method:'POST', headers:{'Content-Type': 'application/json'},
-                        body:JSON.stringify({ id: String(Date.now()), title: document.getElementById('manualName').value || 'Saved Item', price: parseFloat(priceInput), link: '${targetUrl}', imageUrl: '', category: 'MANUAL', wishCategory: 'Other', timestamp: Date.now() })
-                    }).then(() => { document.getElementById('manualEntryBox').innerHTML = '<h2>Saved!</h2>'; setTimeout(() => window.close(), 1500); });
-                }
-            </script>
-        </html>
-    `);
+    res.send(`<html style="background:#050505; color:#10b981; font-family:sans-serif; text-align:center; padding:2rem;"><div id="manualEntryBox" style="background: rgba(255,255,255,0.05); padding: 20px; border-radius: 16px; margin-top: 20px; border: 1px solid rgba(255,255,255,0.1);"><input type="text" id="manualName" placeholder="Product Name" style="background: rgba(0,0,0,0.5); color: #fff; font-size: 16px; border: 1px solid rgba(255,255,255,0.2); border-radius: 12px; padding: 15px; width: 100%; outline: none; margin-bottom: 10px;"><input type="number" id="manualPrice" placeholder="Enter Price (₹)" style="background: rgba(0,0,0,0.5); color: #10b981; font-size: 24px; font-weight: bold; text-align: center; border: 1px solid rgba(255,255,255,0.2); border-radius: 12px; padding: 15px; width: 100%; outline: none; margin-bottom: 15px;" autofocus><button onclick="saveManualData()" style="background: #3b82f6; color: white; border: none; padding: 15px; width: 100%; border-radius: 12px; font-size: 16px; font-weight: bold; cursor: pointer; transition: 0.2s;">Save to Tracker</button></div><script>function saveManualData() { const btn = document.querySelector('button'); const priceInput = document.getElementById('manualPrice').value; if (!priceInput || priceInput <= 0) return; btn.innerText = "Syncing..."; btn.style.background = "#10b981"; fetch('https://wallet-y7yv.onrender.com/api/add-wishlist', { method:'POST', headers:{'Content-Type': 'application/json'}, body:JSON.stringify({ id: String(Date.now()), title: document.getElementById('manualName').value || 'Saved Item', price: parseFloat(priceInput), link: '${targetUrl}', imageUrl: '', category: 'MANUAL', wishCategory: 'Other', timestamp: Date.now() }) }).then(() => { document.getElementById('manualEntryBox').innerHTML = '<h2>Saved!</h2>'; setTimeout(() => window.close(), 1500); }).catch(() => { btn.innerText = "Save Failed"; btn.style.background = "#ef4444"; }); }</script></html>`);
 });
 
 const PORT = process.env.PORT || 3000;
