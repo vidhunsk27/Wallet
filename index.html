@@ -26,7 +26,7 @@
     .glass-panel:hover { background: linear-gradient(145deg, rgba(10,20,32,.86), rgba(20,8,13,.82)); border-color: rgba(227,38,46,.38); box-shadow: 0 14px 44px rgba(0,0,0,.5), 0 0 28px rgba(227,38,46,.07); transform: translateY(-2px); }
     .glass-input { background: rgba(0, 0, 0, 0.6); border: 1px solid rgba(255, 255, 255, 0.15); transition: all 0.3s ease; }
     .glass-input:focus { border-color: var(--spider-red); box-shadow: 0 0 20px rgba(227,38,46,.22); outline: none; background: rgba(0, 0, 0, 0.8); }
-    ::-webkit-scrollbar { width: 8px; height: 8px; } ::-webkit-scrollbar-track { background: transparent; } ::-webkit-scrollbar-thumb { background: rgba(227,38,46, 0.3); border-radius: 10px; }
+    ::-webkit-scrollbar { width: 8px; height: 8px; } ::-webkit-scrollbar-track { background: transparent; } ::-webkit-scrollbar-thumb { background: rgba(227,38,46, 1); border-radius: 10px; }
     .hide-scroll::-webkit-scrollbar { display: none; } .hide-scroll { -ms-overflow-style: none; scrollbar-width: none; }
     @keyframes slideUpFade { 0% { opacity: 0; transform: translateY(30px); } 100% { opacity: 1; transform: translateY(0); } }
     .animate-slide-up { animation: slideUpFade 0.6s cubic-bezier(0.16, 1, 0.3, 1) forwards; opacity: 0; }
@@ -469,8 +469,17 @@
     const apiHeaders = { 'Content-Type': 'application/json' };
 
     let currentType = 'expense'; 
-    let monthlyBudgets = JSON.parse(localStorage.getItem('walletBudgets')) || { 'default': 25000 }; 
-    let ccLimit = parseFloat(localStorage.getItem('walletCCLimit')) || 50000;
+    let monthlyBudgets = { 'default': 25000 }; 
+    let ccLimit = 50000;
+    
+    try { 
+        if (localStorage.getItem('walletBudgets')) monthlyBudgets = JSON.parse(localStorage.getItem('walletBudgets')); 
+    } catch(e) { localStorage.removeItem('walletBudgets'); }
+
+    try { 
+        if (localStorage.getItem('walletCCLimit')) ccLimit = parseFloat(localStorage.getItem('walletCCLimit')); 
+    } catch(e) { localStorage.removeItem('walletCCLimit'); }
+
     const LOCAL_TX_KEY='walletTransactionsBackupV2';
     
     const rawData = '[]';
@@ -483,7 +492,7 @@
       try{
         const cached=JSON.parse(localStorage.getItem(LOCAL_TX_KEY));
         if(Array.isArray(cached)&&cached.length) return cached.map(normalizeTransaction);
-      }catch(e){}
+      }catch(e){ localStorage.removeItem(LOCAL_TX_KEY); }
       return [];
     })();
         
@@ -492,7 +501,12 @@
     let currentFilter = 'all';
     let wishlistItems = []; 
     let mediaItems = []; 
-    let monthlyWishlistSavings = parseFloat(localStorage.getItem('walletWishlistSavings')) || 0;
+    
+    let monthlyWishlistSavings = 0;
+    try { 
+        if (localStorage.getItem('walletWishlistSavings')) monthlyWishlistSavings = parseFloat(localStorage.getItem('walletWishlistSavings')); 
+    } catch(e) { localStorage.removeItem('walletWishlistSavings'); }
+
     let aiTypingTimer; 
     let allTimeChartObj = null;
     let expandedChartObj = null;
