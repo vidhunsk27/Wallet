@@ -26,8 +26,14 @@
     .glass-panel:hover { background: linear-gradient(145deg, rgba(10,20,32,.86), rgba(20,8,13,.82)); border-color: rgba(227,38,46,.38); box-shadow: 0 14px 44px rgba(0,0,0,.5), 0 0 28px rgba(227,38,46,.07); transform: translateY(-2px); }
     .glass-input { background: rgba(0, 0, 0, 0.6); border: 1px solid rgba(255, 255, 255, 0.15); transition: all 0.3s ease; }
     .glass-input:focus { border-color: var(--spider-red); box-shadow: 0 0 20px rgba(227,38,46,.22); outline: none; background: rgba(0, 0, 0, 0.8); }
-    ::-webkit-scrollbar { width: 8px; height: 8px; } ::-webkit-scrollbar-track { background: transparent; } ::-webkit-scrollbar-thumb { background: rgba(227,38,46, 1); border-radius: 10px; }
+    
+    /* REBUILT SCROLLBAR FOR HIGH VISIBILITY */
+    ::-webkit-scrollbar { width: 12px; height: 12px; } 
+    ::-webkit-scrollbar-track { background: rgba(0,0,0,0.4); border-radius: 10px; border: 1px solid rgba(255,255,255,0.05); } 
+    ::-webkit-scrollbar-thumb { background: rgba(227,38,46, 0.85); border-radius: 10px; border: 2px solid rgba(0,0,0,0.8); transition: background 0.3s ease;}
+    ::-webkit-scrollbar-thumb:hover { background: rgba(255,60,70, 1); }
     .hide-scroll::-webkit-scrollbar { display: none; } .hide-scroll { -ms-overflow-style: none; scrollbar-width: none; }
+    
     @keyframes slideUpFade { 0% { opacity: 0; transform: translateY(30px); } 100% { opacity: 1; transform: translateY(0); } }
     .animate-slide-up { animation: slideUpFade 0.6s cubic-bezier(0.16, 1, 0.3, 1) forwards; opacity: 0; }
     .view-container { position: relative; width: 100%; overflow: hidden; min-height: 80vh; }
@@ -468,44 +474,59 @@
     const API_BASE = 'https://wallet-y7yv.onrender.com/api';
     const apiHeaders = { 'Content-Type': 'application/json' };
 
+    // --- 1. CORE STATE MANAGEMENT (Redefined & Failsafe) ---
     let currentType = 'expense'; 
-    let monthlyBudgets = { 'default': 25000 }; 
-    let ccLimit = 50000;
-    
-    try { 
-        if (localStorage.getItem('walletBudgets')) monthlyBudgets = JSON.parse(localStorage.getItem('walletBudgets')); 
-    } catch(e) { localStorage.removeItem('walletBudgets'); }
-
-    try { 
-        if (localStorage.getItem('walletCCLimit')) ccLimit = parseFloat(localStorage.getItem('walletCCLimit')); 
-    } catch(e) { localStorage.removeItem('walletCCLimit'); }
-
-    const LOCAL_TX_KEY='walletTransactionsBackupV2';
-    
-    const rawData = '[]';
-    const seedTransactions = [];
-    
-    function normalizeTransaction(t){return{id:String(t.id??t.i??Date.now()),type:t.type??(t.t==='e'?'expense':'income'),amount:Number(t.amount??t.a)||0,account:t.account??t.ac??'UPI',category:t.category??t.c??'Other',note:t.note??t.n??'',timestamp:Number(t.timestamp??t.ts)||Date.now(),isRecurring:!!t.isRecurring};}
-    function saveTransactionsLocally(){try{localStorage.setItem(LOCAL_TX_KEY,JSON.stringify(transactions));}catch(e){console.warn('Local cache unavailable',e);}}
-    
-    let transactions=(()=>{
-      try{
-        const cached=JSON.parse(localStorage.getItem(LOCAL_TX_KEY));
-        if(Array.isArray(cached)&&cached.length) return cached.map(normalizeTransaction);
-      }catch(e){ localStorage.removeItem(LOCAL_TX_KEY); }
-      return [];
-    })();
-        
     let selectedMonth = 'all'; 
     let searchQuery = '';
     let currentFilter = 'all';
+    
+    let transactions = [];
     let wishlistItems = []; 
     let mediaItems = []; 
-    
+    let monthlyBudgets = { 'default': 25000 }; 
+    let ccLimit = 50000;
     let monthlyWishlistSavings = 0;
-    try { 
-        if (localStorage.getItem('walletWishlistSavings')) monthlyWishlistSavings = parseFloat(localStorage.getItem('walletWishlistSavings')); 
-    } catch(e) { localStorage.removeItem('walletWishlistSavings'); }
+    
+    const LOCAL_TX_KEY = 'walletTransactionsBackupV2';
+    
+    function normalizeTransaction(t) { return { id: String(t.id ?? t.i ?? Date.now()), type: t.type ?? (t.t === 'e' ? 'expense' : 'income'), amount: Number(t.amount ?? t.a) || 0, account: t.account ?? t.ac ?? 'UPI', category: t.category ?? t.c ?? 'Other', note: t.note ?? t.n ?? '', timestamp: Number(t.timestamp ?? t.ts) || Date.now(), isRecurring: !!t.isRecurring }; }
+    
+    // Completely rewrote the initialization to prevent fatal UI lockups
+    function forceCleanSystemState() {
+        console.log("[System] Validating local memory integrity...");
+        
+        // Failsafe 1: Transactions
+        try {
+            let txData = JSON.parse(localStorage.getItem(LOCAL_TX_KEY));
+            if (Array.isArray(txData)) transactions = txData.map(normalizeTransaction);
+            else throw new Error("Invalid format");
+        } catch(e) { 
+            localStorage.removeItem(LOCAL_TX_KEY); 
+            transactions = []; 
+        }
+
+        // Failsafe 2: Budgets
+        try {
+            let bData = JSON.parse(localStorage.getItem('walletBudgets'));
+            if (bData && typeof bData === 'object' && !Array.isArray(bData)) monthlyBudgets = bData;
+            else throw new Error("Invalid format");
+        } catch(e) { 
+            localStorage.removeItem('walletBudgets'); 
+            monthlyBudgets = { 'default': 25000 }; 
+        }
+
+        // Failsafe 3: Basic Variables
+        try { ccLimit = parseFloat(localStorage.getItem('walletCCLimit')) || 50000; } catch(e) { ccLimit = 50000; }
+        try { monthlyWishlistSavings = parseFloat(localStorage.getItem('walletWishlistSavings')) || 0; } catch(e) { monthlyWishlistSavings = 0; }
+    }
+
+    // Run the safety check immediately
+    forceCleanSystemState();
+
+    function saveTransactionsLocally(){
+        try { localStorage.setItem(LOCAL_TX_KEY, JSON.stringify(transactions)); }
+        catch(e) { console.warn('Local cache storage failed', e); }
+    }
 
     let aiTypingTimer; 
     let allTimeChartObj = null;
@@ -544,22 +565,24 @@
     });
 
     const stack = document.getElementById('walletStack');
-    let stackStartX = 0; let stackStartY = 0;
-    stack.addEventListener('touchstart', e => { stackStartX = e.changedTouches[0].screenX; stackStartY = e.changedTouches[0].screenY; }, {passive: true});
-    stack.addEventListener('touchend', e => {
-        const touchEndX = e.changedTouches[0].screenX; const touchEndY = e.changedTouches[0].screenY;
-        const diffX = touchEndX - stackStartX; const diffY = touchEndY - stackStartY;
-        if (Math.abs(diffX) > 50 || Math.abs(diffY) > 50) {
-            const cards = Array.from(stack.children);
-            const activeIdx = cards.findIndex(c => c.classList.contains('active-card'));
-            if (activeIdx !== -1) {
-                let nextIdx = activeIdx;
-                if (diffX < -50 || diffY < -50) nextIdx = (activeIdx + 1) % cards.length;
-                else if (diffX > 50 || diffY > 50) nextIdx = (activeIdx - 1 + cards.length) % cards.length;
-                bringToFront(cards[nextIdx]);
+    if (stack) {
+        let stackStartX = 0; let stackStartY = 0;
+        stack.addEventListener('touchstart', e => { stackStartX = e.changedTouches[0].screenX; stackStartY = e.changedTouches[0].screenY; }, {passive: true});
+        stack.addEventListener('touchend', e => {
+            const touchEndX = e.changedTouches[0].screenX; const touchEndY = e.changedTouches[0].screenY;
+            const diffX = touchEndX - stackStartX; const diffY = touchEndY - stackStartY;
+            if (Math.abs(diffX) > 50 || Math.abs(diffY) > 50) {
+                const cards = Array.from(stack.children);
+                const activeIdx = cards.findIndex(c => c.classList.contains('active-card'));
+                if (activeIdx !== -1) {
+                    let nextIdx = activeIdx;
+                    if (diffX < -50 || diffY < -50) nextIdx = (activeIdx + 1) % cards.length;
+                    else if (diffX > 50 || diffY > 50) nextIdx = (activeIdx - 1 + cards.length) % cards.length;
+                    bringToFront(cards[nextIdx]);
+                }
             }
-        }
-    }, {passive: true});
+        }, {passive: true});
+    }
 
     function bringToFront(cardEl) {
         const cards = Array.from(stack.children);
@@ -1052,7 +1075,7 @@
 
     function generateMediaCard(item) {
         const sColor = item.mediaStatus === 'Completed' ? 'bg-emerald-500/20 text-emerald-300' : (item.mediaStatus === 'In Progress' ? 'bg-orange-500/20 text-orange-300' : 'bg-blue-500/20 text-blue-300');
-        return `<div class="glass-panel rounded-3xl p-5 relative group border border-white/10 flex flex-col justify-between hover:-translate-y-1.5 transition-transform bg-gradient-to-br from-white/5 to-transparent"><div class="absolute top-3 right-3 flex space-x-2 opacity-100 md:opacity-0 group-hover:opacity-100 transition-all z-20"><button onclick="openEditWishlistModal('${item.id}', true)" class="bg-blue-500/30 text-blue-300 p-2 rounded-full hover:bg-blue-500 hover:text-white"><i data-lucide="edit-2" class="w-4 h-4"></i></button><button onclick="deleteMediaItem('${item.id}')" class="bg-red-500/30 text-red-300 p-2 rounded-full hover:bg-red-50 hover:text-white"><i data-lucide="x" class="w-4 h-4"></i></button></div>${item.imageUrl ? `<img src="${item.imageUrl}" class="w-full h-56 object-cover rounded-xl mb-4 bg-black/50 border border-white/10">` : `<div class="w-full h-56 rounded-xl mb-4 bg-white/5 border border-white/10 flex items-center justify-center"><i data-lucide="film" class="w-8 h-8 text-gray-500"></i></div>`}<div class="flex-grow space-y-2 min-w-0"><div class="flex items-center justify-between gap-2 pr-16"><div class="flex gap-2 min-w-0"><span class="px-2 py-0.5 bg-purple-500/20 text-purple-300 border border-purple-500/30 rounded-md text-[9px] font-black uppercase tracking-wider truncate max-w-[100px]">${item.wishCategory}</span></div><span class="text-[9px] text-gray-500 font-bold flex-shrink-0">${item.timestamp ? new Date(item.timestamp).toLocaleDateString() : ''}</span></div><div class="flex items-start justify-between gap-2 pt-1"><h3 class="font-bold text-white text-lg tracking-wider line-clamp-2">${item.title}</h3><button onclick="toggleMediaStatus('${item.id}')" class="text-gray-400 hover:text-emerald-400 transition-colors mt-1 flex-shrink-0"><i data-lucide="${item.mediaStatus === 'Completed' ? 'check-circle' : 'circle'}" class="w-5 h-5"></i></button></div>${item.mediaDetails ? `<p class="text-[11px] text-gray-300 bg-black/50 px-2 py-1 rounded-lg border border-white/10 mt-2 truncate">${item.mediaDetails}</p>` : ''}<div class="flex items-center justify-between pt-2"><span class="px-2 py-1 ${sColor} rounded-md text-[9px] font-black uppercase tracking-wider flex-shrink-0">${item.mediaStatus}</span>${item.mediaRating !== 'Unrated' ? `<span class="text-yellow-400 text-xs flex-shrink-0">${'⭐'.repeat(parseInt(item.mediaRating))}</span>` : ''}</div></div><div class="flex gap-2 mt-4"><button onclick="linkMediaToWishlist('${item.id}')" class="flex-1 bg-blue-500/20 text-blue-300 py-2.5 rounded-xl text-xs font-bold transition-all border border-blue-500/30 uppercase tracking-wider truncate">Add to Wish</button>${item.link ? `<a href="${item.link}" target="_blank" class="flex-1 text-center bg-white/10 hover:bg-white/20 py-2.5 rounded-xl text-xs font-bold transition-all border border-white/20 text-white uppercase tracking-wider truncate">Link</a>` : ''}</div></div>`;
+        return `<div class="glass-panel rounded-3xl p-5 relative group border border-white/10 flex flex-col justify-between hover:-translate-y-1.5 transition-transform bg-gradient-to-br from-white/5 to-transparent"><div class="absolute top-3 right-3 flex space-x-2 opacity-100 md:opacity-0 group-hover:opacity-100 transition-all z-20"><button onclick="openEditWishlistModal('${item.id}', true)" class="bg-blue-500/30 text-blue-300 p-2 rounded-full hover:bg-blue-50 hover:text-white"><i data-lucide="edit-2" class="w-4 h-4"></i></button><button onclick="deleteMediaItem('${item.id}')" class="bg-red-500/30 text-red-300 p-2 rounded-full hover:bg-red-50 hover:text-white"><i data-lucide="x" class="w-4 h-4"></i></button></div>${item.imageUrl ? `<img src="${item.imageUrl}" class="w-full h-56 object-cover rounded-xl mb-4 bg-black/50 border border-white/10">` : `<div class="w-full h-56 rounded-xl mb-4 bg-white/5 border border-white/10 flex items-center justify-center"><i data-lucide="film" class="w-8 h-8 text-gray-500"></i></div>`}<div class="flex-grow space-y-2 min-w-0"><div class="flex items-center justify-between gap-2 pr-16"><div class="flex gap-2 min-w-0"><span class="px-2 py-0.5 bg-purple-500/20 text-purple-300 border border-purple-500/30 rounded-md text-[9px] font-black uppercase tracking-wider truncate max-w-[100px]">${item.wishCategory}</span></div><span class="text-[9px] text-gray-500 font-bold flex-shrink-0">${item.timestamp ? new Date(item.timestamp).toLocaleDateString() : ''}</span></div><div class="flex items-start justify-between gap-2 pt-1"><h3 class="font-bold text-white text-lg tracking-wider line-clamp-2">${item.title}</h3><button onclick="toggleMediaStatus('${item.id}')" class="text-gray-400 hover:text-emerald-400 transition-colors mt-1 flex-shrink-0"><i data-lucide="${item.mediaStatus === 'Completed' ? 'check-circle' : 'circle'}" class="w-5 h-5"></i></button></div>${item.mediaDetails ? `<p class="text-[11px] text-gray-300 bg-black/50 px-2 py-1 rounded-lg border border-white/10 mt-2 truncate">${item.mediaDetails}</p>` : ''}<div class="flex items-center justify-between pt-2"><span class="px-2 py-1 ${sColor} rounded-md text-[9px] font-black uppercase tracking-wider flex-shrink-0">${item.mediaStatus}</span>${item.mediaRating !== 'Unrated' ? `<span class="text-yellow-400 text-xs flex-shrink-0">${'⭐'.repeat(parseInt(item.mediaRating))}</span>` : ''}</div></div><div class="flex gap-2 mt-4"><button onclick="linkMediaToWishlist('${item.id}')" class="flex-1 bg-blue-500/20 text-blue-300 py-2.5 rounded-xl text-xs font-bold transition-all border border-blue-500/30 uppercase tracking-wider truncate">Add to Wish</button>${item.link ? `<a href="${item.link}" target="_blank" class="flex-1 text-center bg-white/10 hover:bg-white/20 py-2.5 rounded-xl text-xs font-bold transition-all border border-white/20 text-white uppercase tracking-wider truncate">Link</a>` : ''}</div></div>`;
     }
 
     function renderMedia() {
